@@ -28,7 +28,6 @@
 
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/sync/interprocess_condition.hpp>
-#include <boost/interprocess/sync/interprocess_recursive_mutex.hpp>
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
 #include "cpsCore/Synchronization/IRunnableObject.h"
 #include "cpsCore/Utilities/Time.hpp"

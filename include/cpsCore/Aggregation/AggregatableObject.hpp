@@ -8,7 +8,6 @@
 #ifndef UAVAP_CORE_OBJECT_AGGREGATABLEOBJECT_HPP_
 #define UAVAP_CORE_OBJECT_AGGREGATABLEOBJECT_HPP_
 
-#include "cpsCore/Aggregation/IAggregatableObject.h"
 #include "cpsCore/Aggregation/ObjectHandleContainer.hpp"
 #include "cpsCore/Logging/CPSLogger.h"
 

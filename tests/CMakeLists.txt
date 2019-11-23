@@ -3,7 +3,7 @@ set(TEST_SRCS TestRunner.cpp
 
 add_subdirectory(Aggregation)
 add_subdirectory(Configuration)
-#add_subdirectory(Synchronization)
+add_subdirectory(Synchronization)
 
 include_directories(${SUBMODULE_DIR}/Catch2/single_include
         ${CMAKE_CURRENT_SOURCE_DIR})

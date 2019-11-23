@@ -18,16 +18,7 @@ enum TestContent {
 	DUMMY
 };
 
-void
-printString(std::string str)
-{
-	for (unsigned int i = 0; i < str.size(); i++)
-	{
-		std::cout << (unsigned int) ((uint8_t) str[i]) << "|";
-	}
-	std::cout << std::endl;
 }
-
 TEST_CASE("Data Presentation Test")
 {
 	double test1 = 5.312;
@@ -78,6 +69,7 @@ TEST_CASE("String Data Test")
 	TestContent content = dp.extractHeader<TestContent>(packet);
 	auto check = dp.deserialize<std::string>(packet);
 
+	CHECK(content == TestContent::DUMMY);
 	CHECK_FALSE(s.compare(check));
 
 }
@@ -126,4 +118,3 @@ TEST_CASE("Test Int Arrays")
 	CHECK(test[3] == testRead[3]);
 }
 
-}

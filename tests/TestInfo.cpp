@@ -4,13 +4,17 @@
  * @author Mirco Theile, mirco.theile@tum.de
  * @brief
  */
+#include <cpsCore/Logging/CPSLogger.h>
 #include "TestInfo.h"
 
 void
 TestInfo::initialize(int argc, char** argv)
 {
 	char cwd[1024];
-	getcwd(cwd, sizeof(cwd));
+	if (!getcwd(cwd, sizeof(cwd)))
+	{
+		CPSLOG_ERROR << "Cannot determine cwd";
+	}
 
 	std::string str(argv[0]);
 

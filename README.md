@@ -16,7 +16,7 @@ Aggregation defines how objects are aggregated together and contains all the agg
 Configuration defines how configurable objects are made and contains all the configuration logic. Check the [configuration tests](https://github.com/theilem/cpsCore/blob/master/tests/Configuration/ConfigurableObjectTest.cpp) for an example of how Configuration is done.
 
 ### Synchronization
-Synchronization defines all the runnable objects and contains all the synchronization and run stage logic.
+Synchronization defines all the runnable objects and contains all the synchronization and run stage logic. Check the [synchronization tests](https://github.com/theilem/cpsCore/blob/master/tests/Synchronization/RunnerTest.cpp) for an example of how Synchronization is done.
 
 ### Logger
 This contains the logic for the CPSLogger, the logger used in this project.

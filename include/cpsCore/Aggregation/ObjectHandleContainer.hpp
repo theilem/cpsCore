@@ -7,7 +7,6 @@
 
 #ifndef UAVAP_CORE_OBJECT_OBJECTHANDLECONTAINER_HPP_
 #define UAVAP_CORE_OBJECT_OBJECTHANDLECONTAINER_HPP_
-#include <memory>
 
 #include <cpsCore/Aggregation/Aggregator.h>
 

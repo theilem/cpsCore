@@ -4,7 +4,6 @@
  *  Created on: Aug 6, 2017
  *      Author: mircot
  */
-#include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Aggregation/Aggregator.h"
 
 

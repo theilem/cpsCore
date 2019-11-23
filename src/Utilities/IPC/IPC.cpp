@@ -11,10 +11,6 @@
 #include "cpsCore/Utilities/IPC/detail/MessageQueueSubscriptionImpl.h"
 #include "cpsCore/Utilities/IPC/detail/SharedMemoryPublisherImpl.h"
 
-IPC::IPC()
-{
-}
-
 IPC::~IPC()
 {
 	std::lock_guard<std::mutex> lock(subscribeMutex_);

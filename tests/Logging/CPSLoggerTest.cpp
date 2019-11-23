@@ -39,12 +39,13 @@ TEST_CASE("Logging Test")
 	sink.rdbuf(stream.rdbuf());
 	CPSLogger::instance()->setSink(sink);
 	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
+	CPSLogger::instance()->flush();
 
 	CPSLOG_ERROR << "error";
 	CPSLOG_WARN << "warn";
 	CPSLOG_DEBUG << "debug";
 	CPSLOG_TRACE << "trace";
-	CHECK(stream.str().compare("[ERROR] error\n[WARNING] warn\n[DEBUG] debug") == 0);
+	CHECK(stream.str().compare("[ERROR] error\n[WARNING] warn\n[DEBUG] debug\n") == 0);
 	stream.str("");
 
 	CPSLogger::instance()->setLogLevel(LogLevel::NONE);

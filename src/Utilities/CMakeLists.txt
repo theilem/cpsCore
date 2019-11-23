@@ -24,6 +24,17 @@ set(CORE_SRCS ${CORE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/IPC/detail/MessageQueuePublisherImpl.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IPC/detail/SharedMemoryPublisherImpl.cpp
 
+        #IDC
+        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Serial/SerialHandler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Serial/SerialNetworkLayer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Serial/SerialNetworkParams.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisPublisher.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisSubscriber.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisNetworkLayer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisChannelParams.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/IDC.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/IDCSender.cpp
+IDC/
         #DataPresentation
         ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/Binary/BinaryFromArchive.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/Binary/BinaryToArchive.cpp

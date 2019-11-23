@@ -15,7 +15,6 @@
 #include "cpsCore/Utilities/IPC/Publisher.h"
 #include "cpsCore/Utilities/IPC/Subscription.h"
 #include "cpsCore/Utilities/Scheduler/IScheduler.h"
-#include "cpsCore/Utilities/Packet.h"
 #include "cpsCore/Utilities/IPC/IPCOptions.h"
 #include "cpsCore/Utilities/IPC/IPCParams.h"
 #include "cpsCore/Utilities/LockTypes.hpp"
@@ -32,7 +31,7 @@ public:
 
 	static constexpr TypeId typeId = "ipc";
 
-	IPC();
+	IPC() = default;
 
 	~IPC();
 

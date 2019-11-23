@@ -6,7 +6,6 @@
  */
 #include "TestInfo.h"
 
-#include <iostream>
 void
 TestInfo::initialize(int argc, char** argv)
 {

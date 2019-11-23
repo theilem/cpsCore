@@ -5,8 +5,7 @@
  *      Author: mircot
  */
 
-#include <catch2/catch.hpp>
-
+#include "TestInfo.h"
 
 #include <fstream>
 

@@ -4,7 +4,7 @@
  *  Created on: Oct 11, 2019
  *      Author: mirco
  */
-#include <catch2/catch.hpp>
+#include "TestInfo.h"
 
 #include "cpsCore/Utilities/Angle.hpp"
 

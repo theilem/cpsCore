@@ -5,9 +5,9 @@
  *      Author: mircot
  */
 
-#include <catch2/catch.hpp>
+#include "TestInfo.h"
 
-#include <cpsCore/Logging/CPSLogger.h>
+#include "cpsCore/Logging/CPSLogger.h"
 
 #include <sstream>
 #include <iostream>

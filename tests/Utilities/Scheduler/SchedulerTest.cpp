@@ -5,11 +5,9 @@
  *      Author: mircot
  */
 
-#include <catch2/catch.hpp>
-#include "cpsCore/Logging/CPSLogger.h"
+#include "TestInfo.h"
 #include "cpsCore/Synchronization/AggregatableRunner.h"
 #include "cpsCore/Utilities/Scheduler/MicroSimulator.h"
-#include "cpsCore/Utilities/TimeProvider/SystemTimeProvider.h"
 
 #include "cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h"
 

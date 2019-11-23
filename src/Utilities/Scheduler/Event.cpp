@@ -27,7 +27,7 @@ Event::cancel()
 }
 
 bool
-Event::isCancled()
+Event::isCanceled()
 {
 	if (auto body = body_.lock())
 	{

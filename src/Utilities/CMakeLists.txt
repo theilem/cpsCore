@@ -1,10 +1,36 @@
 set(CORE_SRCS ${CORE_SRCS}
+
+        #General Utilities
         ${CMAKE_CURRENT_SOURCE_DIR}/LinearAlgebra.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Packet.cpp
+
+        #SignalHandler
         ${CMAKE_CURRENT_SOURCE_DIR}/SignalHandler/SignalHandler.cpp
+
+        #TimeProvider
         ${CMAKE_CURRENT_SOURCE_DIR}/TimeProvider/SystemTimeProvider.cpp
+
+        #Scheduler
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/MicroSimulator.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/MultiThreadingScheduler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/Event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/EventBody.cpp
+
+        #IPC
+        ${CMAKE_CURRENT_SOURCE_DIR}/IPC/IPC.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IPC/Publisher.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IPC/Subscription.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IPC/detail/MessageQueueSubscriptionImpl.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IPC/detail/SharedMemorySubscriptionImpl.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IPC/detail/MessageQueuePublisherImpl.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/IPC/detail/SharedMemoryPublisherImpl.cpp
+
+        #DataPresentation
+        ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/Binary/BinaryFromArchive.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/Binary/BinaryToArchive.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/File/FileFromArchive.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/File/FileToArchive.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/BasicSerialization.cpp
+
         PARENT_SCOPE)
 

@@ -7,14 +7,14 @@
 
 #include "cpsCore/Utilities/Scheduler/EventBody.h"
 
-EventBody::EventBody(const std::function<void
-()>& b) :
-		body(b), isCanceled(false), isStarted(false), missedDeadline(false)
+EventBody::EventBody(std::function<void
+()>  b) :
+		body(std::move(b)), isCanceled(false), isStarted(false), missedDeadline(false)
 {
 }
 
-EventBody::EventBody(const std::function<void
-()>& b, const Duration& p) :
-		body(b), period(p), isCanceled(false), isStarted(false), missedDeadline(false)
+EventBody::EventBody(std::function<void
+()>  b, const Duration& p) :
+		body(std::move(b)), period(p), isCanceled(false), isStarted(false), missedDeadline(false)
 {
 }

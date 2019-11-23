@@ -7,6 +7,7 @@
 
 #ifndef UAVAP_CORE_SCHEDULER_EVENT_H_
 #define UAVAP_CORE_SCHEDULER_EVENT_H_
+
 #include <memory>
 
 struct EventBody;
@@ -17,13 +18,13 @@ public:
 
 	Event();
 
-	Event(std::weak_ptr<EventBody> body);
+	explicit Event(std::weak_ptr<EventBody> body);
 
 	void
 	cancel();
 
 	bool
-	isCancled();
+	isCanceled();
 
 private:
 

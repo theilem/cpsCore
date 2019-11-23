@@ -12,7 +12,6 @@
 #include <atomic>
 #include <condition_variable>
 #include <thread>
-#include <optional>
 
 #include "cpsCore/Utilities/Time.hpp"
 
@@ -30,11 +29,11 @@ struct EventBody
 	std::thread periodicThread;
 	std::condition_variable intervalCondition;
 
-	EventBody(const std::function<void
-			()>& b);
+	explicit EventBody(std::function<void
+			()> b);
 
-	EventBody(const std::function<void
-			()>& b, const Duration& p);
+	EventBody(std::function<void
+			()> b, const Duration& p);
 
 };
 

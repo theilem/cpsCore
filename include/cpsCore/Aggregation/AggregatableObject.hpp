@@ -33,7 +33,7 @@ public:
 	PtrType<Ret>
 	get() const;
 
-	template<class Ret>
+	template<class...Checks>
 	bool
 	isSet() const;
 
@@ -42,6 +42,10 @@ public:
 	checkIsSet() const;
 
 protected:
+
+	template<class Ret>
+	bool
+	isSetImpl() const;
 
 	template<class Check>
 	bool
@@ -75,12 +79,22 @@ AggregatableObject<Objects...>::get() const
 	return container_.template get<Ret>();
 }
 
+
+
 template<class ... Objects>
 template<class Ret>
 inline bool
-AggregatableObject<Objects...>::isSet() const
+AggregatableObject<Objects...>::isSetImpl() const
 {
 	return container_.template isSet<Ret>();
+}
+
+template<class ... Objects>
+template<class ... Checks>
+inline bool
+AggregatableObject<Objects...>::isSet() const
+{
+	return (... && (this->template isSetImpl<Checks>()));
 }
 
 template<class ... Objects>

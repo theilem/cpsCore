@@ -241,7 +241,7 @@ PropertyMapper<Config>::addVector(const std::string& key,
 		std::vector<enable_if_is_parameter_set<typename T::value_type>>& val, bool mandatory)
 {
 	val.clear();
-	Optional<const Config&> value;
+	boost::optional<const Config&> value;
 	if (key.empty())
 		value = p_;
 	else
@@ -272,7 +272,7 @@ PropertyMapper<Config>::addVector(const std::string& key,
 		std::vector<enable_if_not_is_parameter_set<typename T::value_type>>& val, bool mandatory)
 {
 	val.clear();
-	Optional<const Config&> value;
+	boost::optional<const Config&> value;
 	if (key.empty())
 		value = p_;
 	else

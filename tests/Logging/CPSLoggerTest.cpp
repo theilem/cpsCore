@@ -40,33 +40,34 @@ TEST_CASE("Logging Test")
 	CPSLogger::instance()->setSink(sink);
 	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
 	CPSLogger::instance()->flush();
-
-	CPSLOG_ERROR << "error";
-	CPSLOG_WARN << "warn";
-	CPSLOG_DEBUG << "debug";
-	CPSLOG_TRACE << "trace";
-	CHECK(stream.str().compare("[ERROR] error\n[WARNING] warn\n[DEBUG] debug\n") == 0);
 	stream.str("");
 
-	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
-
 	CPSLOG_ERROR << "error";
 	CPSLOG_WARN << "warn";
 	CPSLOG_DEBUG << "debug";
 	CPSLOG_TRACE << "trace";
-	CHECK(stream.str().compare("") == 0);
+	CHECK(stream.str() == "[ERROR] error\n[WARNING] warn\n[DEBUG] debug");
+
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
 	CPSLogger::instance()->flush();
 	stream.str("");
 
+	CPSLOG_ERROR << "error";
+	CPSLOG_WARN << "warn";
+	CPSLOG_DEBUG << "debug";
+	CPSLOG_TRACE << "trace";
+	CHECK(stream.str() == "");
+
 	CPSLogger::instance()->setLogLevel(LogLevel::TRACE);
+	CPSLogger::instance()->flush();
+	stream.str("");
 
 	CPSLOG_ERROR << "error";
 	CPSLOG_WARN << "warn";
 	CPSLOG_DEBUG << "debug";
 	CPSLOG_TRACE << "trace";
 
-	CHECK(stream.str().compare("[ERROR] error\n[WARNING] warn\n[DEBUG] debug\n[TRACE] trace") == 0);
-	stream.str("");
+	CHECK(stream.str() == "[ERROR] error\n[WARNING] warn\n[DEBUG] debug\n[TRACE] trace");
 
 	CPSLogger::instance()->setSink(std::cout);
 	CPSLogger::instance()->setLogLevel(LogLevel::WARN);

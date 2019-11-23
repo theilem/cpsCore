@@ -47,9 +47,9 @@ public:
 	void
 	checkParams()
 	{
-		CHECK(params.p1() == Approx(2.1).epsilon(1e-4));
+		CHECK(params.p1() == Approx(2.1).margin(1e-4));
 		CHECK(params.p2() == 1);
-		CHECK(params.p3().p1() == Approx(3.2).epsilon(1e-4));
+		CHECK(params.p3().p1() == Approx(3.2).margin(1e-4));
 		CHECK(params.p3().p2() == "test1");
 		CHECK(params.p3().p3() == 700);
 	}
@@ -84,7 +84,7 @@ public:
 	void
 	checkParams()
 	{
-		CHECK(params.p1() == Approx(4.2).epsilon(1e-4));
+		CHECK(params.p1() == Approx(4.2).margin(1e-4));
 		CHECK(params.p2() == "test2");
 		CHECK(params.p3() == 800);
 

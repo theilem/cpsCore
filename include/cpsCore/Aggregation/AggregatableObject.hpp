@@ -100,7 +100,6 @@ inline bool
 AggregatableObject<Objects...>::checkIsSet() const
 {
 	return (... && (this->template checkIsSetImpl<Checks>()));
-//	return this->template checkIsSet<Check>() && this->template checkIsSet<More, Others...>();
 }
 
 

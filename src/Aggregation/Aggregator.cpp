@@ -5,14 +5,11 @@
  *      Author: mircot
  */
 #include "cpsCore/Logging/CPSLogger.h"
-#include "cpsCore/Aggregation/SignalHandler.h"
-#include "uavAP/Core/Object/Aggregator.h"
+#include "cpsCore/Aggregation/Aggregator.h"
 
 
 Aggregator::Aggregator()
 {
-	add(std::make_shared<SignalHandler>(*this));
-	CPSLOG_DEBUG << "Aggregator with signal handler created";
 }
 
 void
@@ -62,6 +59,4 @@ void
 Aggregator::cleanUp()
 {
 	clear();
-
-	SignalHandlerSingleton::getInstance().joinHandler();
 }

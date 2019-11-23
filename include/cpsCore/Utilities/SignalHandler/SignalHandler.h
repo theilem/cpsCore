@@ -8,15 +8,14 @@
 #ifndef UAVAP_CORE_OBJECT_SIGNALHANDLER_H_
 #define UAVAP_CORE_OBJECT_SIGNALHANDLER_H_
 
-#include <boost/signals2.hpp>
-#include <uavAP/Core/LockTypes.h>
-#include <uavAP/Core/Logging/APLogger.h>
-#include <uavAP/Core/Object/AggregatableObject.hpp>
-#include <uavAP/Core/Time.h>
+
 #include <csignal>
 #include <thread>
 
-class IScheduler;
+#include <boost/signals2.hpp>
+
+#include "cpsCore/Aggregation/AggregatableObject.hpp"
+
 
 void
 sigIntHandler(int sig);
@@ -59,11 +58,11 @@ public:
 	callSigHandlers(int sig)
 	{
 		Lock lock(signalMutex_);
-		APLOG_DEBUG << "SignalHandlerSingleton: Calling signal handlers";
+		CPSLOG_DEBUG << "SignalHandlerSingleton: Calling signal handlers";
 		onSigint_(sig);
 		onSigint_.disconnect_all_slots(); //Avoid double call
 
-		APLOG_DEBUG << "SignalHandlerSingleton: Calling on exit";
+		CPSLOG_DEBUG << "SignalHandlerSingleton: Calling on exit";
 		onExit_();
 		onExit_.disconnect_all_slots(); //Avoid double call
 
@@ -96,7 +95,7 @@ private:
 	SignalHandlerSingleton() : signalHandled_(false)
 	{
 		thisThreadBlockSigInt();
-		APLOG_TRACE << "SignalHandlerSingleton: Subscribe on SIGINT";
+		CPSLOG_TRACE << "SignalHandlerSingleton: Subscribe on SIGINT";
 
 		signalHandlerThread_ = std::thread(std::bind(&SignalHandlerSingleton::signalHandleThreadTask, this));
 //		signalHandlerThread_.detach();
@@ -114,9 +113,8 @@ private:
 		while (!signalHandled_)
 			std::this_thread::sleep_for(Milliseconds(100));
 
-		APLOG_DEBUG << "Signal handled. Exit.";
+		CPSLOG_DEBUG << "Signal handled. Exit.";
 
-//		::exit(SIGINT);
 	}
 
 	Mutex signalMutex_;
@@ -127,26 +125,25 @@ private:
 
 };
 
-class SignalHandler: public AggregatableObject<IScheduler, SignalHandler>
+class SignalHandler: public AggregatableObject<>
 {
 
 public:
 
-	SignalHandler(Aggregator& agg);
-
+	SignalHandler() = default;
+	
 	static constexpr TypeId typeId = "signal_handler";
 
 	using OnSIGINT = boost::signals2::signal<void(int)>;
+	using OnExit = boost::signals2::signal<void(void)>;
 
 	void
 	subscribeOnSigint(const OnSIGINT::slot_type& slot);
 
-private:
-
 	void
-	onExit();
+	subscribeOnExit(const OnExit::slot_type& slot);
 
-	Aggregator& agg_;
+private:
 
 };
 

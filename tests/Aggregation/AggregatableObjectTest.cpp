@@ -5,6 +5,8 @@
 
 #include <cpsCore/Aggregation/AggregatableObject.hpp>
 
+#include <catch.hpp>
+
 namespace
 {
 

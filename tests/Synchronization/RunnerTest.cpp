@@ -61,7 +61,7 @@ public:
 	RunStage lastRunStage;
 };
 
-SCENARIO("Synchronized Runner Test")
+TEST_CASE("Synchronized Runner Test")
 {
 	auto runObj1 = std::make_shared<RunnableTestClass>();
 	auto runObj2 = std::make_shared<RunnableTestClass>();
@@ -119,7 +119,7 @@ SCENARIO("Synchronized Runner Test")
 	run2.join();
 }
 
-SCENARIO("Synchronized Runner Timeout")
+TEST_CASE("Synchronized Runner Timeout")
 {
 	auto runObj1 = std::make_shared<RunnableTestTimeoutClass>();
 	auto runObj2 = std::make_shared<RunnableTestClass>();

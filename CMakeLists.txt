@@ -12,3 +12,5 @@ set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/extern)
 
 add_subdirectory(src)
 add_subdirectory(tests)
+
+install(DIRECTORY include/cpsCore DESTINATION include)

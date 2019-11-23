@@ -7,14 +7,8 @@
 
 #ifndef UAVAP_CORE_PROPERTYMAPPER_JSONPOPULATOR_H_
 #define UAVAP_CORE_PROPERTYMAPPER_JSONPOPULATOR_H_
-#include <uavAP/Core/EnumMap.hpp>
-#include <uavAP/Core/Framework/Helper.h>
-#include <cpsCore/Configuration/ConfigurableObject.hpp>
-#include <cpsCore/Configuration/Parameter.hpp>
-#include <uavAP/Core/TypeTraits.hpp>
-#include <sstream>
-#include <string>
-#include <iostream>
+
+#include "cpsCore/Configuration/ConfigurableObject.hpp"
 
 class JsonPopulator
 {
@@ -29,7 +23,7 @@ public:
 	template<typename Type>
 	typename std::enable_if<
 			!is_parameter_set<typename Type::ValueType>::value
-					&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>::type&
+			&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>::type&
 	operator&(Type& param);
 
 	template<typename Type>
@@ -54,7 +48,7 @@ public:
 
 	template<typename Type>
 	JsonPopulator&
-	operator <<(const Type& text);
+	operator<<(const Type& text);
 
 	template<class Obj, typename std::enable_if<is_configurable_object<Obj>::value, int>::type = 0>
 	void
@@ -98,8 +92,8 @@ private:
 template<typename Type>
 inline typename std::enable_if<
 		!is_parameter_set<typename Type::ValueType>::value
-				&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>::type&
-JsonPopulator::operator &(Type& param)
+		&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>::type&
+JsonPopulator::operator&(Type& param)
 {
 	if (!firstElement_)
 	{
@@ -116,7 +110,7 @@ JsonPopulator::operator &(Type& param)
 
 template<typename Type>
 inline typename std::enable_if<(is_parameter_set<typename Type::ValueType>::value), JsonPopulator>::type&
-JsonPopulator::operator &(Type& param)
+JsonPopulator::operator&(Type& param)
 {
 	if (!firstElement_)
 	{
@@ -141,7 +135,7 @@ JsonPopulator::operator &(Type& param)
 template<typename Type>
 inline typename std::enable_if<(is_configurable_object<typename Type::ValueType>::value),
 		JsonPopulator>::type&
-JsonPopulator::operator &(Type& param)
+JsonPopulator::operator&(Type& param)
 {
 	if (!firstElement_)
 	{
@@ -188,7 +182,8 @@ JsonPopulator::writeValue(const Type& value)
 }
 
 template<typename Type>
-inline typename std::enable_if<!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value, JsonPopulator>::type&
+inline typename std::enable_if<
+		!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value, JsonPopulator>::type&
 JsonPopulator::writeValue(const Type& value)
 {
 	jsonString_ << value;
@@ -197,7 +192,7 @@ JsonPopulator::writeValue(const Type& value)
 
 template<typename Type>
 inline JsonPopulator&
-JsonPopulator::operator <<(const Type& text)
+JsonPopulator::operator<<(const Type& text)
 {
 	jsonString_ << text;
 	return *this;

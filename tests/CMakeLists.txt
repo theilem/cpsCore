@@ -12,4 +12,4 @@ include_directories(${SUBMODULE_DIR}/Catch2/single_include
 
 add_executable(tests EXCLUDE_FROM_ALL ${TEST_SRCS})
 
-target_link_libraries(tests cpsCore)
+target_link_libraries(tests cps_core)

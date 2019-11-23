@@ -4,7 +4,7 @@
  *  Created on: Jul 26, 2019
  *      Author: mirco
  */
-#include <uavAP/Core/PropertyMapper/JsonPopulator.h>
+#include <cpsCore/Configuration/JsonPopulator.h>
 #include <fstream>
 
 JsonPopulator::JsonPopulator() :

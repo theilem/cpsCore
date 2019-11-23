@@ -1,10 +1,21 @@
 # cpsCore
 
-## Cloning
+## Cloning and Compiling
 
 This project uses various external projects. Make sure to clone the submodules:
 
-`git clone https://github.com/theilem/cpsCore --recurse-submodules`
+```shell script
+git clone --recurse-submodules https://github.com/theilem/cpsCore.git 
+
+cd cpsCore
+mkdir -p bld/release && cd bld/release
+
+cmake -DCMAKE_BUILD_TYPE=Release ../../
+make 
+make install
+```
+
+
 
 ## Components
 

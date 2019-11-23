@@ -13,4 +13,5 @@ add_library(cpsCore SHARED ${CORE_SRCS})
 target_link_libraries(cpsCore   pthread
                                 rt
                                 Eigen3::Eigen
-                                Boost::boost)
+                                Boost::boost
+                                boost_system)

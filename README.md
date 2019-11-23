@@ -1,17 +1,25 @@
 # cpsCore
 
-## Aggregation
+## Cloning
 
-Aggregation defines how objects are aggregated together and contains all the aggregation logic.
+This project uses various external projects. Make sure to clone the submodules:
 
-Aggregation is handled as follows:
-- Inside AggregatabeObject, checkIsSet<...>() returns a boolean true if all the classes defined in the <...> are set. This funcion supports checking multiple classes in 1 function call. The classes are then resolved at compile time via iterative calls to checkIsSetImpl<Class Object>(), which checks if a single class is aggregated.
+`git clone https://github.com/theilem/cpsCore --recurse-submodules`
+
+## Components
+
+### Aggregation
+
+Aggregation defines how objects are aggregated together and contains all the aggregation logic. Check the [aggregation tests](https://github.com/theilem/cpsCore/blob/master/tests/Aggregation/AggregatableObjectTest.cpp) for an example of how Aggregation is done.
     
-## Configuration
-Configuration defines how configurable objects are made and contains all the configuration logic
+### Configuration
+Configuration defines how configurable objects are made and contains all the configuration logic. Check the [configuration tests](https://github.com/theilem/cpsCore/blob/master/tests/Configuration/ConfigurableObjectTest.cpp) for an example of how Configuration is done.
 
-## Synchronization
-Synchronization defines all the runnable objects and contains all the synchronization and run stage logic
+### Synchronization
+Synchronization defines all the runnable objects and contains all the synchronization and run stage logic.
 
-## Utilities
-Utilities contain all helper classes which can be Aggregatable, Configurable, and Runnable
+### Logger
+This contains the logic for the CPSLogger, the logger used in this project.
+
+### Utilities
+Utilities contain all helper classes which can be Aggregatable, Configurable, and Runnable. This is a catchall directory for components

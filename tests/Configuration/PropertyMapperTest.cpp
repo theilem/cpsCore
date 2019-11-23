@@ -5,7 +5,7 @@
  *      Author: mircot
  */
 
-#include <catch2/catch.hpp>
+#include "TestInfo.h"
 #include <boost/property_tree/json_parser.hpp>
 #include <cpsCore/Configuration/Configuration.hpp>
 #include <cpsCore/Configuration/PropertyMapper.hpp>
@@ -14,7 +14,7 @@
 TEST_CASE("Vector of Doubles")
 {
 	Configuration config;
-	boost::property_tree::read_json("Utilities/config/pm_test.json",
+	boost::property_tree::read_json(test_info::test_dir() + "Utilities/config/pm_test.json",
 			config);
 
 	PropertyMapper<Configuration> pm(config);
@@ -32,7 +32,7 @@ TEST_CASE("Vector of Doubles")
 TEST_CASE("Vector Test 2")
 {
 	Configuration config;
-	boost::property_tree::read_json("Utilities/config/pm_test.json",
+	boost::property_tree::read_json(test_info::test_dir() + "Utilities/config/pm_test.json",
 			config);
 
 	PropertyMapper<Configuration> pm(config);

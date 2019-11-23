@@ -9,6 +9,8 @@ find_package(Boost REQUIRED)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/extern)
+include_directories(${SUBMODULE_DIR}/cpp_redis/includes)
+include_directories(${SUBMODULE_DIR}/cpp_redis/tacopie/includes)
 
 add_subdirectory(src)
 add_subdirectory(tests)

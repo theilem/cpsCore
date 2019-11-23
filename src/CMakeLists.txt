@@ -15,8 +15,8 @@ target_link_libraries(cps_core pthread
         Eigen3::Eigen
         Boost::boost
         boost_system
-        cpp_redis
-        tacopie)
+        ${CPP_REDIS_LIB}
+        ${TACOPIE_LIB})
 
 install(TARGETS cps_core
         RUNTIME DESTINATION bin

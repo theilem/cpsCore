@@ -19,25 +19,26 @@ class TestC;
 class TestA : public AggregatableObject<TestB, TestC>
 {
 public:
-
 	int testVal;
 
-
+	static constexpr TypeId typeId = "test_a";
 };
 
 class TestB : public AggregatableObject<TestA, TestC>
 {
 public:
-
 	int testVal;
+
+	static constexpr TypeId typeId = "test_b";
 
 };
 
 class TestC : public AggregatableObject<TestA, TestB>
 {
 public:
-
 	int testVal;
+
+	static constexpr TypeId typeId = "test_c";
 
 };
 
@@ -55,12 +56,25 @@ TEST_CASE("Checking objects can be Aggregated")
 
 	auto agg = Aggregator::aggregate({testa, testb, testc});
 
-	REQUIRE(testa->isSet<TestB>());
+	CHECK(!testa->isSet<TestA>());
+	CHECK(testa->isSet<TestB>());
+	CHECK(testa->isSet<TestC>());
+	CHECK(testa->checkIsSet<TestB, TestC>());
 
-	REQUIRE(testb->get<TestA>()->testVal == 1);
-	REQUIRE(testc->get<TestA>()->testVal == 1);
+	CHECK(!testb->isSet<TestB>());
+	CHECK(testb->isSet<TestA>());
+	CHECK(testb->isSet<TestC>());
+	CHECK(testb->checkIsSet<TestA, TestC>());
+
+	CHECK(!testc->isSet<TestC>());
+	CHECK(testc->isSet<TestA>());
+	CHECK(testc->isSet<TestB>());
+	CHECK(testc->checkIsSet<TestA, TestB>());
+
+	CHECK(testb->get<TestA>()->testVal == 1);
+	CHECK(testc->get<TestA>()->testVal == 1);
 
 	testb->get<TestA>()->testVal = 2;
 
-	REQUIRE(testa->testVal == 2);
+	CHECK(testa->testVal == 2);
 }

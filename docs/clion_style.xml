@@ -1,0 +1,25 @@
+<code_scheme name="Default" version="173">
+  <MarkdownNavigatorCodeStyleSettings>
+    <option name="RIGHT_MARGIN" value="72" />
+  </MarkdownNavigatorCodeStyleSettings>
+  <Objective-C>
+    <option name="INDENT_NAMESPACE_MEMBERS" value="0" />
+    <option name="NAMESPACE_BRACE_PLACEMENT" value="2" />
+    <option name="FUNCTION_BRACE_PLACEMENT" value="2" />
+    <option name="BLOCK_BRACE_PLACEMENT" value="2" />
+    <option name="FUNCTION_NON_TOP_AFTER_RETURN_TYPE_WRAP" value="2" />
+    <option name="FUNCTION_TOP_AFTER_RETURN_TYPE_WRAP" value="2" />
+    <option name="SPACE_BEFORE_POINTER_IN_DECLARATION" value="false" />
+    <option name="SPACE_AFTER_POINTER_IN_DECLARATION" value="true" />
+    <option name="SPACE_BEFORE_REFERENCE_IN_DECLARATION" value="false" />
+    <option name="SPACE_AFTER_REFERENCE_IN_DECLARATION" value="true" />
+  </Objective-C>
+  <codeStyleSettings language="ObjectiveC">
+    <option name="BRACE_STYLE" value="2" />
+    <option name="CLASS_BRACE_STYLE" value="2" />
+    <option name="ELSE_ON_NEW_LINE" value="true" />
+    <indentOptions>
+      <option name="USE_TAB_CHARACTER" value="true" />
+    </indentOptions>
+  </codeStyleSettings>
+</code_scheme>

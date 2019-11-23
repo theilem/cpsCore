@@ -10,7 +10,7 @@
 #include <uavAP/Core/EnumMap.hpp>
 #include <uavAP/Core/Framework/Helper.h>
 #include <cpsCore/Configuration/ConfigurableObject.hpp>
-#include <cpsCore/Configuration/Parameter.h>
+#include <cpsCore/Configuration/Parameter.hpp>
 #include <uavAP/Core/TypeTraits.hpp>
 #include <sstream>
 #include <string>

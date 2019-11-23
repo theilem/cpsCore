@@ -7,8 +7,8 @@
 
 #ifndef UAVAP_CORE_PROPERTYMAPPER_CONFIGURABLEOBJECT_HPP_
 #define UAVAP_CORE_PROPERTYMAPPER_CONFIGURABLEOBJECT_HPP_
-#include "cpsCore/Configuration/Configuration.h"
-#include "cpsCore/Configuration/PropertyMapper.h"
+#include "cpsCore/Configuration/Configuration.hpp"
+#include "cpsCore/Configuration/PropertyMapper.hpp"
 
 template<class ParameterSet>
 class ConfigurableObject

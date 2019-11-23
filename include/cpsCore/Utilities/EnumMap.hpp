@@ -12,7 +12,7 @@
 #include <map>
 #include <string>
 
-#include "cpsCore/Logging/APLogger.h"
+#include "cpsCore/Logging/CPSLogger.h"
 
 template<typename ENUM>
 class EnumMap
@@ -46,7 +46,7 @@ public:
 		auto it = getInstance().right_.find(str);
 		if (it == getInstance().right_.end())
 		{
-			APLOG_ERROR << "Unknown enum name for " << str;
+			CPSLOG_ERROR << "Unknown enum name for " << str;
 			return static_cast<ENUM>(0);
 		}
 		return it->second;
@@ -58,7 +58,7 @@ public:
 		auto it = getInstance().left_.find(e);
 		if (it == getInstance().left_.end())
 		{
-			APLOG_ERROR << "Undefined enum value " << static_cast<int>(e);
+			CPSLOG_ERROR << "Undefined enum value " << static_cast<int>(e);
 			return std::string();
 		}
 		return it->second;

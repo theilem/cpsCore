@@ -26,16 +26,19 @@
 #ifndef UAVAP_CORE_PROPERTYMAPPER_PROPERTYMAPPER_H_
 #define UAVAP_CORE_PROPERTYMAPPER_PROPERTYMAPPER_H_
 
+#include <type_traits>
+
+#include <Eigen/Core>
+
+#include "cpsCore/Configuration/Parameter.hpp"
+#include "cpsCore/Configuration/Optional.hpp"
+#include "cpsCore/Configuration/ParameterRef.hpp"
+#include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Utilities/Angle.hpp"
 #include "cpsCore/Utilities/EnumMap.hpp"
-#include <uavAP/Core/LinearAlgebra.h>
-#include <cpsCore/Configuration/Parameter.h>
-#include <cpsCore/Configuration/ParameterRef.h>
-#include <uavAP/Core/Time.h>
-#include "cpsCore/Logging/CPSLogger.h"
-#include "uavAP/Core/TypeTraits.hpp"
-#include <Eigen/Core>
-#include <type_traits>
+#include "cpsCore/Utilities/Time.hpp"
+#include "cpsCore/Utilities/LinearAlgebra.h"
+#include "cpsCore/Utilities/TypeTraits.hpp"
 
 template<typename Configuration>
 class PropertyMapper

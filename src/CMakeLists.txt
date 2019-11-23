@@ -9,4 +9,6 @@ add_subdirectory(Utilities)
 
 add_library(cpsCore SHARED ${CORE_SRCS})
 
-target_link_libraries(cpsCore pthread)
+target_link_libraries(cpsCore   pthread
+                                Eigen3::Eigen
+                                Boost::boost)

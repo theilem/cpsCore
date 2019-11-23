@@ -74,10 +74,10 @@ struct Optional
 
 #else
 
-#include <boost/optional.hpp>
+#include <optional>
 
 template <typename Type>
-using Optional = boost::optional<Type>;
+using Optional = std::optional<Type>;
 
 #endif
 

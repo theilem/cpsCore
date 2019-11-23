@@ -15,6 +15,7 @@
 #include <boost/signals2.hpp>
 
 #include "cpsCore/Aggregation/AggregatableObject.hpp"
+#include "cpsCore/Utilities/LockTypes.hpp"
 
 
 void
@@ -98,8 +99,6 @@ private:
 		CPSLOG_TRACE << "SignalHandlerSingleton: Subscribe on SIGINT";
 
 		signalHandlerThread_ = std::thread(std::bind(&SignalHandlerSingleton::signalHandleThreadTask, this));
-//		signalHandlerThread_.detach();
-//		std::signal(SIGTERM, sigIntHandler);
 	}
 
 	void
@@ -111,7 +110,7 @@ private:
 		std::signal(SIGINT, sigIntHandler);
 
 		while (!signalHandled_)
-			std::this_thread::sleep_for(Milliseconds(100));
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 		CPSLOG_DEBUG << "Signal handled. Exit.";
 

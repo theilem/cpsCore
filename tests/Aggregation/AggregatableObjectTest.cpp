@@ -4,8 +4,8 @@
 
 
 #include <cpsCore/Aggregation/AggregatableObject.hpp>
-
-#include <catch.hpp>
+#include <cpsCore/Aggregation/Aggregator.h>
+#include "TestInfo.h"
 
 namespace
 {
@@ -43,34 +43,24 @@ public:
 
 }
 
+TEST_CASE("Checking objects can be Aggregated")
+{
+	auto testa = std::make_shared<TestA>();
+	auto testb = std::make_shared<TestB>();
+	auto testc = std::make_shared<TestC>();
 
-BOOST_AUTO_TEST_SUITE(ObjectHandleTests)
+	testa->testVal = 1;
 
-BOOST_AUTO_TEST_CASE(Aggregation)
-		{
-				auto testa = std::make_shared<TestA>();
-		auto testb = std::make_shared<TestB>();
-		auto testc = std::make_shared<TestC>();
+	REQUIRE_FALSE(testa->isSet<TestB>());
 
-		testa->testVal = 1;
+	auto agg = Aggregator::aggregate({testa, testb, testc});
 
-		BOOST_CHECK(!testa->isSet<TestB>());
+	REQUIRE(testa->isSet<TestB>());
 
-		auto agg = Aggregator::aggregate({ testa, testb, testc });
+	REQUIRE(testb->get<TestA>()->testVal == 1);
+	REQUIRE(testc->get<TestA>()->testVal == 1);
 
-		BOOST_REQUIRE(testa->isSet<TestB>());
+	testb->get<TestA>()->testVal = 2;
 
-		BOOST_CHECK_EQUAL(testb->get<TestA>()->testVal, 1);
-		BOOST_CHECK_EQUAL(testc->get<TestA>()->testVal, 1);
-
-		testb->get<TestA>()->testVal = 2;
-
-		BOOST_CHECK_EQUAL(testa->testVal, 2);
-
-
-		}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-
+	REQUIRE(testa->testVal == 2);
+}

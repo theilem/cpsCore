@@ -12,5 +12,6 @@ set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/extern)
 
 add_subdirectory(src)
 add_subdirectory(tests)
+add_subdirectory(${SUBMODULE_DIR}/cpp_redis)
 
 install(DIRECTORY include/cpsCore DESTINATION include)

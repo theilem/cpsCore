@@ -6,6 +6,7 @@
  */
 #include <cpsCore/Configuration/ConfigurableObject.hpp>
 #include <iostream>
+#include "TestInfo.h"
 
 namespace
 {
@@ -47,11 +48,11 @@ public:
 	void
 	checkParams()
 	{
-		BOOST_CHECK_CLOSE(params.p1(), 2.1, 1e-4);
-		BOOST_CHECK_EQUAL(params.p2(), 1);
-		BOOST_CHECK_CLOSE(params.p3().p1(), 3.2, 1e-4);
-		BOOST_CHECK_EQUAL(params.p3().p2(), "test1");
-		BOOST_CHECK_EQUAL(params.p3().p3(), 700);
+		CHECK(params.p1() == Approx(2.1).epsilon(1e-4));
+		CHECK(params.p2() == 1);
+		CHECK(params.p3().p1() == Approx(3.2).epsilon(1e-4));
+		CHECK(params.p3().p2() == "test1");
+		CHECK(params.p3().p3() == 700);
 	}
 };
 
@@ -84,9 +85,9 @@ public:
 	void
 	checkParams()
 	{
-		BOOST_CHECK_CLOSE(params.p1(), 4.2, 1e-4);
-		BOOST_CHECK_EQUAL(params.p2(), "test2");
-		BOOST_CHECK_EQUAL(params.p3(), 800);
+		CHECK(params.p1() == Approx(4.2).epsilon(1e-4));
+		CHECK(params.p2() == "test2");
+		CHECK(params.p3() == 800);
 
 		test.checkParams();
 	}
@@ -99,9 +100,7 @@ private:
 
 }
 
-BOOST_AUTO_TEST_SUITE(ConfigurableObjectTest)
-
-BOOST_AUTO_TEST_CASE(Test1)
+TEST_CASE("Test1")
 {
 
 	Configuration config;
@@ -116,16 +115,16 @@ BOOST_AUTO_TEST_CASE(Test1)
 	config.add_child("p3", subConfig);
 
 	Test test;
-	BOOST_CHECK(test.configure(config));
+	CHECK(test.configure(config));
 	test.checkParams();
 
-	BOOST_CHECK(is_parameter_set<float>::value == 0);
-	BOOST_CHECK(is_parameter_set<Params>::value == 1);
-	BOOST_CHECK(is_parameter_set<ParamsNested>::value == 1);
+	CHECK_FALSE(is_parameter_set<float>::value);
+	CHECK(is_parameter_set<Params>::value);
+	CHECK(is_parameter_set<ParamsNested>::value);
 
 }
 
-BOOST_AUTO_TEST_CASE(Test2_MemberConfig)
+TEST_CASE("Test2 Member Config")
 {
 
 	Configuration config;
@@ -147,11 +146,9 @@ BOOST_AUTO_TEST_CASE(Test2_MemberConfig)
 	configUpper.add_child("sub_test", config);
 
 	Test2 test;
-	BOOST_CHECK(test.configure(configUpper));
+	CHECK(test.configure(configUpper));
 	test.checkParams();
 
 
 
 }
-
-BOOST_AUTO_TEST_SUITE_END()

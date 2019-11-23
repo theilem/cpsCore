@@ -5,12 +5,12 @@
  *      Author: mircot
  */
 
+#include "TestInfo.h"
+
 #include <cpsCore/Aggregation/AggregatableObject.hpp>
 #include <cpsCore/Synchronization/SynchronizedRunner.h>
 #include <cpsCore/Synchronization/SynchronizedRunnerMaster.h>
 #include <thread>
-
-#include <catch2/catch.hpp>
 
 class RunnableTestClass : public IRunnableObject, public AggregatableObject<>
 {

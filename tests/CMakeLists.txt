@@ -3,6 +3,7 @@ set(TEST_SRCS TestRunner.cpp
 
 add_subdirectory(Aggregation)
 add_subdirectory(Configuration)
+add_subdirectory(Framework)
 add_subdirectory(Logging)
 add_subdirectory(Synchronization)
 add_subdirectory(Utilities)
@@ -12,4 +13,4 @@ include_directories(${SUBMODULE_DIR}/Catch2/single_include
 
 add_executable(tests EXCLUDE_FROM_ALL ${TEST_SRCS})
 
-target_link_libraries(tests cps_core)
+target_link_libraries(tests cps_core cps_framework_api)

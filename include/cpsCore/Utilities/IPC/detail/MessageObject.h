@@ -8,7 +8,6 @@
 #define UAVAP_CORE_IPC_MESSAGEOBJECT_H_
 #include <boost/interprocess/sync/interprocess_condition_any.hpp>
 #include <boost/interprocess/sync/interprocess_sharable_mutex.hpp>
-#include <atomic>
 
 struct MessageObjectHeader
 {

@@ -18,7 +18,6 @@ set(CORE_SRCS ${CORE_SRCS}
 
         #IPC
         ${CMAKE_CURRENT_SOURCE_DIR}/IPC/IPC.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/IPC/Publisher.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IPC/Subscription.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IPC/detail/MessageQueueSubscriptionImpl.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IPC/detail/SharedMemorySubscriptionImpl.cpp

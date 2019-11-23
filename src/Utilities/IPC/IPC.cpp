@@ -6,9 +6,10 @@
  */
 
 #include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
-#include "cpsCore/Utilities/Scheduler/IScheduler.h"
 #include "cpsCore/Utilities/IPC/IPC.h"
-#include <csignal>
+#include "cpsCore/Utilities/IPC/detail/MessageQueuePublisherImpl.h"
+#include "cpsCore/Utilities/IPC/detail/MessageQueueSubscriptionImpl.h"
+#include "cpsCore/Utilities/IPC/detail/SharedMemoryPublisherImpl.h"
 
 IPC::IPC()
 {
@@ -32,7 +33,7 @@ IPC::run(RunStage stage)
 	{
 		if (!isSet<IScheduler>())
 		{
-			APLOG_WARN << "IPC is missing Scheduler. Subscription functionality disabled.";
+			CPSLOG_WARN << "IPC is missing Scheduler. Subscription functionality disabled.";
 		}
 		break;
 	}
@@ -40,7 +41,7 @@ IPC::run(RunStage stage)
 	{
 		if (auto sh = get<SignalHandler>())
 		{
-			APLOG_DEBUG << "IPC subscribing on SIGINT";
+			CPSLOG_DEBUG << "IPC subscribing on SIGINT";
 			sh->subscribeOnSigint(std::bind(&IPC::sigintHandler, this, std::placeholders::_1));
 		}
 
@@ -48,7 +49,7 @@ IPC::run(RunStage stage)
 		{
 			if (auto sched = get<IScheduler>())
 			{
-				APLOG_DEBUG << "Schedule retries";
+				CPSLOG_DEBUG << "Schedule retries";
 				sched->schedule(std::bind(&IPC::retrySubscriptions, this), Milliseconds(0),
 						Milliseconds(params.retryPeriod()));
 			}
@@ -96,7 +97,7 @@ IPC::publishOnMessageQueue(const std::string& id, unsigned maxPacketSize, unsign
 		impl = std::make_shared<MessageQueuePublisherImpl>(id, numPackets, maxPacketSize);
 	} catch (boost::interprocess::interprocess_exception&)
 	{
-		APLOG_WARN << "Message queue with id: " << id << " already exists. Creating new.";
+		CPSLOG_WARN << "Message queue with id: " << id << " already exists. Creating new.";
 		boost::interprocess::message_queue::remove(id.c_str());
 		impl = std::make_shared<MessageQueuePublisherImpl>(id, numPackets, maxPacketSize);
 	}
@@ -110,8 +111,8 @@ IPC::sigintHandler(int sig)
 {
 	if (sig == SIGINT || sig == SIGTERM)
 	{
-		APLOG_DEBUG << "Caught signal " << sig << ". Deleting subscriptions and publications.";
-		APLogger::instance()->flush();
+		CPSLOG_DEBUG << "Caught signal " << sig << ". Deleting subscriptions and publications.";
+		CPSLogger::instance()->flush();
 		for (const auto& sub : subscriptions_)
 		{
 			sub.second->cancel();
@@ -139,7 +140,7 @@ IPC::subscribeOnPackets(const std::string& id, const std::function<void
 	if (!result.connected() && options.retry)
 	{
 		LockGuard l(retryVectorMutex_);
-		APLOG_DEBUG << "Queuing " << id << " for retry";
+		CPSLOG_DEBUG << "Queuing " << id << " for retry";
 		//Schedule retry
 		if (options.multiTarget)
 		{
@@ -185,7 +186,7 @@ IPC::subscribeOnSharedMemory(const std::string& id, const std::function<void
 			}
 			else
 			{
-				APLOG_ERROR << "Scheduler missing. Cannot start subscription.";
+				CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
 			}
 			impl = sub;
 			subscriptions_.insert(std::make_pair(id, impl));
@@ -227,7 +228,7 @@ IPC::subscribeOnMessageQueue(const std::string& id, const std::function<void
 			}
 			else
 			{
-				APLOG_ERROR << "Scheduler missing. Cannot start subscription.";
+				CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
 			}
 			impl = sub;
 			subscriptions_.insert(std::make_pair(id, impl));

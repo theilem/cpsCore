@@ -31,7 +31,7 @@
 #include <Eigen/Core>
 
 #include "cpsCore/Configuration/Parameter.hpp"
-#include "cpsCore/Configuration/Optional.hpp"
+#include "cpsCore/Utilities/Optional.hpp"
 #include "cpsCore/Configuration/ParameterRef.hpp"
 #include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Utilities/Angle.hpp"

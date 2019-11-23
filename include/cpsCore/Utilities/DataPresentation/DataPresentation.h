@@ -7,16 +7,17 @@
 
 #ifndef UAVAP_CORE_DATAPRESENTATION_DATAPRESENTATION_H_
 #define UAVAP_CORE_DATAPRESENTATION_DATAPRESENTATION_H_
-#include <uavAP/Core/DataPresentation/APDataPresentation/ArchiveOptions.h>
-#include <uavAP/Core/DataPresentation/APDataPresentation/BinaryFromArchive.h>
-#include <uavAP/Core/DataPresentation/APDataPresentation/BasicSerialization.h>
-#include <uavAP/Core/DataPresentation/APDataPresentation/detail/BasicSerializationImpl.hpp>
-#include <uavAP/Core/DataPresentation/APDataPresentation/detail/BinaryFromArchiveImpl.hpp>
-#include <uavAP/Core/DataPresentation/APDataPresentation/BinaryToArchive.h>
-#include <uavAP/Core/DataPresentation/APDataPresentation/detail/BinaryToArchiveImpl.hpp>
-#include <uavAP/Core/DataPresentation/Packet.h>
-#include <uavAP/Core/Object/AggregatableObject.hpp>
-#include <uavAP/Core/PropertyMapper/ConfigurableObject.hpp>
+
+#include "cpsCore/Aggregation/AggregatableObject.hpp"
+#include "cpsCore/Configuration/ConfigurableObject.hpp"
+#include "cpsCore/Utilities/Packet.h"
+#include "cpsCore/Utilities/DataPresentation/detail/ArchiveOptions.h"
+#include "cpsCore/Utilities/DataPresentation/detail/BasicSerialization.h"
+#include "cpsCore/Utilities/DataPresentation/detail/BasicSerializationImpl.hpp"
+#include "cpsCore/Utilities/DataPresentation/detail/Binary/BinaryFromArchive.h"
+#include "cpsCore/Utilities/DataPresentation/detail/Binary/BinaryFromArchiveImpl.hpp"
+#include "cpsCore/Utilities/DataPresentation/detail/Binary/BinaryToArchive.h"
+#include "cpsCore/Utilities/DataPresentation/detail/Binary/BinaryToArchiveImpl.hpp"
 
 class DataPresentation: public AggregatableObject<>, public ConfigurableObject<ArchiveOptions>
 {

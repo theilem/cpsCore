@@ -7,18 +7,19 @@
 
 #ifndef UAVAP_CORE_DATAPRESENTATION_BINARYSERIALIZATION_HPP_
 #define UAVAP_CORE_DATAPRESENTATION_BINARYSERIALIZATION_HPP_
-#include "uavAP/Core/DataPresentation/APDataPresentation/BasicSerialization.h"
-#include "uavAP/Core/DataPresentation/APDataPresentation/BinaryFromArchive.h"
-#include "uavAP/Core/DataPresentation/APDataPresentation/BinaryToArchive.h"
-#include "uavAP/Core/DataPresentation/APDataPresentation/FileFromArchive.h"
-#include "uavAP/Core/DataPresentation/APDataPresentation/FileToArchive.h"
-#include "uavAP/Core/DataPresentation/APDataPresentation/detail/BinaryFromArchiveImpl.hpp"
-#include "uavAP/Core/DataPresentation/APDataPresentation/detail/BinaryToArchiveImpl.hpp"
-#include "uavAP/Core/DataPresentation/APDataPresentation/detail/FileFromArchiveImpl.hpp"
-#include "uavAP/Core/DataPresentation/APDataPresentation/detail/FileToArchiveImpl.hpp"
-#include "uavAP/Core/DataPresentation/APDataPresentation/detail/BasicSerializationImpl.hpp"
-#include "uavAP/Core/DataPresentation/Packet.h"
-#include "uavAP/Core/Logging/APLogger.h"
+
+#include "cpsCore/Utilities/DataPresentation/detail/BasicSerialization.h"
+#include "cpsCore/Utilities/DataPresentation/detail/File/FileFromArchive.h"
+#include "cpsCore/Utilities/DataPresentation/detail/File/FileToArchive.h"
+#include "cpsCore/Utilities/DataPresentation/detail/File/FileFromArchiveImpl.hpp"
+#include "cpsCore/Utilities/DataPresentation/detail/File/FileToArchiveImpl.hpp"
+#include "cpsCore/Utilities/DataPresentation/detail/Binary/BinaryFromArchiveImpl.hpp"
+#include "cpsCore/Utilities/DataPresentation/detail/Binary/BinaryToArchiveImpl.hpp"
+#include "cpsCore/Utilities/DataPresentation/detail/Binary/BinaryFromArchive.h"
+#include "cpsCore/Utilities/DataPresentation/detail/Binary/BinaryToArchive.h"
+#include "cpsCore/Utilities/DataPresentation/detail/BasicSerializationImpl.hpp"
+#include "cpsCore/Utilities/Packet.h"
+#include "cpsCore/Logging/CPSLogger.h"
 
 namespace dp
 {
@@ -47,7 +48,7 @@ deserialize(const Packet& packet, const ArchiveOptions& options = ArchiveOptions
 {
 	if (packet.getSize() == 0)
 	{
-		APLOG_WARN << "packet empty";
+		CPSLOG_WARN << "packet empty";
 		return T();
 	}
 	BinaryFromArchive archive(packet.getBuffer(), options);
@@ -58,7 +59,7 @@ deserialize(const Packet& packet, const ArchiveOptions& options = ArchiveOptions
 		return t;
 	} catch (ArchiveError& err)
 	{
-		APLOG_WARN << "Invalid Packet. Error: " << err.what();
+		CPSLOG_WARN << "Invalid Packet. Error: " << err.what();
 		return T();
 	}
 }
@@ -75,7 +76,7 @@ deserialize(std::ifstream& file, const ArchiveOptions& options = ArchiveOptions(
 		return t;
 	} catch (ArchiveError& err)
 	{
-		APLOG_WARN << "Invalid Packet. Error: " << err.what();
+		CPSLOG_WARN << "Invalid Packet. Error: " << err.what();
 		return T();
 	}
 }
@@ -97,7 +98,7 @@ extract(Packet& packet, const ArchiveOptions& options = ArchiveOptions())
 		return t;
 	} catch (ArchiveError& err)
 	{
-		APLOG_WARN << "Invalid Packet. Error: " << err.what();
+		CPSLOG_WARN << "Invalid Packet. Error: " << err.what();
 		return T();
 	}
 }

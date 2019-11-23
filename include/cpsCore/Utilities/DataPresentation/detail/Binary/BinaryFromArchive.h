@@ -1,21 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2018 University of Illinois Board of Trustees
-//
-// This file is part of uavAP.
-//
-// uavAP is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// uavAP is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-////////////////////////////////////////////////////////////////////////////////
 /**
  * @file BinaryFromArchive.h
  * @brief Defines the BinaryFromArchive.
@@ -26,14 +8,13 @@
 #ifndef UAVAP_CORE_DATAPRESENTATION_APDATAPRESENTATION_BINARYFROMARCHIVE_H_
 #define UAVAP_CORE_DATAPRESENTATION_APDATAPRESENTATION_BINARYFROMARCHIVE_H_
 
-#include <uavAP/Core/DataPresentation/APDataPresentation/ArchiveOptions.h>
 #include <stdexcept>
-#include <string>
+#include "cpsCore/Utilities/DataPresentation/detail/ArchiveOptions.h"
 
 /**
  * @brief Archive Error is a range error
  */
-class ArchiveError: public std::range_error
+class ArchiveError : public std::range_error
 {
 public:
 	ArchiveError(const std::string& what) :
@@ -82,10 +63,10 @@ public:
 	 */
 	template<class Type>
 	BinaryFromArchive&
-	operator >>(Type& val);
+	operator>>(Type& val);
 
 	BinaryFromArchive&
-	operator >>(double& doub);
+	operator>>(double& doub);
 
 	/**
 	 * @brief Operator & defining behavior for flush out
@@ -93,7 +74,7 @@ public:
 	 */
 	template<class Type>
 	void
-	operator &(Type& val);
+	operator&(Type& val);
 
 	/**
 	 * @brief Flush in operator. Does nothing since it is a "from archive"
@@ -102,7 +83,7 @@ public:
 	 */
 	template<class Type>
 	BinaryFromArchive&
-	operator <<(Type& val);
+	operator<<(Type& val);
 
 	/**
 	 * @brief Returns the remaining string from idx_ to the end of string_
@@ -113,6 +94,7 @@ public:
 
 	std::size_t
 	getConsumed();
+
 private:
 
 	ArchiveOptions options_;

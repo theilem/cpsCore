@@ -26,7 +26,7 @@
 #ifndef UAVAP_CORE_DATAPRESENTATION_APDATAPRESENTATION_DETAIL_BASICSERIALIZATIONIMPL_HPP_
 #define UAVAP_CORE_DATAPRESENTATION_APDATAPRESENTATION_DETAIL_BASICSERIALIZATIONIMPL_HPP_
 
-#include "uavAP/Core/DataPresentation/APDataPresentation/BasicSerialization.h"
+#include "cpsCore/Utilities/DataPresentation/detail/BasicSerialization.h"
 
 template<class Type>
 inline void

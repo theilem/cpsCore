@@ -7,7 +7,7 @@
 
 #ifndef UAVAP_CORE_PROPERTYMAPPER_EMPTYCONFIGURATION_H_
 #define UAVAP_CORE_PROPERTYMAPPER_EMPTYCONFIGURATION_H_
-#include <cpsCore/Configuration/Optional.hpp>
+#include <cpsCore/Utilities/Optional.hpp>
 #include <map>
 #include <vector>
 

@@ -4,10 +4,15 @@
  *  Created on: Jul 15, 2019
  *      Author: mirco
  */
+#include <thread>
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/thread/lock_types.hpp>
+
+#include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Utilities/IPC/detail/SharedMemoryPublisherImpl.h"
 #include "cpsCore/Utilities/Time.hpp"
-#include "cpsCore/Logging/CPSLogger.h"
-#include <thread>
+#include "cpsCore/Utilities/IPC/detail/MessageObject.h"
+
 
 SharedMemoryPublisherImpl::SharedMemoryPublisherImpl(const std::string& id, std::size_t init) :
 		maxPacketSize_(init)

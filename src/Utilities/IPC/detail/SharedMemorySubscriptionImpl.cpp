@@ -6,10 +6,11 @@
  */
 #include <boost/interprocess/sync/sharable_lock.hpp>
 #include <boost/thread/thread_time.hpp>
-#include <uavAP/Core/DataPresentation/Packet.h>
-#include <uavAP/Core/IPC/detail/MessageObject.h>
-#include <uavAP/Core/IPC/detail/SharedMemorySubscriptionImpl.h>
-#include <uavAP/Core/Logging/APLogger.h>
+#include <boost/interprocess/mapped_region.hpp>
+
+#include "cpsCore/Utilities/IPC/detail/MessageObject.h"
+#include "cpsCore/Utilities/IPC/detail/SharedMemorySubscriptionImpl.h"
+#include "cpsCore/Logging/CPSLogger.h"
 
 
 
@@ -79,7 +80,7 @@ SharedMemorySubscriptionImpl::onSharedMemory()
 		}
 		if (!message->active)
 		{
-			APLOG_DEBUG << "Shm object inactive. End subscription.";
+			CPSLOG_DEBUG << "Shm object inactive. End subscription.";
 			return;
 		}
 		packet.getBuffer().resize(message->packetSize);

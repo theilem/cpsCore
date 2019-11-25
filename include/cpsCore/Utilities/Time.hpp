@@ -11,8 +11,8 @@
 #include <chrono>
 #include <ctime>
 
-using Clock = std::chrono::high_resolution_clock;
-using SystemClock = std::chrono::system_clock;
+//using Clock = std::chrono::high_resolution_clock;
+using Clock = std::chrono::system_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 using Duration = Clock::duration;
 using Nanoseconds = std::chrono::nanoseconds;
@@ -25,7 +25,7 @@ using Hours = std::chrono::hours;
 inline std::tm*
 getTM(const TimePoint& time)
 {
-	auto timeT = SystemClock::to_time_t(time);
+	auto timeT = Clock::to_time_t(time);
 	return std::localtime(&timeT);
 }
 

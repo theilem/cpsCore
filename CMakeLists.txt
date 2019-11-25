@@ -6,7 +6,7 @@ set (CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 find_package(Eigen3 REQUIRED NO_MODULE)
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
 
 find_library(CPP_REDIS_LIBRARY cpp_redis)
 find_library(TACOPIE_LIBRARY tacopie)

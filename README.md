@@ -1,8 +1,21 @@
 # cpsCore
 
+## Dependencies
+
+This project has some dependencies for various functionality. The dependencies are as follows:
+
+```
+Prerequisites:
+- Eigen3 [header only] (http://eigen.tuxfamily.org)
+- Boost [Component: system] (https://www.boost.org/)
+
+Submodules:
+- cpp_redis (https://github.com/cpp-redis/cpp_redis)
+- Catch2 (https://github.com/catchorg/Catch2)
+```
+
 ## Cloning and Compiling
 
-This project uses various external projects. Make sure to clone the submodules:
 
 ```shell script
 git clone --recurse-submodules https://github.com/theilem/cpsCore.git 

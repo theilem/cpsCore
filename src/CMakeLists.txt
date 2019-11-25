@@ -13,8 +13,7 @@ target_link_libraries(cps_core pthread
         rt
         dl
         Eigen3::Eigen
-        Boost::boost
-        boost_system
+        ${Boost_LIBRARIES}
         ${CPP_REDIS_LIB}
         ${TACOPIE_LIB})
 

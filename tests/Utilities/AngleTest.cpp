@@ -9,7 +9,7 @@
 #include "cpsCore/Utilities/Angle.hpp"
 
 
-TEST_CASE("Test 1")
+TEST_CASE("Angle Test")
 {
 
 	Angle<float> a(180.0);

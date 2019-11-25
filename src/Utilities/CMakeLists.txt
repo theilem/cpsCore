@@ -34,7 +34,7 @@ set(CORE_SRCS ${CORE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisChannelParams.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/IDC.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/IDCSender.cpp
-IDC/
+
         #DataPresentation
         ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/Binary/BinaryFromArchive.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/Binary/BinaryToArchive.cpp

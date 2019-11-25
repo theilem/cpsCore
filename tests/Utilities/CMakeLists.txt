@@ -1,4 +1,5 @@
 add_subdirectory(DataPresentation)
+add_subdirectory(IPC)
 add_subdirectory(Scheduler)
 
 set(TEST_SRCS 	${TEST_SRCS}

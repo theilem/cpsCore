@@ -1,21 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2018 University of Illinois Board of Trustees
-//
-// This file is part of uavAP.
-//
-// uavAP is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// uavAP is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-////////////////////////////////////////////////////////////////////////////////
 /**
  * @file Time.h
  * @brief Typedefs for usage of time in uavAP based on boost posix_time
@@ -30,6 +12,7 @@
 #include <ctime>
 
 using Clock = std::chrono::high_resolution_clock;
+using SystemClock = std::chrono::system_clock;
 using TimePoint = std::chrono::time_point<Clock>;
 using Duration = Clock::duration;
 using Nanoseconds = std::chrono::nanoseconds;
@@ -42,7 +25,7 @@ using Hours = std::chrono::hours;
 inline std::tm*
 getTM(const TimePoint& time)
 {
-	auto timeT = Clock::to_time_t(time);
+	auto timeT = SystemClock::to_time_t(time);
 	return std::localtime(&timeT);
 }
 

@@ -23,6 +23,13 @@ else()
     set(TACOPIE_LIB tacopie)
 endif(TACOPIE_LIBRARY)
 
+set(SYSTEM_LIBS pthread
+        dl)
+
+if (NOT APPLE)
+    set(SYSTEM_LIBS ${SYSTEM_LIBS} rt)
+endif(NOT APPLE)
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/extern)

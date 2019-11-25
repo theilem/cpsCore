@@ -9,9 +9,8 @@ add_subdirectory(Utilities)
 
 add_library(cps_core SHARED ${CORE_SRCS})
 
-target_link_libraries(cps_core pthread
-        rt
-        dl
+target_link_libraries(cps_core
+        ${SYSTEM_LIBS}
         Eigen3::Eigen
         ${Boost_LIBRARIES}
         ${CPP_REDIS_LIB}

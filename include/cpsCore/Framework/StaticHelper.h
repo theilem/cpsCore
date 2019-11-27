@@ -16,6 +16,8 @@ class StaticHelper
 {
 public:
 
+	using Types = std::tuple<Objects...>;
+
 	/**
 	 * @brief Create an Aggregator containing Objects defined in a configuration loaded in from a config path.
 	 * @param configPath path to the configuration .json file

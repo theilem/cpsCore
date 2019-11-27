@@ -21,17 +21,17 @@ public:
 	~JsonPopulator();
 
 	template<typename Type>
-	typename std::enable_if<
+	std::enable_if_t<
 			!is_parameter_set<typename Type::ValueType>::value
-			&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>::type&
+			&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>&
 	operator&(Type& param);
 
 	template<typename Type>
-	typename std::enable_if<(is_parameter_set<typename Type::ValueType>::value), JsonPopulator>::type&
+	std::enable_if_t<(is_parameter_set<typename Type::ValueType>::value), JsonPopulator>&
 	operator&(Type& param);
 
 	template<typename Type>
-	typename std::enable_if<(is_configurable_object<typename Type::ValueType>::value), JsonPopulator>::type&
+	std::enable_if_t<(is_configurable_object<typename Type::ValueType>::value), JsonPopulator>&
 	operator&(Type& param);
 
 	std::string
@@ -50,36 +50,42 @@ public:
 	JsonPopulator&
 	operator<<(const Type& text);
 
-	template<class Obj, typename std::enable_if<is_configurable_object<Obj>::value, int>::type = 0>
+	template<class ... Objects>
 	void
 	populate();
 
-	template<class Obj, typename std::enable_if<!is_configurable_object<Obj>::value, int>::type = 0>
-	void
-	populate();
-
-	template<class Obj1, class Obj2, class ... Others>
-	void
-	populate();
+	template<template <class...Args> class Container, class ... Objects>
+	inline void
+	populateContainer(const Container<Objects...>& container);
 
 private:
 
+
+	template<class Obj, std::enable_if_t<is_configurable_object<Obj>::value, int> = 0>
+	void
+	populateImpl();
+
+	template<class Obj, std::enable_if_t<!is_configurable_object<Obj>::value, int> = 0>
+	void
+	populateImpl();
+
+
 	template<typename Type>
-	typename std::enable_if<is_string<Type>::value, JsonPopulator>::type&
+	std::enable_if_t<is_string<Type>::value, JsonPopulator>&
 	writeValue(const Type& value);
 
 	template<typename Type>
-	typename std::enable_if<std::is_enum<Type>::value, JsonPopulator>::type&
+	std::enable_if_t<std::is_enum<Type>::value, JsonPopulator>&
 	writeValue(const Type& value);
 
 	template<typename Type>
-	typename std::enable_if<is_angle<Type>::value, JsonPopulator>::type&
+	std::enable_if_t<is_angle<Type>::value, JsonPopulator>&
 	writeValue(const Type& value);
 
 	template<typename Type>
-	typename std::enable_if<
+	std::enable_if_t<
 			!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value,
-			JsonPopulator>::type&
+			JsonPopulator>&
 	writeValue(const Type& value);
 
 	std::stringstream stringStream_;
@@ -90,9 +96,9 @@ private:
 };
 
 template<typename Type>
-inline typename std::enable_if<
+inline std::enable_if_t<
 		!is_parameter_set<typename Type::ValueType>::value
-		&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>::type&
+		&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>&
 JsonPopulator::operator&(Type& param)
 {
 	if (!firstElement_)
@@ -109,7 +115,7 @@ JsonPopulator::operator&(Type& param)
 }
 
 template<typename Type>
-inline typename std::enable_if<(is_parameter_set<typename Type::ValueType>::value), JsonPopulator>::type&
+inline std::enable_if_t<(is_parameter_set<typename Type::ValueType>::value), JsonPopulator>&
 JsonPopulator::operator&(Type& param)
 {
 	if (!firstElement_)
@@ -133,8 +139,8 @@ JsonPopulator::operator&(Type& param)
 }
 
 template<typename Type>
-inline typename std::enable_if<(is_configurable_object<typename Type::ValueType>::value),
-		JsonPopulator>::type&
+inline std::enable_if_t<(is_configurable_object<typename Type::ValueType>::value),
+		JsonPopulator>&
 JsonPopulator::operator&(Type& param)
 {
 	if (!firstElement_)
@@ -158,7 +164,7 @@ JsonPopulator::operator&(Type& param)
 }
 
 template<typename Type>
-inline typename std::enable_if<is_string<Type>::value, JsonPopulator>::type&
+inline std::enable_if_t<is_string<Type>::value, JsonPopulator>&
 JsonPopulator::writeValue(const Type& value)
 {
 	jsonString_ << "\"" << value << "\"";
@@ -166,7 +172,7 @@ JsonPopulator::writeValue(const Type& value)
 }
 
 template<typename Type>
-inline typename std::enable_if<std::is_enum<Type>::value, JsonPopulator>::type&
+inline std::enable_if_t<std::is_enum<Type>::value, JsonPopulator>&
 JsonPopulator::writeValue(const Type& value)
 {
 	jsonString_ << EnumMap<Type>::convert(value);
@@ -174,7 +180,7 @@ JsonPopulator::writeValue(const Type& value)
 }
 
 template<typename Type>
-inline typename std::enable_if<is_angle<Type>::value, JsonPopulator>::type&
+inline std::enable_if_t<is_angle<Type>::value, JsonPopulator>&
 JsonPopulator::writeValue(const Type& value)
 {
 	jsonString_ << value.degrees();
@@ -182,8 +188,8 @@ JsonPopulator::writeValue(const Type& value)
 }
 
 template<typename Type>
-inline typename std::enable_if<
-		!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value, JsonPopulator>::type&
+inline std::enable_if_t<
+		!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value, JsonPopulator>&
 JsonPopulator::writeValue(const Type& value)
 {
 	jsonString_ << value;
@@ -198,9 +204,23 @@ JsonPopulator::operator<<(const Type& text)
 	return *this;
 }
 
-template<class Obj, typename std::enable_if<is_configurable_object<Obj>::value, int>::type>
+template<class ... Objects>
 inline void
 JsonPopulator::populate()
+{
+	(populateImpl<Objects>(),...);
+}
+
+template<template <class...Args> class Container, class ... Objects>
+inline void
+JsonPopulator::populateContainer(const Container<Objects...>& container)
+{
+	(populateImpl<Objects>(),...);
+}
+
+template<class Obj, std::enable_if_t<is_configurable_object<Obj>::value, int>>
+inline void
+JsonPopulator::populateImpl()
 {
 	//Is configurable Object
 	if (!firstElement_)
@@ -222,9 +242,9 @@ JsonPopulator::populate()
 	jsonString_ << "}";
 }
 
-template<class Obj, typename std::enable_if<!is_configurable_object<Obj>::value, int>::type>
+template<class Obj, std::enable_if_t<!is_configurable_object<Obj>::value, int>>
 inline void
-JsonPopulator::populate()
+JsonPopulator::populateImpl()
 {
 	//Is not configurable, just add type
 	if (!firstElement_)
@@ -236,14 +256,6 @@ JsonPopulator::populate()
 	jsonString_ << "\"" << Obj::typeId << "\"" << ":{" << std::endl;
 	addTabs();
 	jsonString_ << "}";
-}
-
-template<class Obj1, class Obj2, class ... Others>
-inline void
-JsonPopulator::populate()
-{
-	populate<Obj1>();
-	populate<Obj2, Others...>();
 }
 
 #endif /* UAVAP_CORE_PROPERTYMAPPER_JSONPOPULATOR_H_ */

@@ -33,7 +33,7 @@ class SystemTimeProvider : public ITimeProvider, public AggregatableObject<>
 {
 public:
 
-	static constexpr TypeId typeId = "system";
+	static constexpr TypeId typeId = "system_time";
 
 	SystemTimeProvider();
 

@@ -1,7 +1,7 @@
 /**
  * @file Time.h
- * @brief Typedefs for usage of time in uavAP based on boost posix_time
- * @date Jun 25, 2017
+ * @brief Typedefs for usage of time in cpsCore based on std::chrono
+ * @date Nov 23rd 2019
  * @author Mirco Theile, mirco.theile@tum.de
  */
 

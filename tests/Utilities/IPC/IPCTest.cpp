@@ -110,7 +110,7 @@ TEST_CASE("IPC Test 1")
 	CHECK(counter2 == 2);
 }
 
-TEST_CASE("IPC Test 4")
+TEST_CASE("IPC Test 2")
 {
 	auto ipc = std::make_shared<IPC>();
 	auto tp = std::make_shared<SystemTimeProvider>();

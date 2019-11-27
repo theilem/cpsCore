@@ -10,12 +10,9 @@
 
 #include <thread>
 
-#include "cpsCore/Aggregation/AggregatableObject.hpp"
-#include "cpsCore/Aggregation/IAggregatableObject.h"
-#include "cpsCore/Synchronization/IRunnableObject.h"
+#include "cpsCore/cps_object"
 #include "cpsCore/Utilities/Scheduler/EventBody.h"
 #include "cpsCore/Utilities/Scheduler/IScheduler.h"
-#include "cpsCore/Configuration/ConfigurableObject.hpp"
 #include "cpsCore/Utilities/Scheduler/MultiThreadingSchedulerParams.h"
 
 class ITimeProvider;

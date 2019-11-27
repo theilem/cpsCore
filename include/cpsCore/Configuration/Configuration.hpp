@@ -22,6 +22,9 @@ using ConfigurationError = int;
 using Configuration = boost::property_tree::ptree;
 using ConfigurationError = boost::property_tree::ptree_error;
 
+Configuration
+parseConfigFile(const std::string& path);
+
 #endif
 
 

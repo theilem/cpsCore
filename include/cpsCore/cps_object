@@ -1,0 +1,15 @@
+//
+// Created by mirco on 25.11.19.
+//
+
+#ifndef CPSCORE_CPS_OBJECT
+#define CPSCORE_CPS_OBJECT
+
+/**
+ * Include simplification. Use only iff the newly defined class is Aggregatable, Configurable, and Runnable!
+ */
+#include <cpsCore/Aggregation/AggregatableObject.hpp>
+#include <cpsCore/Configuration/ConfigurableObject.hpp>
+#include <cpsCore/Synchronization/IRunnableObject.h>
+
+#endif //CPSCORE_CPS_OBJECT

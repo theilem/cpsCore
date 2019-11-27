@@ -12,8 +12,7 @@
 #include <map>
 #include <string>
 
-#include <boost/property_tree/ptree.hpp>
-
+#include "cpsCore/Configuration/Configuration.hpp"
 #include "cpsCore/Framework/Factory.h"
 #include "cpsCore/Aggregation/AggregatableObject.hpp"
 

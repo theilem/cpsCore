@@ -24,7 +24,7 @@ cd cpsCore
 mkdir -p bld/release && cd bld/release
 
 cmake -DCMAKE_BUILD_TYPE=Release ../../
-make -j`nproc`
+make
 make install
 ```
 

@@ -20,7 +20,7 @@ public:
 
 	~SharedMemoryPublisherImpl();
 
-	void
+	bool
 	publish(const Packet& obj) override;
 
 private:

@@ -27,13 +27,13 @@ RedisSubscriber::~RedisSubscriber()
 }
 
 boost::signals2::connection
-RedisSubscriber::subscribeOnPackets(const OnPacket::slot_type& slot)
+RedisSubscriber::subscribe(const OnPacket::slot_type& slot)
 {
 	return onPacket_.connect(slot);
 }
 
 void
-RedisSubscriber::startHandler()
+RedisSubscriber::start()
 {
 	subscriber_.commit();
 }
@@ -42,4 +42,10 @@ void
 RedisSubscriber::onChannel(const std::string& channel, const std::string& message)
 {
 	onPacket_(Packet(message));
+}
+
+void
+RedisSubscriber::cancel()
+{
+	subscriber_.disconnect(false);
 }

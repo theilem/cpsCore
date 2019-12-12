@@ -63,7 +63,7 @@ RedisNetworkLayer::sendPacket(const std::string& id, const Packet& packet)
 		return false;
 	}
 
-	return it->second->sendPacket(packet);
+	return it->second->publish(packet);
 }
 
 boost::signals2::connection
@@ -76,7 +76,7 @@ RedisNetworkLayer::subscribeOnPacket(const std::string& id, const OnPacket::slot
 		return boost::signals2::connection();
 	}
 
-	return it->second->subscribeOnPackets(handle);
+	return it->second->subscribe(handle);
 }
 
 bool
@@ -98,7 +98,7 @@ RedisNetworkLayer::run(RunStage stage)
 		auto sched = get<IScheduler>();
 		for (const auto& it : subscribers_)
 		{
-			sched->schedule(std::bind(&RedisSubscriber::startHandler, it.second), Milliseconds(0));
+			sched->schedule(std::bind(&RedisSubscriber::start, it.second), Milliseconds(0));
 		}
 
 		for (const auto& it : publishers_)

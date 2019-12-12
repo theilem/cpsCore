@@ -45,6 +45,7 @@ public:
 
 SCENARIO("Checking objects can be Aggregated")
 {
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
 	GIVEN("Items to be aggregated")
 	{
 		auto testa = std::make_shared<TestA>();
@@ -125,4 +126,5 @@ SCENARIO("Checking objects can be Aggregated")
 			}
 		}
 	}
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
 }

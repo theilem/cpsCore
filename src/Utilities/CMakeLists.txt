@@ -12,6 +12,7 @@ set(CORE_SRCS ${CORE_SRCS}
 
         #Scheduler
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/MicroSimulator.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/ExternalSimulator.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/MultiThreadingScheduler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/Event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/EventBody.cpp

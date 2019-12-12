@@ -101,6 +101,7 @@ private:
 
 TEST_CASE("Test1")
 {
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
 
 	Configuration config;
 	Configuration subConfig;
@@ -121,10 +122,12 @@ TEST_CASE("Test1")
 	CHECK(is_parameter_set<Params>::value);
 	CHECK(is_parameter_set<ParamsNested>::value);
 
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
 }
 
 TEST_CASE("Test2 Member Config")
 {
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
 
 	Configuration config;
 	Configuration subConfig;
@@ -148,6 +151,7 @@ TEST_CASE("Test2 Member Config")
 	CHECK(test.configure(configUpper));
 	test.checkParams();
 
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
 
 
 }

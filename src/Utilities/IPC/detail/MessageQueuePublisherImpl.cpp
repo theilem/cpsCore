@@ -20,17 +20,19 @@ MessageQueuePublisherImpl::~MessageQueuePublisherImpl()
 		CPSLOG_DEBUG << id_ << " message queue removed.";
 }
 
-void
+bool
 MessageQueuePublisherImpl::publish(const Packet& packet)
 {
 	if (packet.getSize() > maxPacketSize_)
 	{
 		CPSLOG_ERROR << "Packet to large: " << packet.getSize() << " > " << maxPacketSize_;
-		return;
+		return false;
 	}
 	unsigned int priority = 1; //TODO Adjust priority?
 	if (!messageQueue_.try_send(static_cast<const void*>(packet.getStart()), packet.getSize(), priority))
 	{
 		CPSLOG_WARN << "Message queue full. Do not send.";
+		return false;
 	}
+	return true;
 }

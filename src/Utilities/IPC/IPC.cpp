@@ -5,6 +5,8 @@
  *      Author: mircot
  */
 
+#include <cpsCore/Utilities/IDC/NetworkLayer/Redis/RedisPublisher.h>
+#include <cpsCore/Utilities/IDC/NetworkLayer/Redis/RedisSubscriber.h>
 #include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
 #include "cpsCore/Utilities/IPC/IPC.h"
 #include "cpsCore/Utilities/IPC/detail/MessageQueuePublisherImpl.h"
@@ -25,35 +27,35 @@ IPC::run(RunStage stage)
 {
 	switch (stage)
 	{
-	case RunStage::INIT:
-	{
-		if (!isSet<IScheduler>())
+		case RunStage::INIT:
 		{
-			CPSLOG_WARN << "IPC is missing Scheduler. Subscription functionality disabled.";
-		}
-		break;
-	}
-	case RunStage::NORMAL:
-	{
-		if (auto sh = get<SignalHandler>())
-		{
-			CPSLOG_DEBUG << "IPC subscribing on SIGINT";
-			sh->subscribeOnSigint(std::bind(&IPC::sigintHandler, this, std::placeholders::_1));
-		}
-
-		if (params.retryPeriod() != 0)
-		{
-			if (auto sched = get<IScheduler>())
+			if (!isSet<IScheduler>())
 			{
-				CPSLOG_DEBUG << "Schedule retries";
-				sched->schedule(std::bind(&IPC::retrySubscriptions, this), Milliseconds(0),
-						Milliseconds(params.retryPeriod()));
+				CPSLOG_WARN << "IPC is missing Scheduler. Subscription functionality disabled.";
 			}
+			break;
 		}
-		break;
-	}
-	default:
-		break;
+		case RunStage::NORMAL:
+		{
+			if (auto sh = get<SignalHandler>())
+			{
+				CPSLOG_DEBUG << "IPC subscribing on SIGINT";
+				sh->subscribeOnSigint(std::bind(&IPC::sigintHandler, this, std::placeholders::_1));
+			}
+
+			if (params.retryPeriod() != 0)
+			{
+				if (auto sched = get<IScheduler>())
+				{
+					CPSLOG_DEBUG << "Schedule retries";
+					sched->schedule(std::bind(&IPC::retrySubscriptions, this), Milliseconds(0),
+									Milliseconds(params.retryPeriod()));
+				}
+			}
+			break;
+		}
+		default:
+			break;
 	}
 	return false;
 }
@@ -61,18 +63,24 @@ IPC::run(RunStage stage)
 Publisher<Packet>
 IPC::publishPackets(const std::string& id, const IPCOptions& options)
 {
+	if (params.useRedis())
+	{
+		return Publisher<Packet>(publishOnRedis(id, params.maxPacketSize()),
+								 [](const Packet& p)
+								 { return p; });
+	}
 	if (options.multiTarget)
 	{
 		return Publisher<Packet>(publishOnSharedMemory(id, params.maxPacketSize()),
-				[](const Packet& p)
-				{	return p;});
+								 [](const Packet& p)
+								 { return p; });
 	}
 	else
 	{
 		return Publisher<Packet>(
 				publishOnMessageQueue(id, params.maxPacketSize(), params.maxNumPackets()),
 				[](const Packet& p)
-				{	return p;});
+				{ return p; });
 	}
 }
 
@@ -102,6 +110,17 @@ IPC::publishOnMessageQueue(const std::string& id, unsigned maxPacketSize, unsign
 	return impl;
 }
 
+std::shared_ptr<IPublisherImpl>
+IPC::publishOnRedis(const std::string& id, unsigned)
+{
+	RedisChannelParams params;
+	params.channel_ = id;
+	auto impl = std::make_shared<RedisPublisher>(params);
+	publications_.push_back(impl);
+
+	return impl;
+}
+
 void
 IPC::sigintHandler(int sig)
 {
@@ -121,16 +140,23 @@ IPC::sigintHandler(int sig)
 
 Subscription
 IPC::subscribeOnPackets(const std::string& id, const std::function<void
-(const Packet&)>& slot, const IPCOptions& options)
+		(const Packet&)>& slot, const IPCOptions& options)
 {
 	Subscription result;
-	if (options.multiTarget)
+	if (params.useRedis())
 	{
-		result = subscribeOnSharedMemory(id, slot);
+		result = subscribeOnRedis(id, slot);
 	}
 	else
 	{
-		result = subscribeOnMessageQueue(id, slot);
+		if (options.multiTarget)
+		{
+			result = subscribeOnSharedMemory(id, slot);
+		}
+		else
+		{
+			result = subscribeOnMessageQueue(id, slot);
+		}
 	}
 
 	if (!result.connected() && options.retry)
@@ -142,13 +168,13 @@ IPC::subscribeOnPackets(const std::string& id, const std::function<void
 		{
 			retryVector_.push_back(
 					std::make_pair(options.retrySuccessCallback,
-							std::bind(&IPC::subscribeOnSharedMemory, this, id, slot)));
+								   std::bind(&IPC::subscribeOnSharedMemory, this, id, slot)));
 		}
 		else
 		{
 			retryVector_.push_back(
 					std::make_pair(options.retrySuccessCallback,
-							std::bind(&IPC::subscribeOnMessageQueue, this, id, slot)));
+								   std::bind(&IPC::subscribeOnMessageQueue, this, id, slot)));
 		}
 	}
 
@@ -157,7 +183,7 @@ IPC::subscribeOnPackets(const std::string& id, const std::function<void
 
 Subscription
 IPC::subscribeOnSharedMemory(const std::string& id, const std::function<void
-(const Packet&)>& slot)
+		(const Packet&)>& slot)
 {
 	std::shared_ptr<ISubscriptionImpl> impl;
 
@@ -178,7 +204,7 @@ IPC::subscribeOnSharedMemory(const std::string& id, const std::function<void
 			if (auto sched = get<IScheduler>())
 			{
 				sched->schedule(std::bind(&SharedMemorySubscriptionImpl::start, sub),
-						Milliseconds(0));
+								Milliseconds(0));
 			}
 			else
 			{
@@ -199,7 +225,7 @@ IPC::subscribeOnSharedMemory(const std::string& id, const std::function<void
 
 Subscription
 IPC::subscribeOnMessageQueue(const std::string& id, const std::function<void
-(const Packet&)>& slot)
+		(const Packet&)>& slot)
 {
 	std::shared_ptr<ISubscriptionImpl> impl;
 
@@ -220,7 +246,7 @@ IPC::subscribeOnMessageQueue(const std::string& id, const std::function<void
 			if (auto sched = get<IScheduler>())
 			{
 				sched->schedule(std::bind(&MessageQueueSubscriptionImpl::start, sub),
-						Milliseconds(0));
+								Milliseconds(0));
 			}
 			else
 			{
@@ -236,6 +262,44 @@ IPC::subscribeOnMessageQueue(const std::string& id, const std::function<void
 
 	auto con = impl->subscribe(slot);
 
+	return Subscription(impl, con);
+}
+
+Subscription
+IPC::subscribeOnRedis(const std::string& id, const std::function<void
+		(const Packet&)>& slot)
+{
+
+	std::shared_ptr<ISubscriptionImpl> impl;
+
+	std::lock_guard<std::mutex> lock(subscribeMutex_);
+
+	auto subscription = subscriptions_.find(id);
+	if (subscription != subscriptions_.end())
+	{
+		impl = subscription->second;
+		auto con = impl->subscribe(slot);
+		return Subscription(subscription->second, con);
+	}
+	else
+	{
+		RedisChannelParams channelParams;
+		channelParams.channel_ = id;
+		auto sub = std::make_shared<RedisSubscriber>(channelParams);
+		if (auto sched = get<IScheduler>())
+		{
+			sched->schedule(std::bind(&RedisSubscriber::start, sub),
+							Milliseconds(0));
+		}
+		else
+		{
+			CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
+		}
+		impl = sub;
+		subscriptions_.insert(std::make_pair(id, impl));
+	}
+
+	auto con = impl->subscribe(slot);
 	return Subscription(impl, con);
 }
 

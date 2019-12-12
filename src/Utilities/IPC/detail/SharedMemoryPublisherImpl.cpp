@@ -38,7 +38,7 @@ SharedMemoryPublisherImpl::SharedMemoryPublisherImpl(const std::string& id, std:
 
 }
 
-void
+bool
 SharedMemoryPublisherImpl::publish(const Packet& packet)
 {
 	using namespace boost::interprocess;
@@ -48,7 +48,7 @@ SharedMemoryPublisherImpl::publish(const Packet& packet)
 	if (size > maxPacketSize_)
 	{
 		CPSLOG_ERROR << "Packet to big, cannot copy to shm.";
-		return;
+		return false;
 	}
 
 	mapped_region region(sharedMem_, read_write);
@@ -60,6 +60,7 @@ SharedMemoryPublisherImpl::publish(const Packet& packet)
 	memcpy((uint8_t*) region.get_address() + sizeof(MessageObjectHeader), packet.getStart(), size);
 
 	message->cnd.notify_all();
+	return true;
 }
 
 SharedMemoryPublisherImpl::~SharedMemoryPublisherImpl()

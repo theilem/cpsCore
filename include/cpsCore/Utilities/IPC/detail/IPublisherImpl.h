@@ -17,7 +17,7 @@ public:
 	virtual
 	~IPublisherImpl() = default;
 
-	virtual void
+	virtual bool
 	publish(const Packet& obj) = 0;
 
 };

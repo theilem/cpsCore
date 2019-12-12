@@ -7,6 +7,7 @@
 
 #include <cpsCore/Aggregation/Aggregator.h>
 #include <cpsCore/Configuration/ConfigurableObject.hpp>
+#include <iostream>
 
 template<class...>
 class StaticHelper;
@@ -15,8 +16,6 @@ template<class...Objects>
 class StaticHelper
 {
 public:
-
-	using Types = std::tuple<Objects...>;
 
 	/**
 	 * @brief Create an Aggregator containing Objects defined in a configuration loaded in from a config path.
@@ -45,28 +44,34 @@ public:
 
 private:
 
-	template<class Object, typename std::enable_if<is_configurable_object<Object>::value, bool>::type B = true>
+	template<class Object, std::enable_if_t<is_configurable_object<Object>::value, bool> B = true>
 	inline void
 	addIfInConfig(Aggregator& agg, const Configuration& config)
 	{
 		auto params = config.get_child_optional(Object::typeId);
 		if (params)
 		{
+			CPSLOG_TRACE << "Adding " << Object::typeId << " with config";
 			auto obj = std::make_shared<Object>();
 			obj->configure(*params);
 			agg.add(obj);
 		}
+		else
+			CPSLOG_TRACE << Object::typeId << " not found in config. It is not added.";
 	}
 
-	template<class Object, typename std::enable_if<!is_configurable_object<Object>::value, bool>::type B = true>
+	template<class Object, std::enable_if_t<!is_configurable_object<Object>::value, bool> B = true>
 	inline void
 	addIfInConfig(Aggregator& agg, const Configuration& config)
 	{
 		if (config.get_child_optional(Object::typeId))
 		{
+			CPSLOG_TRACE << "Adding " << Object::typeId << " without config";
 			auto obj = std::make_shared<Object>();
 			agg.add(obj);
 		}
+		else
+			CPSLOG_TRACE << Object::typeId << " not found in config. It is not added.";
 	}
 
 

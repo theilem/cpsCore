@@ -122,7 +122,7 @@ MultiThreadingScheduler::run(RunStage stage)
 		started_ = true;
 		if (!mainThread_)
 		{
-			invokerThread_ = std::thread(boost::bind(&MultiThreadingScheduler::runSchedule, this));
+			invokerThread_ = std::thread(std::bind(&MultiThreadingScheduler::runSchedule, this));
 
 			if (params.priority() != 20)
 				pthread_setschedparam(invokerThread_.native_handle(), SCHED_FIFO,

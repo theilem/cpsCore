@@ -5,6 +5,7 @@
  *      Author: mircot
  */
 
+#include <iostream>
 #include "cpsCore/Logging/CPSLogger.h"
 
 CPSLogger* CPSLogger::instance_ = nullptr;
@@ -61,6 +62,7 @@ CPSLogger::log(LogLevel level, const std::string& module)
 CPSLogger::CPSLogger() :
 		setLevel_(LogLevel::WARN), sink_(nullptr), emptySink_(nullptr)
 {
+	sink_.rdbuf(std::cout.rdbuf());
 }
 
 CPSLogger::CGuard::~CGuard()

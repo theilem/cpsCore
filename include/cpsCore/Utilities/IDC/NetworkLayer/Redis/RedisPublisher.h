@@ -14,11 +14,12 @@
 #include <boost/signals2.hpp>
 #include "cpsCore/Utilities/Packet.h"
 #include "cpsCore/Utilities/IDC/NetworkLayer/Redis/RedisChannelParams.h"
+#include "cpsCore/Utilities/IPC/detail/IPublisherImpl.h"
+
 
 #include <cpp_redis/cpp_redis>
 
-
-class RedisPublisher
+class RedisPublisher : public IPublisherImpl
 {
 public:
 
@@ -29,10 +30,13 @@ public:
 	using OnPacket = boost::signals2::signal<void(const Packet&)>;
 
 	bool
-	sendPacket(const Packet& packet);
+	publish(const Packet& packet) override;
 
 	void
 	startHandler();
+
+	bool
+	isConnected() const;
 private:
 
 	void

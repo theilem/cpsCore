@@ -24,7 +24,7 @@ RedisPublisher::~RedisPublisher()
 }
 
 bool
-RedisPublisher::sendPacket(const Packet& packet)
+RedisPublisher::publish(const Packet& packet)
 {
 	if (!client_.is_connected())
 	{
@@ -80,4 +80,10 @@ RedisPublisher::onConnectionEvent(const std::string& host, std::size_t port,
 	{
 		CPSLOG_ERROR << "Client disconnected from " << host << ": " << port;
 	}
+}
+
+bool
+RedisPublisher::isConnected() const
+{
+	return client_.is_connected();
 }

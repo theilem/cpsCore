@@ -64,11 +64,18 @@ private:
 	subscribeOnMessageQueue(const std::string& id, const std::function<void
 			(const Packet&)>& slot);
 
+	Subscription
+	subscribeOnRedis(const std::string& id, const std::function<void
+			(const Packet&)>& slot);
+
 	std::shared_ptr<IPublisherImpl>
 	publishOnSharedMemory(const std::string& id, unsigned maxPacketSize);
 
 	std::shared_ptr<IPublisherImpl>
 	publishOnMessageQueue(const std::string& id, unsigned maxPacketSize, unsigned numPackets);
+
+	std::shared_ptr<IPublisherImpl>
+	publishOnRedis(const std::string& id, unsigned maxPacketSize);
 
 	void
 	sigintHandler(int sig);
@@ -103,6 +110,10 @@ IPC::publish(const std::string& id, const IPCOptions& options)
 {
 	auto packetSize = forwardToPacket(Type()).getSize();
 	auto forwarding = std::bind(&IPC::forwardToPacket<Type>, this, std::placeholders::_1);
+	if (params.useRedis())
+	{
+		return Publisher<Type>(publishOnRedis(id, packetSize),forwarding);
+	}
 	if (options.multiTarget)
 	{
 		return Publisher<Type>(publishOnSharedMemory(id, packetSize), forwarding);
@@ -122,13 +133,21 @@ IPC::subscribe(const std::string& id, const std::function<void
 	Subscription result;
 	std::function<void(const Packet&)> packetSlot = std::bind(&IPC::forwardFromPacket<Type>, this,
 															  std::placeholders::_1, slot);
-	if (options.multiTarget)
+
+	if (params.useRedis())
 	{
-		result = subscribeOnSharedMemory(id, packetSlot);
+		result = subscribeOnRedis(id, packetSlot);
 	}
 	else
 	{
-		result = subscribeOnMessageQueue(id, packetSlot);
+		if (options.multiTarget)
+		{
+			result = subscribeOnSharedMemory(id, packetSlot);
+		}
+		else
+		{
+			result = subscribeOnMessageQueue(id, packetSlot);
+		}
 	}
 
 	if (!result.connected() && options.retry)

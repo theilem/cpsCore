@@ -15,6 +15,7 @@ struct IPCParams
 	Parameter<std::size_t> maxPacketSize = {16384, "max_size", false};
 	Parameter<std::size_t> maxNumPackets = {10, "max_num", false};
 	Parameter<unsigned int> retryPeriod = {1000, "retry_period_ms", false};
+	Parameter<bool> useRedis = {false, "use_redis", false};
 
 	template <typename Config>
 	void
@@ -23,6 +24,7 @@ struct IPCParams
 		c & maxPacketSize;
 		c & maxNumPackets;
 		c & retryPeriod;
+		c & useRedis;
 	}
 };
 

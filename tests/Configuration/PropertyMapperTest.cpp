@@ -13,6 +13,7 @@
 
 TEST_CASE("Vector of Doubles")
 {
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
 	Configuration config;
 	boost::property_tree::read_json(test_info::test_dir() + "Utilities/config/pm_test.json",
 			config);
@@ -27,10 +28,12 @@ TEST_CASE("Vector of Doubles")
 	CHECK(vec[2] == 3.0);
 	CHECK(vec[3] == 4.0);
 
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
 }
 
 TEST_CASE("Vector Test 2")
 {
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
 	Configuration config;
 	boost::property_tree::read_json(test_info::test_dir() + "Utilities/config/pm_test.json",
 			config);
@@ -55,4 +58,5 @@ TEST_CASE("Vector Test 2")
 	CHECK(vec[2] == Vector2(1,2));
 	CHECK(vec[3] == Vector2(2,2));
 
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
 }

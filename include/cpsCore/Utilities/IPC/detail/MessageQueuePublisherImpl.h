@@ -18,7 +18,7 @@ public:
 
 	~MessageQueuePublisherImpl();
 
-	void
+	bool
 	publish(const Packet& obj) override;
 
 private:

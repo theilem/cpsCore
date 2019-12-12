@@ -9,15 +9,15 @@
 #define PLUGIN_NETWORKLAYER_REDIS_REDISSUBSCRIBER_H_
 
 
-
 #include <boost/signals2.hpp>
 #include "cpsCore/Utilities/Packet.h"
 #include "cpsCore/Utilities/IDC/NetworkLayer/Redis/RedisChannelParams.h"
 
 #include <cpp_redis/cpp_redis>
+#include "cpsCore/Utilities/IPC/detail/ISubscriptionImpl.h"
 
 
-class RedisSubscriber
+class RedisSubscriber : public ISubscriptionImpl
 {
 public:
 
@@ -28,10 +28,14 @@ public:
 	using OnPacket = boost::signals2::signal<void(const Packet&)>;
 
 	boost::signals2::connection
-	subscribeOnPackets(const OnPacket::slot_type& slot);
+	subscribe(const OnPacket::slot_type& slot) override;
 
 	void
-	startHandler();
+	cancel() override;
+
+	void
+	start() override;
+
 private:
 
 	void
@@ -42,7 +46,6 @@ private:
 	OnPacket onPacket_;
 
 };
-
 
 
 #endif /* PLUGIN_NETWORKLAYER_REDIS_REDISSUBSCRIBER_H_ */

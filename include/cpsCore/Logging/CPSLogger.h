@@ -64,6 +64,7 @@ private:
 
 #define CPSLOG(level) (CPSLogger::instance()->log(level))
 #ifdef NO_LOGGING
+#warning "Logging Disabled"
 #define CPSLOG_ERROR if (0) CPSLOG(::LogLevel::ERROR)
 #define CPSLOG_WARN if (0) CPSLOG(::LogLevel::WARN)
 #define CPSLOG_DEBUG if (0) CPSLOG(::LogLevel::DEBUG)

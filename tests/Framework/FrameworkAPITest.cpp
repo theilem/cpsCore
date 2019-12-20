@@ -8,19 +8,14 @@
 #include "TestInfo.h"
 
 #include "cpsCore/Framework/api/FrameworkAPI.h"
-#include "cpsCore/Framework/Helper.h"
+#include "cpsCore/Framework/StaticHelper.h"
 #include "cpsCore/Utilities/IDC/NetworkLayer/NetworkFactory.h"
+#include "cpsCore/Utilities/Scheduler/IScheduler.h"
+#include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
 
 namespace
 {
-class TestHelper: public Helper
-{
-public:
-	TestHelper()
-	{
-		addFactory<NetworkFactory>();
-	}
-};
+using TestHelper = StaticHelper<NetworkFactory>;
 }
 
 TEST_CASE("locking")

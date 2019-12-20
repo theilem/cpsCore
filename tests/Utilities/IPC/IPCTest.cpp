@@ -115,7 +115,8 @@ TEST_CASE("IPC Test 2")
 	auto ipc = std::make_shared<IPC>();
 	auto tp = std::make_shared<SystemTimeProvider>();
 	auto sched = std::make_shared<MultiThreadingScheduler>();
-	auto agg = Aggregator::aggregate({ipc, tp, sched});
+	auto sigHand = std::make_shared<SignalHandler>();
+	auto agg = Aggregator::aggregate({ipc, tp, sched, sigHand});
 
 	IPCOptions opt;
 	opt.multiTarget = false; // setting to message queue
@@ -176,9 +177,10 @@ TEST_CASE("Test Retry Functionality")
 	auto ipc = std::make_shared<IPC>();
 	auto sim = std::make_shared<MicroSimulator>();
 	auto sched = std::make_shared<MultiThreadingScheduler>();
+	auto sigHand = std::make_shared<SignalHandler>();
 	auto dp = std::make_shared<DataPresentation>();
-	auto agg = Aggregator::aggregate({sched, sim}); // set sim as tp of sched
-	auto agg2 = Aggregator::aggregate({ipc, sched, dp}); // set sched as scheduler of ipc
+	auto agg = Aggregator::aggregate({sched, sim, sigHand}); // set sim as tp of sched
+	auto agg2 = Aggregator::aggregate({ipc, sched, dp, sigHand}); // set sched as scheduler of ipc
 
 	sim->stopOnWait();
 

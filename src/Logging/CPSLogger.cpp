@@ -88,3 +88,20 @@ CPSLogger::flush()
 	sink_ << std::endl;
 	isFlushed_ = true;
 }
+
+LogLevel
+CPSLogger::getLogLevel() const
+{
+	return setLevel_;
+}
+
+CPSLogger::LogLevelScope::LogLevelScope(LogLevel setLevel)
+{
+	oldLogLevel_ = CPSLogger::instance()->getLogLevel();
+	CPSLogger::instance()->setLogLevel(setLevel);
+}
+
+CPSLogger::LogLevelScope::~LogLevelScope()
+{
+	CPSLogger::instance()->setLogLevel(oldLogLevel_);
+}

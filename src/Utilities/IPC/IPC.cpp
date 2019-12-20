@@ -114,7 +114,7 @@ std::shared_ptr<IPublisherImpl>
 IPC::publishOnRedis(const std::string& id, unsigned)
 {
 	RedisChannelParams params;
-	params.channel_ = id;
+	params.channel.setValue(id);
 	auto impl = std::make_shared<RedisPublisher>(params);
 	publications_.push_back(impl);
 
@@ -284,7 +284,7 @@ IPC::subscribeOnRedis(const std::string& id, const std::function<void
 	else
 	{
 		RedisChannelParams channelParams;
-		channelParams.channel_ = id;
+		channelParams.channel.setValue(id);
 		auto sub = std::make_shared<RedisSubscriber>(channelParams);
 		if (auto sched = get<IScheduler>())
 		{

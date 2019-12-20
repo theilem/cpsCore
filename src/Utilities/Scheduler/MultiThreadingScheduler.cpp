@@ -10,6 +10,7 @@
 #include "cpsCore/Utilities/TimeProvider/ITimeProvider.h"
 #include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h"
+#include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
 #include <utility>
 
 MultiThreadingScheduler::MultiThreadingScheduler() :
@@ -22,12 +23,12 @@ MultiThreadingScheduler::~MultiThreadingScheduler()
 	if (started_)
 		stop();
 
-	CPSLOG_DEBUG << "Scheduler destroyed.";
+	CPSLOG_TRACE << "Scheduler destroyed.";
 }
 
 Event
 MultiThreadingScheduler::schedule(const std::function<void
-()>& task, Duration initialFromNow)
+		()>& task, Duration initialFromNow)
 {
 	auto body = std::make_shared<EventBody>(task);
 	auto element = createSchedule(initialFromNow, body);
@@ -40,7 +41,7 @@ MultiThreadingScheduler::schedule(const std::function<void
 
 Event
 MultiThreadingScheduler::schedule(const std::function<void
-()>& task, Duration initialFromNow, Duration period)
+		()>& task, Duration initialFromNow, Duration period)
 {
 	auto body = std::make_shared<EventBody>(task, period);
 	auto element = createSchedule(initialFromNow, body);
@@ -98,7 +99,6 @@ MultiThreadingScheduler::stop()
 	lock.unlock();
 
 
-
 	if (!mainThread_)
 		invokerThread_.join();
 }
@@ -108,35 +108,44 @@ MultiThreadingScheduler::run(RunStage stage)
 {
 	switch (stage)
 	{
-	case RunStage::INIT:
-		if (!isSet<ITimeProvider>())
+		case RunStage::INIT:
 		{
-			CPSLOG_ERROR << "TimeProvider missing.";
-			return true;
+			if (!checkIsSet<ITimeProvider>())
+			{
+				CPSLOG_ERROR << "MultiThreadingScheduler deps missing.";
+				return true;
+			}
+			schedulingParams_.sched_priority = params.priority();
+			break;
 		}
-		schedulingParams_.sched_priority = params.priority();
-		break;
-	case RunStage::NORMAL:
-		break;
-	case RunStage::FINAL:
-		started_ = true;
-		if (!mainThread_)
+		case RunStage::NORMAL:
 		{
-			invokerThread_ = std::thread(std::bind(&MultiThreadingScheduler::runSchedule, this));
 
-			if (params.priority() != 20)
-				pthread_setschedparam(invokerThread_.native_handle(), SCHED_FIFO,
-						&schedulingParams_);
+			if (auto sigHand = get<SignalHandler>())
+				sigHand->subscribeOnExit(std::bind(&MultiThreadingScheduler::stop, this));
+			break;
 		}
-		else
+		case RunStage::FINAL:
 		{
-			if (params.priority() != 20)
-				pthread_setschedparam(pthread_self(), SCHED_FIFO, &schedulingParams_);
-		}
+			started_ = true;
+			if (!mainThread_)
+			{
+				invokerThread_ = std::thread(std::bind(&MultiThreadingScheduler::runSchedule, this));
 
-		break;
-	default:
-		break;
+				if (params.priority() != 20)
+					pthread_setschedparam(invokerThread_.native_handle(), SCHED_FIFO,
+										  &schedulingParams_);
+			}
+			else
+			{
+				if (params.priority() != 20)
+					pthread_setschedparam(pthread_self(), SCHED_FIFO, &schedulingParams_);
+			}
+
+			break;
+		}
+		default:
+			break;
 	}
 	return false;
 }
@@ -203,7 +212,7 @@ MultiThreadingScheduler::runSchedule()
 						//Thread not started yet
 						eventBody->periodicThread = std::thread(
 								std::bind(&MultiThreadingScheduler::periodicTask, this,
-										eventBody));
+										  eventBody));
 						if (params.priority() != 20)
 							if (int r = pthread_setschedparam(
 									eventBody->periodicThread.native_handle(),
@@ -215,7 +224,7 @@ MultiThreadingScheduler::runSchedule()
 				}
 				if (!eventBody->isCanceled.load())
 				{
-				//Reschedule Task
+					//Reschedule Task
 					auto element = std::make_pair(it->first + *eventBody->period, eventBody);
 					events_.insert(element);
 				}

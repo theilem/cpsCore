@@ -9,6 +9,9 @@
 #include <cpsCore/Configuration/ConfigurableObject.hpp>
 #include <cpsCore/Configuration/JsonPopulator.h>
 #include <fstream>
+#include <cpsCore/Utilities/Scheduler/IScheduler.h>
+#include <cpsCore/Utilities/Scheduler/MicroSimulator.h>
+#include <cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h>
 
 namespace
 {
@@ -16,9 +19,9 @@ struct ParamsNested
 {
 	Parameter<float> p1 =
 			{2.5, "p1", true};
-	Parameter <std::string> p2 =
+	Parameter<std::string> p2 =
 			{"test", "p2", false};
-	Parameter <uint64_t> p3 =
+	Parameter<uint64_t> p3 =
 			{100, "p3", true};
 
 	template<class Configurator>
@@ -35,9 +38,9 @@ struct Params
 {
 	Parameter<float> p1 =
 			{1.0, "p1", true};
-	Parameter<int> p2 =
-			{7, "p2", true};
-	Parameter <ParamsNested> p3 =
+	Parameter<std::vector<int>> p2 =
+			{{7,8,9}, "p2", true};
+	Parameter<ParamsNested> p3 =
 			{
 					{}, "p3", false};
 
@@ -67,7 +70,7 @@ public:
 	bool
 	configure(const Configuration& config)
 	{
-		PropertyMapper <Configuration> pm(config);
+		PropertyMapper<Configuration> pm(config);
 
 		configureParams(pm);
 
@@ -80,8 +83,8 @@ public:
 	{
 		params.configure(c);
 
-		ParameterRef <Test> ref(test,
-								{}, "sub_test", true);
+		ParameterRef<Test> ref(test,
+							   {}, "sub_test", true);
 		c & ref;
 
 	}
@@ -102,7 +105,11 @@ TEST_CASE("Json Populator Test 1")
 	std::string correct = "{\n"
 						  "\t\"test\":{\n"
 						  "\t\t\"p1\":1,\n"
-						  "\t\t\"p2\":7,\n"
+						  "\t\t\"p2\":[\n"
+						  "\t\t\t7,\n"
+						  "\t\t\t8,\n"
+						  "\t\t\t9\n"
+						  "\t\t],\n"
 						  "\t\t\"p3\":{\n"
 						  "\t\t\t\"p1\":2.5,\n"
 						  "\t\t\t\"p2\":\"test\",\n"
@@ -111,7 +118,11 @@ TEST_CASE("Json Populator Test 1")
 						  "\t},\n"
 						  "\t\"test\":{\n"
 						  "\t\t\"p1\":1,\n"
-						  "\t\t\"p2\":7,\n"
+						  "\t\t\"p2\":[\n"
+						  "\t\t\t7,\n"
+						  "\t\t\t8,\n"
+						  "\t\t\t9\n"
+						  "\t\t],\n"
 						  "\t\t\"p3\":{\n"
 						  "\t\t\t\"p1\":2.5,\n"
 						  "\t\t\t\"p2\":\"test\",\n"
@@ -125,13 +136,20 @@ TEST_CASE("Json Populator Test 1")
 
 TEST_CASE("Json Populator Test 2")
 {
+	REQUIRE(has_configure_params<Test2>::value);
 	JsonPopulator pop;
 	pop.populate<Test2>();
+
+
 
 	std::string correct = "{\n"
 						  "\t\"test2\":{\n"
 						  "\t\t\"p1\":1,\n"
-						  "\t\t\"p2\":7,\n"
+						  "\t\t\"p2\":[\n"
+						  "\t\t\t7,\n"
+						  "\t\t\t8,\n"
+						  "\t\t\t9\n"
+						  "\t\t],\n"
 						  "\t\t\"p3\":{\n"
 						  "\t\t\t\"p1\":2.5,\n"
 						  "\t\t\t\"p2\":\"test\",\n"
@@ -139,7 +157,11 @@ TEST_CASE("Json Populator Test 2")
 						  "\t\t},\n"
 						  "\t\t\"sub_test\":{\n"
 						  "\t\t\t\"p1\":1,\n"
-						  "\t\t\t\"p2\":7,\n"
+						  "\t\t\t\"p2\":[\n"
+						  "\t\t\t\t7,\n"
+						  "\t\t\t\t8,\n"
+						  "\t\t\t\t9\n"
+						  "\t\t\t],\n"
 						  "\t\t\t\"p3\":{\n"
 						  "\t\t\t\t\"p1\":2.5,\n"
 						  "\t\t\t\t\"p2\":\"test\",\n"
@@ -152,3 +174,4 @@ TEST_CASE("Json Populator Test 2")
 	CHECK(correct == pop.getString());
 
 }
+

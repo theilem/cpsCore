@@ -50,34 +50,25 @@ public:
 		return params;
 	}
 
+//	template<typename Config>
+//	inline static void
+//	configureParams(ConfigurableObject<ParameterSet>& obj, Config& config)
+//	{
+//		obj.params.template configure(config);
+//	}
+
 	template<typename Config>
-	inline void
-	configureParams(Config& config)
+	inline static ParameterSet
+	configureParamsStatic(Config& config)
 	{
-		params.template configure(config);
+		ParameterSet p;
+		p.template configure(config);
+		return p;
 	}
 
 protected:
 
 	ParameterSet params;
-};
-
-template<typename Type>
-struct is_configurable_object
-{
-	template<typename _1>
-	static char &
-	chk(
-			typename std::enable_if<
-					std::is_same<void,
-							decltype(std::declval<typename _1::ParamType>().configure(std::declval<int&>()))>::value,
-					int>::type);
-
-	template<typename >
-	static int &
-	chk(...);
-
-	static constexpr bool value = sizeof(chk<Type>(0)) == sizeof(char);
 };
 
 #endif /* UAVAP_CORE_PROPERTYMAPPER_CONFIGURABLEOBJECT_HPP_ */

@@ -1,12 +1,13 @@
-//
-// Created by mirco on 26.11.19.
-//
+/**
+ * Created by mirco on 26.11.19.
+ * Replace SFINAE with Concepts when c++20 is out
+ */
 
 #ifndef CPSCORE_STATICHELPER_H
 #define CPSCORE_STATICHELPER_H
 
-#include <cpsCore/Aggregation/Aggregator.h>
-#include <cpsCore/Configuration/ConfigurableObject.hpp>
+#include "cpsCore/Aggregation/Aggregator.h"
+#include "cpsCore/Framework/StaticFactory.h"
 #include <iostream>
 
 template<class...>
@@ -22,7 +23,7 @@ public:
 	 * @param configPath path to the configuration .json file
 	 * @return Aggregator containing the objects
 	 */
-	inline Aggregator
+	inline static Aggregator
 	createAggregation(const std::string& configPath)
 	{
 		return createAggregation(parseConfigFile(configPath));
@@ -34,7 +35,7 @@ public:
 	 * @param config Configuration object tree
 	 * @return Aggregator containing the objects
 	 */
-	inline Aggregator
+	inline static Aggregator
 	createAggregation(const Configuration& config)
 	{
 		Aggregator agg;
@@ -44,34 +45,50 @@ public:
 
 private:
 
-	template<class Object, std::enable_if_t<is_configurable_object<Object>::value, bool> B = true>
-	inline void
+	template<class Object>
+	inline static void
 	addIfInConfig(Aggregator& agg, const Configuration& config)
 	{
 		auto params = config.get_child_optional(Object::typeId);
 		if (params)
 		{
 			CPSLOG_TRACE << "Adding " << Object::typeId << " with config";
-			auto obj = std::make_shared<Object>();
-			obj->configure(*params);
+			auto obj = createObject<Object>(*params);
 			agg.add(obj);
 		}
 		else
 			CPSLOG_TRACE << Object::typeId << " not found in config. It is not added.";
 	}
 
-	template<class Object, std::enable_if_t<!is_configurable_object<Object>::value, bool> B = true>
-	inline void
-	addIfInConfig(Aggregator& agg, const Configuration& config)
+	template<class Factory, std::enable_if_t<is_static_factory<Factory>::value, bool> B = true>
+	inline static typename Factory::ReturnType
+	createObject(const Configuration& config)
 	{
-		if (config.get_child_optional(Object::typeId))
-		{
-			CPSLOG_TRACE << "Adding " << Object::typeId << " without config";
-			auto obj = std::make_shared<Object>();
-			agg.add(obj);
-		}
-		else
-			CPSLOG_TRACE << Object::typeId << " not found in config. It is not added.";
+		return Factory::create(config);
+	}
+
+	template<class Object, std::enable_if_t<!is_static_factory<Object>::value, bool> B = true>
+	inline static std::shared_ptr<Object>
+	createObject(const Configuration& config)
+	{
+		auto obj = std::make_shared<Object>();
+		configureIfConfigurable(obj, config);
+		return obj;
+	}
+
+
+	template<class Object, std::enable_if_t<is_configurable_object<Object>::value, bool> B = true>
+	static void
+	configureIfConfigurable(std::shared_ptr<Object> obj, const Configuration& config)
+	{
+		obj->configure(config);
+	}
+
+
+	template<class Object, std::enable_if_t<!is_configurable_object<Object>::value, bool> B = true>
+	static void
+	configureIfConfigurable(std::shared_ptr<Object>, const Configuration&)
+	{
 	}
 
 

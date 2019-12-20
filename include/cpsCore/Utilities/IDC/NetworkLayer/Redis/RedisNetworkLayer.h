@@ -10,28 +10,27 @@
 
 #include <unordered_map>
 
-#include "cpsCore/Aggregation/AggregatableObject.hpp"
-#include "cpsCore/Configuration/Configuration.hpp"
-#include "cpsCore/Synchronization/IRunnableObject.h"
+#include "cpsCore/cps_object"
 #include "cpsCore/Utilities/IDC/NetworkLayer/INetworkLayer.h"
+#include "cpsCore/Utilities/IDC/NetworkLayer/Redis/RedisNetworkLayerParams.h"
 #include "cpsCore/Utilities/Packet.h"
 
 
 class IScheduler;
+
 class RedisPublisher;
+
 class RedisSubscriber;
 
-class RedisNetworkLayer : public INetworkLayer, public AggregatableObject<IScheduler>, public IRunnableObject
+class RedisNetworkLayer
+		: public INetworkLayer,
+		  public AggregatableObject<IScheduler>,
+		  public IRunnableObject,
+		  public ConfigurableObject<RedisNetworkLayerParams>
 {
 public:
 
 	static constexpr TypeId typeId = "redis";
-
-	static std::shared_ptr<RedisNetworkLayer>
-	create(const Configuration& config);
-
-	bool
-	configure(const Configuration& config);
 
 	bool
 	sendPacket(const std::string& id, const Packet& packet) override;

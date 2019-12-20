@@ -20,11 +20,23 @@ class CPSLogger
 {
 public:
 
+	struct LogLevelScope
+	{
+		explicit LogLevelScope(LogLevel setLevel);
+
+		~LogLevelScope();
+
+		LogLevel oldLogLevel_;
+	};
+
 	static CPSLogger*
 	instance();
 
 	void
 	setLogLevel(LogLevel level);
+
+	LogLevel
+	getLogLevel() const;
 
 	void
 	setSink(std::ostream& sink);

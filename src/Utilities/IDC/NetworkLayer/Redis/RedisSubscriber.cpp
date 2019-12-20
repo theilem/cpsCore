@@ -10,13 +10,13 @@
 
 RedisSubscriber::RedisSubscriber(const RedisChannelParams& params)
 {
-	subscriber_.connect(params.hostIP_, params.port_,
+	subscriber_.connect(params.hostIP(), params.port(),
 			[](const std::string& host, std::size_t port, cpp_redis::connect_state status)
 			{	if (status == cpp_redis::connect_state::dropped)
 				{	CPSLOG_ERROR << "Client disconnected from " << host << ": " << port;}});
-	if (!params.auth_.empty())
-		subscriber_.auth(params.auth_);
-	subscriber_.subscribe(params.channel_,
+	if (!params.auth().empty())
+		subscriber_.auth(params.auth());
+	subscriber_.subscribe(params.channel(),
 			std::bind(&RedisSubscriber::onChannel, this, std::placeholders::_1,
 					std::placeholders::_2));
 }

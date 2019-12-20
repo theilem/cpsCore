@@ -10,6 +10,7 @@
 #include "cpsCore/Utilities/Scheduler/MicroSimulator.h"
 
 #include "cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h"
+#include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
 
 void
 schedulingCount(int& counter)
@@ -22,8 +23,9 @@ TEST_CASE("MultiThreaded Test 1")
 	auto tp = std::make_shared<MicroSimulator>();
 	auto sched = std::make_shared<MultiThreadingScheduler>();
 	auto runner = std::make_shared<AggregatableRunner>();
+	auto sigHand = std::make_shared<SignalHandler>();
 	Aggregator::aggregate(
-			{tp, sched, runner});
+			{tp, sched, runner, sigHand});
 
 	CPSLogger::instance()->setLogLevel(LogLevel::ERROR);
 
@@ -46,8 +48,9 @@ TEST_CASE("MultiThreaded Test 2")
 	auto tp = std::make_shared<MicroSimulator>();
 	auto sched = std::make_shared<MultiThreadingScheduler>();
 	auto runner = std::make_shared<AggregatableRunner>();
+	auto sigHand = std::make_shared<SignalHandler>();
 	Aggregator::aggregate(
-			{tp, sched, runner});
+			{tp, sched, runner, sigHand});
 	CPSLogger::instance()->setLogLevel(LogLevel::ERROR);
 
 	int count1 = 0;
@@ -84,9 +87,10 @@ TEST_CASE("MultiThreaded Test 3")
 {
 	auto tp = std::make_shared<MicroSimulator>();
 	auto sched = std::make_shared<MultiThreadingScheduler>();
+	auto sigHand = std::make_shared<SignalHandler>();
 	auto runner = std::make_shared<AggregatableRunner>();
 	Aggregator::aggregate(
-			{tp, sched, runner});
+			{tp, sched, runner,sigHand});
 	CPSLogger::instance()->setLogLevel(LogLevel::ERROR);
 
 	int count1 = 0;
@@ -127,9 +131,10 @@ TEST_CASE("MultiThreaded Test 4")
 {
 	auto tp = std::make_shared<MicroSimulator>();
 	auto sched = std::make_shared<MultiThreadingScheduler>();
+	auto sigHand = std::make_shared<SignalHandler>();
 	auto runner = std::make_shared<AggregatableRunner>();
 	Aggregator::aggregate(
-			{tp, sched, runner});
+			{tp, sched, runner, sigHand});
 	CPSLogger::instance()->setLogLevel(LogLevel::ERROR);
 
 	int count1 = 0;

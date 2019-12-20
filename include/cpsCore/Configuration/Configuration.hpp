@@ -10,7 +10,7 @@
 
 #ifdef NO_RTTI
 
-#include "uavAP/Core/PropertyMapper/EmptyConfiguration.h"
+#include "cpsCore/Configuration/EmptyConfiguration.h"
 
 using Configuration = EmptyConfiguration;
 using ConfigurationError = int;

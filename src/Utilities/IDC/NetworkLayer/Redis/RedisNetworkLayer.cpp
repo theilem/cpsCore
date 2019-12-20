@@ -11,48 +11,6 @@
 #include "cpsCore/Configuration/PropertyMapper.hpp"
 #include "cpsCore/Utilities/Scheduler/IScheduler.h"
 
-
-std::shared_ptr<RedisNetworkLayer>
-RedisNetworkLayer::create(const Configuration& config)
-{
-	auto rnl = std::make_shared<RedisNetworkLayer>();
-	rnl->configure(config);
-	return rnl;
-}
-
-bool
-RedisNetworkLayer::configure(const Configuration& config)
-{
-	PropertyMapper<Configuration> pm(config);
-
-	Configuration sub;
-	pm.add("sub", sub, false);
-
-	for (const auto& it : sub)
-	{
-		RedisChannelParams params;
-		if (!params.configure(it.second))
-			return false;
-
-		subscribers_.emplace(it.first, std::make_shared<RedisSubscriber>(params));
-	}
-
-	Configuration pub;
-	pm.add("pub", pub, false);
-
-	for (const auto& it : pub)
-	{
-		RedisChannelParams params;
-		if (!params.configure(it.second))
-			return false;
-
-		publishers_.emplace(it.first, std::make_shared<RedisPublisher>(params));
-	}
-
-	return pm.map();
-
-}
-
 bool
 RedisNetworkLayer::sendPacket(const std::string& id, const Packet& packet)
 {
@@ -91,6 +49,17 @@ RedisNetworkLayer::run(RunStage stage)
 			CPSLOG_ERROR << "RedisNetworkLayer scheduler missing";
 			return true;
 		}
+
+		for (const auto& it : params.sub())
+		{
+			subscribers_.emplace(it.channel(), std::make_shared<RedisSubscriber>(it));
+		}
+		for (const auto& it : params.pub())
+		{
+			publishers_.emplace(it.channel(), std::make_shared<RedisPublisher>(it));
+		}
+
+
 		break;
 	}
 	case RunStage::NORMAL:

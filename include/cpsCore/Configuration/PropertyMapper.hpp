@@ -16,6 +16,7 @@
 #include "cpsCore/Configuration/Parameter.hpp"
 #include "cpsCore/Utilities/Optional.hpp"
 #include "cpsCore/Configuration/ParameterRef.hpp"
+#include "cpsCore/Configuration/TypeTraits.hpp"
 #include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Utilities/Angle.hpp"
 #include "cpsCore/Utilities/EnumMap.hpp"
@@ -32,31 +33,31 @@ public:
 	template<typename PODType>
 	bool
 	add(const std::string& key,
-			typename std::enable_if<std::is_pod<PODType>::value, PODType>::type& val,
-			bool mandatory);
+		typename std::enable_if<std::is_pod<PODType>::value, PODType>::type& val,
+		bool mandatory);
 
 	template<typename Type>
 	bool
 	add(const std::string& key, typename std::enable_if<!std::is_pod<Type>::value, Type>::type& val,
-			bool mandatory);
+		bool mandatory);
 
 	template<typename T>
 	bool
 	addVector(const std::string& key,
-			std::vector<enable_if_is_parameter_set<typename T::value_type>>& val, bool mandatory);
+			  std::vector<enable_if_is_parameter_set<typename T::value_type>>& val, bool mandatory);
 
 	template<typename T>
 	bool
 	addVector(const std::string& key,
-			std::vector<enable_if_not_is_parameter_set<typename T::value_type>>& val,
-			bool mandatory);
+			  std::vector<enable_if_not_is_parameter_set<typename T::value_type>>& val,
+			  bool mandatory);
 
 //	template<typename T>
 //	bool
 //	addVector(const std::string& key, std::vector<T>& val, bool mandatory);
 
 	bool
-	addVector(const std::string&key, std::vector<Configuration>& val, bool mandatory);
+	addVector(const std::string& key, std::vector<Configuration>& val, bool mandatory);
 
 	bool
 	add(const std::string& key, Duration& val, bool mandatory);
@@ -94,17 +95,17 @@ public:
 	addEnumVector(const std::string& key, std::vector<Enum>& e, bool mandatory);
 
 	template<typename Param>
-	typename std::enable_if<
-			!(is_parameter_set<typename Param::ValueType>::value
-					|| is_parameter_set_ref<typename Param::ValueType>::value), bool>::type
-	operator&(Param& param);
-
-	template<typename Param>
 	typename std::enable_if<is_parameter_set<typename Param::ValueType>::value, bool>::type
 	operator&(Param& param);
 
 	template<typename Param>
 	typename std::enable_if<is_parameter_set_ref<typename Param::ValueType>::value, bool>::type
+	operator&(Param& param);
+
+	template<typename Param>
+	std::enable_if_t<
+			!is_parameter_set<typename Param::ValueType>::value
+			&& !is_parameter_set_ref<typename Param::ValueType>::value, bool>
 	operator&(Param& param);
 
 	bool
@@ -125,10 +126,13 @@ private:
 	template<typename Type>
 	struct is_special_param
 	{
-		template<typename _1> static char
+		template<typename _1>
+		static char
 		chk(
 				decltype(std::declval<PropertyMapper<Configuration>>().add(std::string(), std::declval<_1&>(), true)));
-		template<typename > static int
+
+		template<typename>
+		static int
 		chk(...);
 
 		static constexpr bool value = sizeof(chk<Type>(0)) == sizeof(char);
@@ -137,18 +141,18 @@ private:
 	template<typename Type>
 	bool
 	addSpecific(const std::string& key,
-			typename std::enable_if<is_special_param<Type>::value, Type>::type& val,
-			bool mandatory);
+				typename std::enable_if<is_special_param<Type>::value, Type>::type& val,
+				bool mandatory);
 
 	template<typename Type>
 	bool
 	addSpecific(const std::string& key,
-			typename std::enable_if<std::is_enum<Type>::value, Type>::type& val, bool mandatory);
+				typename std::enable_if<std::is_enum<Type>::value, Type>::type& val, bool mandatory);
 
 	template<typename Type>
 	bool
 	addSpecific(const std::string& key,
-			typename std::enable_if<is_angle<Type>::value, Type>::type& val, bool mandatory);
+				typename std::enable_if<is_angle<Type>::value, Type>::type& val, bool mandatory);
 
 	template<typename Type>
 	bool
@@ -157,10 +161,10 @@ private:
 	template<typename Type>
 	bool
 	addSpecific(const std::string& key,
-			typename std::enable_if<
-					!is_special_param<Type>::value && !std::is_enum<Type>::value
-							&& !is_vector<Type>::value && !is_angle<Type>::value, Type>::type& val,
-			bool mandatory);
+				typename std::enable_if<
+						!is_special_param<Type>::value && !std::is_enum<Type>::value
+						&& !is_vector<Type>::value && !is_angle<Type>::value, Type>::type& val,
+				bool mandatory);
 
 };
 
@@ -168,7 +172,7 @@ template<typename Config>
 template<typename PODType>
 inline bool
 PropertyMapper<Config>::add(const std::string& key,
-		typename std::enable_if<std::is_pod<PODType>::value, PODType>::type& val, bool mandatory)
+							typename std::enable_if<std::is_pod<PODType>::value, PODType>::type& val, bool mandatory)
 {
 	auto value = p_.template get_optional<PODType>(key);
 	if (value)
@@ -189,7 +193,7 @@ template<typename Config>
 template<typename Type>
 inline bool
 PropertyMapper<Config>::add(const std::string& key,
-		typename std::enable_if<!std::is_pod<Type>::value, Type>::type& val, bool mandatory)
+							typename std::enable_if<!std::is_pod<Type>::value, Type>::type& val, bool mandatory)
 {
 	if (key.empty())
 	{
@@ -221,7 +225,7 @@ template<typename Config>
 template<typename T>
 inline bool
 PropertyMapper<Config>::addVector(const std::string& key,
-		std::vector<enable_if_is_parameter_set<typename T::value_type>>& val, bool mandatory)
+								  std::vector<enable_if_is_parameter_set<typename T::value_type>>& val, bool mandatory)
 {
 	val.clear();
 	boost::optional<const Config&> value;
@@ -252,7 +256,8 @@ template<typename Config>
 template<typename T>
 inline bool
 PropertyMapper<Config>::addVector(const std::string& key,
-		std::vector<enable_if_not_is_parameter_set<typename T::value_type>>& val, bool mandatory)
+								  std::vector<enable_if_not_is_parameter_set<typename T::value_type>>& val,
+								  bool mandatory)
 {
 	val.clear();
 	boost::optional<const Config&> value;
@@ -281,7 +286,7 @@ template<typename Config>
 template<typename Type>
 inline bool
 PropertyMapper<Config>::add(const std::string& key, Eigen::Matrix<Type, Eigen::Dynamic, 1>& val,
-		bool mandatory)
+							bool mandatory)
 {
 	auto value = p_.get_child_optional(key);
 	if (value)
@@ -308,10 +313,10 @@ template<typename Config>
 template<typename Type>
 inline bool
 PropertyMapper<Config>::add(const std::string& key, Eigen::Array<Type, Eigen::Dynamic, 1>& val,
-		bool mandatory)
+							bool mandatory)
 {
 	val =
-	{};
+			{};
 	auto value = p_.get_child_optional(key);
 	if (value)
 	{
@@ -562,10 +567,10 @@ PropertyMapper<Config>::isEmpty() const
 
 template<typename Config>
 template<typename Param>
-inline typename std::enable_if<
-		!(is_parameter_set<typename Param::ValueType>::value
-				|| is_parameter_set_ref<typename Param::ValueType>::value), bool>::type
-PropertyMapper<Config>::operator &(Param& param)
+std::enable_if_t<
+		!is_parameter_set<typename Param::ValueType>::value
+		&& !is_parameter_set_ref<typename Param::ValueType>::value, bool>
+PropertyMapper<Config>::operator&(Param& param)
 {
 	return addSpecific<typename Param::ValueType>(param.id, param.value, param.mandatory);
 }
@@ -573,7 +578,7 @@ PropertyMapper<Config>::operator &(Param& param)
 template<typename Config>
 template<typename Param>
 inline typename std::enable_if<is_parameter_set<typename Param::ValueType>::value, bool>::type
-PropertyMapper<Config>::operator &(Param& param)
+PropertyMapper<Config>::operator&(Param& param)
 {
 	auto pm = getChild(param.id, param.mandatory);
 	if (!pm.isEmpty())
@@ -587,7 +592,7 @@ PropertyMapper<Config>::operator &(Param& param)
 template<typename Config>
 template<typename Param>
 inline typename std::enable_if<is_parameter_set_ref<typename Param::ValueType>::value, bool>::type
-PropertyMapper<Config>::operator &(Param& param)
+PropertyMapper<Config>::operator&(Param& param)
 {
 	auto pm = getChild(param.id, param.mandatory);
 	if (!pm.isEmpty())
@@ -602,7 +607,8 @@ template<typename Config>
 template<typename Type>
 bool
 PropertyMapper<Config>::addSpecific(const std::string& key,
-		typename std::enable_if<is_special_param<Type>::value, Type>::type& val, bool mandatory)
+									typename std::enable_if<is_special_param<Type>::value, Type>::type& val,
+									bool mandatory)
 {
 	return add(key, val, mandatory);
 }
@@ -611,7 +617,7 @@ template<typename Config>
 template<typename Type>
 bool
 PropertyMapper<Config>::addSpecific(const std::string& key,
-		typename std::enable_if<std::is_enum<Type>::value, Type>::type& val, bool mandatory)
+									typename std::enable_if<std::is_enum<Type>::value, Type>::type& val, bool mandatory)
 {
 	return addEnum(key, val, mandatory);
 }
@@ -620,7 +626,7 @@ template<typename Config>
 template<typename Type>
 bool
 PropertyMapper<Config>::addSpecific(const std::string& key, enable_if_is_vector<Type>& val,
-		bool mandatory)
+									bool mandatory)
 {
 	return addVector<Type>(key, val, mandatory);
 }
@@ -629,7 +635,7 @@ template<typename Config>
 template<typename Type>
 bool
 PropertyMapper<Config>::addSpecific(const std::string& key,
-		typename std::enable_if<is_angle<Type>::value, Type>::type& val, bool mandatory)
+									typename std::enable_if<is_angle<Type>::value, Type>::type& val, bool mandatory)
 {
 	return addAngle<typename Type::ValueType>(key, val, mandatory);
 }
@@ -638,10 +644,10 @@ template<typename Config>
 template<typename Type>
 bool
 PropertyMapper<Config>::addSpecific(const std::string& key,
-		typename std::enable_if<
-				!is_special_param<Type>::value && !std::is_enum<Type>::value
-						&& !is_vector<Type>::value && !is_angle<Type>::value, Type>::type& val,
-		bool mandatory)
+									typename std::enable_if<
+											!is_special_param<Type>::value && !std::is_enum<Type>::value
+											&& !is_vector<Type>::value && !is_angle<Type>::value, Type>::type& val,
+									bool mandatory)
 {
 	return add<Type>(key, val, mandatory);
 }

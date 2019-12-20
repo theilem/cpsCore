@@ -9,24 +9,24 @@
 #define UAVAP_CORE_IDC_NETWORKLAYER_REDIS_REDISCHANNELPARAMS_H_
 #include "cpsCore/Configuration/Configuration.hpp"
 #include <string>
+#include "cpsCore/Configuration/Parameter.hpp"
 
 struct RedisChannelParams
 {
-	static constexpr const char* const DEFAULT_HOST_IP = "127.0.0.1";
-	std::string hostIP_ = DEFAULT_HOST_IP;
+	Parameter<std::string> hostIP = {"127.0.0.1", "host_ip", false};
+	Parameter<std::string> auth = {"", "auth", false};
+	Parameter<unsigned int> port = {6379, "port", false};
+	Parameter<std::string> channel = {"", "channel", true};
 
-	static constexpr const char* const DEFAULT_AUTH = "";
-	std::string auth_ = DEFAULT_AUTH;
-
-	static constexpr unsigned int DEFAULT_PORT = 6379;
-	unsigned int port_ = DEFAULT_PORT;
-
-	std::string channel_;
-
-	RedisChannelParams() = default;
-
-	bool
-	configure(const Configuration& config);
+	template <typename Config>
+	void
+	configure(Config& config)
+	{
+		config & hostIP;
+		config & auth;
+		config & port;
+		config & channel;
+	}
 };
 
 #endif /* UAVAP_CORE_IDC_NETWORKLAYER_REDIS_REDISCHANNELPARAMS_H_ */

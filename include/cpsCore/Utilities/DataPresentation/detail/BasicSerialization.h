@@ -16,6 +16,7 @@
 
 #include <map>
 #include <vector>
+#include <Eigen/Dense>
 
 class BinaryFromArchive;
 class BinaryToArchive;
@@ -363,6 +364,44 @@ serialize(Archive& ar, typename std::enable_if<is_parameter<Type>::value, Type>:
 template<class Archive, typename Type>
 void
 serialize(Archive& ar, typename std::enable_if<is_parameter_set<Type>::value, Type>::type& val);
+
+
+/**
+ * Eigen Matrix serialization operations
+ */
+
+template<typename T>
+struct is_eigen_mat: public std::false_type
+{
+};
+
+template<typename T>
+struct is_eigen_mat<Eigen::Matrix<T, -1, -1>> : public std::true_type
+{
+};
+
+/**
+ * @brief Load function for any Matrix
+ */
+template<class Archive, typename Type>
+void
+load(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val);
+
+/**
+ * @brief Store function for any Matrix
+ */
+template<class Archive, typename Type>
+void
+store(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val);
+
+/**
+ * @brief Serialize function for any Matrix
+ */
+template<class Archive, typename Type>
+inline void
+serialize(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val);
+
+
 
 
 

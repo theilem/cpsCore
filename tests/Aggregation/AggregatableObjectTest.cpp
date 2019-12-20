@@ -99,20 +99,20 @@ SCENARIO("Checking objects can be Aggregated")
 
 			THEN("TestC Correctly aggregated")
 			{
-				CHECK(testb->isSet<TestA>());
-				CHECK(!testb->isSet<TestB>());
-				CHECK(testb->isSet<TestC>());
-				CHECK(!testb->isSet<TestA, TestB>());
-				CHECK(testb->isSet<TestA, TestC>());
-				CHECK(!testb->isSet<TestB, TestC>());
-				CHECK(!testb->isSet<TestA, TestB, TestC>());
+				CHECK(testc->isSet<TestA>());
+				CHECK(testc->isSet<TestB>());
+				CHECK(!testc->isSet<TestC>());
+				CHECK(testc->isSet<TestA, TestB>());
+				CHECK(!testc->isSet<TestA, TestC>());
+				CHECK(!testc->isSet<TestB, TestC>());
+				CHECK(!testc->isSet<TestA, TestB, TestC>());
 
-				CHECK(testb->checkIsSet<TestA>());
-				CHECK(!testb->checkIsSet<TestB>());
-				CHECK(testb->checkIsSet<TestC>());
-				CHECK(!testb->checkIsSet<TestA, TestB>());
-				CHECK(testb->checkIsSet<TestA, TestC>());
-				CHECK(!testb->checkIsSet<TestB, TestC>());
+				CHECK(testc->checkIsSet<TestA>());
+				CHECK(testc->checkIsSet<TestB>());
+				CHECK(!testc->checkIsSet<TestC>());
+				CHECK(testc->checkIsSet<TestA, TestB>());
+				CHECK(!testc->checkIsSet<TestA, TestC>());
+				CHECK(!testc->checkIsSet<TestB, TestC>());
 			}
 
 			THEN("Values correctly set")

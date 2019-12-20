@@ -26,8 +26,19 @@ public:
 	void
 	add(std::shared_ptr<Type> obj);
 
+	template<class Type>
+	void
+	add(std::vector<std::shared_ptr<Type>> objs);
+
 	void
 	add(std::shared_ptr<IAggregatableObject> obj);
+
+	void
+	add(std::vector<std::shared_ptr<IAggregatableObject>> objs);
+
+	template<class...Types>
+	void
+	add(std::tuple<std::shared_ptr<Types>...> obj);
 
 	void
 	add(const ObjectContainer& obj);
@@ -74,6 +85,16 @@ Aggregator::add(std::shared_ptr<Type> obj)
 }
 
 template<class Type>
+inline void
+Aggregator::add(std::vector<std::shared_ptr<Type>> objs)
+{
+	for (auto it : objs)
+	{
+		add(it);
+	}
+}
+
+template<class Type>
 inline std::shared_ptr<Type>
 Aggregator::getOne(Type* self) const
 {
@@ -85,6 +106,16 @@ inline std::vector<std::shared_ptr<Type> >
 Aggregator::getAll(Type* self) const
 {
 	return container_.template getAll<Type>(self);
+}
+
+template<class... Types>
+void
+Aggregator::add(std::tuple<std::shared_ptr<Types>...> obj)
+{
+
+	std::apply([this](auto...x)
+			   { (this->add(x),...); }, obj);
+
 }
 
 #endif /* UAVAP_CORE_OBJECT_AGGREGATOR_H_ */

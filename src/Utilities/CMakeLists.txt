@@ -32,7 +32,6 @@ set(CORE_SRCS ${CORE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisPublisher.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisSubscriber.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisNetworkLayer.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisChannelParams.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/IDC.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/IDCSender.cpp
 

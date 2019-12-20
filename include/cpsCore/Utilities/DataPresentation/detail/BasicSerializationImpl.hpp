@@ -82,7 +82,7 @@ dp::store(Archive& ar, typename std::enable_if<std::is_enum<EnumType>::value, En
 template<class Archive, class EnumType>
 void
 dp::serialize(Archive& ar,
-		typename std::enable_if<std::is_enum<EnumType>::value, EnumType>::type& val)
+			  typename std::enable_if<std::is_enum<EnumType>::value, EnumType>::type& val)
 {
 	split(ar, val);
 }
@@ -90,9 +90,9 @@ dp::serialize(Archive& ar,
 template<class Archive, typename PODType>
 inline void
 dp::load(Archive& ar,
-		typename std::enable_if<
-				std::is_pod<PODType>::value && !std::is_enum<PODType>::value
-						&& !std::is_base_of<SerializeCustom, PODType>::value, PODType>::type& val)
+		 typename std::enable_if<
+				 std::is_pod<PODType>::value && !std::is_enum<PODType>::value
+				 && !std::is_base_of<SerializeCustom, PODType>::value, PODType>::type& val)
 {
 	load(ar, reinterpret_cast<char*>(&val), sizeof(PODType));
 }
@@ -100,9 +100,9 @@ dp::load(Archive& ar,
 template<class Archive, typename PODType>
 inline void
 dp::store(Archive& ar,
-		typename std::enable_if<
-				std::is_pod<PODType>::value && !std::is_enum<PODType>::value
-						&& !std::is_base_of<SerializeCustom, PODType>::value, PODType>::type& val)
+		  typename std::enable_if<
+				  std::is_pod<PODType>::value && !std::is_enum<PODType>::value
+				  && !std::is_base_of<SerializeCustom, PODType>::value, PODType>::type& val)
 {
 	store(ar, reinterpret_cast<char*>(&val), sizeof(PODType));
 }
@@ -110,9 +110,9 @@ dp::store(Archive& ar,
 template<class Archive, typename PODType>
 inline void
 dp::serialize(Archive& ar,
-		typename std::enable_if<
-				std::is_pod<PODType>::value && !std::is_enum<PODType>::value
-						&& !std::is_base_of<SerializeCustom, PODType>::value, PODType>::type& val)
+			  typename std::enable_if<
+					  std::is_pod<PODType>::value && !std::is_enum<PODType>::value
+					  && !std::is_base_of<SerializeCustom, PODType>::value, PODType>::type& val)
 {
 	split(ar, val);
 }
@@ -250,7 +250,7 @@ dp::serialize(Archive& ar, typename std::enable_if<is_map<Type>::value, Type>::t
 template<class Archive, typename Type>
 inline void
 dp::load(Archive& ar,
-		typename std::enable_if<std::is_same<Type, std::string>::value, Type>::type& val)
+		 typename std::enable_if<std::is_same<Type, std::string>::value, Type>::type& val)
 {
 	uint16_t size;
 	ar >> size;
@@ -261,7 +261,7 @@ dp::load(Archive& ar,
 template<class Archive, typename Type>
 inline void
 dp::store(Archive& ar,
-		typename std::enable_if<std::is_same<Type, std::string>::value, Type>::type& val)
+		  typename std::enable_if<std::is_same<Type, std::string>::value, Type>::type& val)
 {
 	ar << static_cast<uint16_t>(val.size());
 	ar.append(val.c_str(), val.size());
@@ -270,7 +270,7 @@ dp::store(Archive& ar,
 template<class Archive, typename Type>
 inline void
 dp::serialize(Archive& ar,
-		typename std::enable_if<std::is_same<Type, std::string>::value, Type>::type& val)
+			  typename std::enable_if<std::is_same<Type, std::string>::value, Type>::type& val)
 {
 	split(ar, val);
 }
@@ -297,5 +297,35 @@ dp::serialize(Archive& ar, typename std::enable_if<is_parameter_set<Type>::value
 	val.configure(ar);
 }
 
+template<class Archive, typename Type>
+void
+dp::load(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val)
+{
+	Eigen::Index rows(1);
+	Eigen::Index cols(1);
+	ar & rows;
+	ar & cols;
+	val.resize(rows, cols);
+
+	ar.read(reinterpret_cast<char*>(val.data()), val.size() * sizeof(typename Type::Base::Scalar));
+}
+
+template<class Archive, typename Type>
+void
+dp::store(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val)
+{
+	Eigen::Index rows = val.rows();
+	Eigen::Index cols = val.cols();
+	ar & rows;
+	ar & cols;
+	ar.append(reinterpret_cast<char*>(val.data()), val.size() * sizeof(typename Type::Base::Scalar));
+}
+
+template<class Archive, typename Type>
+inline void
+dp::serialize(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val)
+{
+	split(ar, val);
+}
 
 #endif /* UAVAP_CORE_DATAPRESENTATION_APDATAPRESENTATION_DETAIL_BASICSERIALIZATIONIMPL_HPP_ */

@@ -118,3 +118,25 @@ TEST_CASE("Test Int Arrays")
 	CHECK(test[3] == testRead[3]);
 }
 
+
+
+TEST_CASE("Test Eigen Matrix")
+{
+	Eigen::Matrix<int, -1, -1> mat = Eigen::Matrix<int, -1, -1>::Random(7,3);
+
+	DataPresentation dp;
+	Packet packet = dp.serialize(mat);
+
+	auto matRes = dp.deserialize<Eigen::Matrix<int, -1, -1>>(packet);
+
+	CHECK(matRes == mat);
+
+	Eigen::Matrix<float, -1, -1> matFloat = Eigen::Matrix<float, -1, -1>::Random(31,27);
+
+	Packet packetFloat = dp.serialize(matFloat);
+
+	auto matFloatRes = dp.deserialize<Eigen::Matrix<float, -1, -1>>(packetFloat);
+
+	CHECK(matFloat == matFloatRes);
+}
+

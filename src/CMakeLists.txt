@@ -9,6 +9,14 @@ add_subdirectory(Utilities)
 
 add_library(cps_core SHARED ${CORE_SRCS})
 
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_definitions(cps_core PRIVATE NODEBUG)
+    message("Compiling with NODEBUG")
+else ()
+
+endif ()
+
+
 target_link_libraries(cps_core
         ${SYSTEM_LIBS}
         Eigen3::Eigen

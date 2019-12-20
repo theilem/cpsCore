@@ -1,30 +1,21 @@
 /**
  * @file IDCFactory.h
  * @brief Defines the IDCFactory
- * @date Jul 31, 2017
+ * @date 14. Dec 2019
  * @author Mirco Theile, mirco.theile@tum.de
  */
 
 #ifndef UAVAP_CORE_IDC_NETWORKFACTORY_H_
 #define UAVAP_CORE_IDC_NETWORKFACTORY_H_
 
-#include "cpsCore/Utilities/IDC/NetworkLayer/Redis/RedisNetworkLayer.h"
+#include "cpsCore/Framework/StaticFactory.h"
 #include "cpsCore/Utilities/IDC/NetworkLayer/INetworkLayer.h"
+#include "cpsCore/Utilities/IDC/NetworkLayer/Redis/RedisNetworkLayer.h"
 #include "cpsCore/Utilities/IDC/NetworkLayer/Serial/SerialNetworkLayer.h"
-#include "cpsCore/Framework/Factory.h"
 
 /**
- * @brief Factory for IInterDeviceComm objects. Default creates SerialIDC
+ * @brief Factory for IInterDeviceComm objects.
  */
-class NetworkFactory: public Factory<INetworkLayer>
-{
-public:
-	NetworkFactory()
-	{
-		addCreator<SerialNetworkLayer>();
-		addCreator<RedisNetworkLayer>();
-	}
-
-};
+using NetworkFactory = StaticFactory<INetworkLayer, true, SerialNetworkLayer, RedisNetworkLayer>;
 
 #endif /* UAVAP_CORE_IDC_NETWORKFACTORY_H_ */

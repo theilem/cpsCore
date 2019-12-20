@@ -10,9 +10,9 @@
 #include "cpsCore/Utilities/Time.hpp"
 
 RedisPublisher::RedisPublisher(const RedisChannelParams& params) :
-		channel_(params.channel_), auth_(params.auth_)
+		channel_(params.channel()), auth_(params.auth())
 {
-	client_.connect(params.hostIP_, params.port_,
+	client_.connect(params.hostIP(), params.port(),
 			std::bind(&RedisPublisher::onConnectionEvent, this, std::placeholders::_1,
 					std::placeholders::_2, std::placeholders::_3));
 

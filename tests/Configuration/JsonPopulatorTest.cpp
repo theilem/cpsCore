@@ -5,7 +5,7 @@
  *      Author: mirco
  */
 
-#include "TestInfo.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
 #include <cpsCore/Configuration/ConfigurableObject.hpp>
 #include <cpsCore/Configuration/JsonPopulator.h>
 #include <fstream>

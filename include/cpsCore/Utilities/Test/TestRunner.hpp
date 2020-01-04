@@ -7,7 +7,7 @@
 
 #define CATCH_CONFIG_RUNNER
 
-#include "TestInfo.h"
+#include "cpsCore/Utilities/Test/TestInfo.h"
 
 int
 main(int argc, char** argv)

@@ -4,7 +4,7 @@
 
 
 #include <cpsCore/Aggregation/AggregatableObject.hpp>
-#include "TestInfo.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
 
 namespace
 {

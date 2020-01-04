@@ -5,7 +5,7 @@
  *      Author: mircot
  */
 
-#include "TestInfo.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
 
 #include <cpsCore/Aggregation/AggregatableObject.hpp>
 #include <cpsCore/Synchronization/SynchronizedRunner.h>

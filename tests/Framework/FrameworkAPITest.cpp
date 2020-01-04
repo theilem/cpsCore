@@ -5,13 +5,13 @@
  *      Author: mirco
  */
 
-#include "TestInfo.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
 
-#include "cpsCore/Framework/api/FrameworkAPI.h"
-#include "cpsCore/Framework/StaticHelper.h"
-#include "cpsCore/Utilities/IDC/NetworkLayer/NetworkFactory.h"
-#include "cpsCore/Utilities/Scheduler/IScheduler.h"
-#include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
+#include <cpsCore/Framework/api/FrameworkAPI.h>
+#include <cpsCore/Framework/StaticHelper.h>
+#include <cpsCore/Utilities/IDC/NetworkLayer/NetworkFactory.h>
+#include <cpsCore/Utilities/Scheduler/IScheduler.h>
+#include <cpsCore/Utilities/SignalHandler/SignalHandler.h>
 
 namespace
 {

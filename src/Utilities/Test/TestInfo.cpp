@@ -5,7 +5,7 @@
  * @brief
  */
 #include <cpsCore/Logging/CPSLogger.h>
-#include "TestInfo.h"
+#include "cpsCore/Utilities/Test/TestInfo.h"
 
 void
 TestInfo::initialize(int argc, char** argv)

@@ -5,7 +5,7 @@
  *      Author: mircot
  */
 
-#include "TestInfo.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
 #include <boost/property_tree/json_parser.hpp>
 #include <cpsCore/Configuration/Configuration.hpp>
 #include <cpsCore/Configuration/PropertyMapper.hpp>

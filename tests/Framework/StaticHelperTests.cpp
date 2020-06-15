@@ -3,10 +3,10 @@
 //
 
 #include <cpsCore/Utilities/TimeProvider/SystemTimeProvider.h>
-#include "cpsCore/Utilities/Scheduler/MicroSimulator.h"
-#include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
-#include "TestInfo.h"
-#include "cpsCore/Framework/StaticHelper.h"
+#include <cpsCore/Utilities/Scheduler/MicroSimulator.h>
+#include <cpsCore/Utilities/SignalHandler/SignalHandler.h>
+#include <cpsCore/Utilities/Test/TestInfo.h>
+#include <cpsCore/Framework/StaticHelper.h>
 
 
 

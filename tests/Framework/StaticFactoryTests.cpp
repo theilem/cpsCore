@@ -2,13 +2,13 @@
 // Created by mirco on 26.11.19.
 //
 
-#include "cpsCore/Utilities/TimeProvider/SystemTimeProvider.h"
-#include "cpsCore/Utilities/Scheduler/MicroSimulator.h"
-#include "cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h"
-#include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
-#include "cpsCore/Framework/StaticHelper.h"
-#include "cpsCore/Framework/StaticFactory.h"
-#include "TestInfo.h"
+#include <cpsCore/Utilities/TimeProvider/SystemTimeProvider.h>
+#include <cpsCore/Utilities/Scheduler/MicroSimulator.h>
+#include <cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h>
+#include <cpsCore/Utilities/SignalHandler/SignalHandler.h>
+#include <cpsCore/Framework/StaticHelper.h>
+#include <cpsCore/Framework/StaticFactory.h>
+#include <cpsCore/Utilities/Test/TestInfo.h>
 
 
 TEST_CASE("Single Type Static Factory")

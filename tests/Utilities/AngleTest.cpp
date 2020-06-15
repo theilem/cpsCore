@@ -4,9 +4,8 @@
  *  Created on: Oct 11, 2019
  *      Author: mirco
  */
-#include "TestInfo.h"
-
-#include "cpsCore/Utilities/Angle.hpp"
+#include <cpsCore/Utilities/Test/TestInfo.h>
+#include <cpsCore/Utilities/Angle.hpp>
 
 
 TEST_CASE("Angle Test")

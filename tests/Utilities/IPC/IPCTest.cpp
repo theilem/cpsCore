@@ -7,11 +7,11 @@
 
 
 #include <cpsCore/Utilities/Scheduler/MicroSimulator.h>
-#include "cpsCore/Synchronization/SimpleRunner.h"
-#include "cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h"
-#include "cpsCore/Utilities/TimeProvider/SystemTimeProvider.h"
+#include <cpsCore/Synchronization/SimpleRunner.h>
+#include <cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h>
+#include <cpsCore/Utilities/TimeProvider/SystemTimeProvider.h>
 
-#include "TestInfo.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
 #include <functional>
 
 struct Test

@@ -42,5 +42,7 @@ set(CORE_SRCS ${CORE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/File/FileToArchive.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/BasicSerialization.cpp
 
-        PARENT_SCOPE)
+        #Test
+        ${CMAKE_CURRENT_SOURCE_DIR}/Test/TestInfo.cpp
 
+        PARENT_SCOPE)

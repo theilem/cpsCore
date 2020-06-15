@@ -5,7 +5,7 @@
  *      Author: mirco
  */
 #include <cpsCore/Configuration/ConfigurableObject.hpp>
-#include "TestInfo.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
 
 namespace
 {

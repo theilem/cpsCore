@@ -1,5 +1,4 @@
-set(TEST_SRCS TestRunner.cpp
-        TestInfo.cpp)
+set(TEST_SRCS Test.cpp)
 
 add_subdirectory(Aggregation)
 add_subdirectory(Configuration)

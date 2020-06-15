@@ -5,12 +5,12 @@
  *      Author: mircot
  */
 
-#include "TestInfo.h"
-#include "cpsCore/Synchronization/AggregatableRunner.h"
-#include "cpsCore/Utilities/Scheduler/MicroSimulator.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
+#include <cpsCore/Synchronization/AggregatableRunner.h>
+#include <cpsCore/Utilities/Scheduler/MicroSimulator.h>
 
-#include "cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h"
-#include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
+#include <cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h>
+#include <cpsCore/Utilities/SignalHandler/SignalHandler.h>
 
 void
 schedulingCount(int& counter)

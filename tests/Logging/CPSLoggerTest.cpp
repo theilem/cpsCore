@@ -5,9 +5,9 @@
  *      Author: mircot
  */
 
-#include "TestInfo.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
 
-#include "cpsCore/Logging/CPSLogger.h"
+#include <cpsCore/Logging/CPSLogger.h>
 
 #include <sstream>
 #include <iostream>

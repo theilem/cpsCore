@@ -5,12 +5,12 @@
  *      Author: mircot
  */
 
-#include "TestInfo.h"
+#include <cpsCore/Utilities/Test/TestInfo.h>
 
 #include <fstream>
 
-#include "cpsCore/Utilities/DataPresentation/BinarySerialization.hpp"
-#include "cpsCore/Utilities/DataPresentation/DataPresentation.h"
+#include <cpsCore/Utilities/DataPresentation/BinarySerialization.hpp>
+#include <cpsCore/Utilities/DataPresentation/DataPresentation.h>
 
 namespace
 {

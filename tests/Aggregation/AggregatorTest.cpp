@@ -2,11 +2,11 @@
 // Created by mirco on 26.11.19.
 //
 
-#include "cpsCore/Utilities/TimeProvider/SystemTimeProvider.h"
-#include "cpsCore/Utilities/Scheduler/MicroSimulator.h"
-#include "cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h"
-#include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
-#include "TestInfo.h"
+#include <cpsCore/Utilities/TimeProvider/SystemTimeProvider.h>
+#include <cpsCore/Utilities/Scheduler/MicroSimulator.h>
+#include <cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h>
+#include <cpsCore/Utilities/SignalHandler/SignalHandler.h>
+#include <cpsCore/Utilities/Test/TestInfo.h>
 
 
 TEST_CASE("Aggregator tuple add")

@@ -13,6 +13,7 @@
 #include "cpsCore/Utilities/Optional.hpp"
 #include "cpsCore/Configuration/Parameter.hpp"
 #include "cpsCore/Utilities/DataPresentation/detail/SerializeCustom.h"
+#include "cpsCore/Utilities/DataPresentation/detail/Split.h"
 
 #include <map>
 #include <vector>
@@ -61,54 +62,54 @@ load(FileFromArchive& ar, char* val, unsigned long bytes);
  */
 void
 store(FileToArchive& ar, char* val, unsigned long bytes);
-
-/**
- * @brief General split functionality for loading
- * @param ar From archive
- * @param val any value to be loaded differently than it is stored
- */
-template<class Type>
-void
-split(BinaryFromArchive& ar, Type& val);
-
-/**
- * @brief General split functionality for storing
- * @param ar To archive
- * @param val any value to be stored differently than it is loaded
- */
-template<class Type>
-void
-split(BinaryToArchive& ar, Type& val);
-
-/**
- * @brief General split functionality for loading
- * @param ar From archive
- * @param val any value to be loaded differently than it is stored
- */
-template<class Type>
-void
-split(FileFromArchive& ar, Type& val);
-
-/**
- * @brief General split functionality for storing
- * @param ar To archive
- * @param val any value to be stored differently than it is loaded
- */
-template<class Type>
-void
-split(FileToArchive& ar, Type& val);
-
-void
-split(BinaryFromArchive& ar, char* val, std::size_t size);
-
-void
-split(BinaryToArchive& ar, char* val, std::size_t size);
-
-void
-split(FileFromArchive& ar, char* val, std::size_t size);
-
-void
-split(FileToArchive& ar, char* val, std::size_t size);
+//
+///**
+// * @brief General split functionality for loading
+// * @param ar From archive
+// * @param val any value to be loaded differently than it is stored
+// */
+//template<class Type>
+//void
+//split(BinaryFromArchive& ar, Type& val);
+//
+///**
+// * @brief General split functionality for storing
+// * @param ar To archive
+// * @param val any value to be stored differently than it is loaded
+// */
+//template<class Type>
+//void
+//split(BinaryToArchive& ar, Type& val);
+//
+///**
+// * @brief General split functionality for loading
+// * @param ar From archive
+// * @param val any value to be loaded differently than it is stored
+// */
+//template<class Type>
+//void
+//split(FileFromArchive& ar, Type& val);
+//
+///**
+// * @brief General split functionality for storing
+// * @param ar To archive
+// * @param val any value to be stored differently than it is loaded
+// */
+//template<class Type>
+//void
+//split(FileToArchive& ar, Type& val);
+//
+//void
+//split(BinaryFromArchive& ar, char* val, std::size_t size);
+//
+//void
+//split(BinaryToArchive& ar, char* val, std::size_t size);
+//
+//void
+//split(FileFromArchive& ar, char* val, std::size_t size);
+//
+//void
+//split(FileToArchive& ar, char* val, std::size_t size);
 
 template<class Archive>
 void

@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <cpsCore/Utilities/DataPresentation/detail/Split.h>
 
 //using Clock = std::chrono::high_resolution_clock;
 using Clock = std::chrono::system_clock;

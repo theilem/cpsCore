@@ -12,6 +12,7 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <cpsCore/Utilities/DataPresentation/detail/Split.h>
 
 
 #ifdef FLOAT_SINGLE

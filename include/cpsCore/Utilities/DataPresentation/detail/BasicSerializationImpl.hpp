@@ -199,7 +199,7 @@ template<class Archive, typename Type>
 inline void
 dp::store(Archive& ar, typename std::enable_if<isOptional<Type>::value, Type>::type& val)
 {
-	ar << val.is_initialized();
+	ar << val.has_value();
 	if (val)
 	{
 		ar << *val;

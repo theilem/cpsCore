@@ -11,13 +11,13 @@
 #include <boost/asio.hpp>
 #include <boost/signals2.hpp>
 #include "cpsCore/Utilities/Packet.h"
-#include "cpsCore/Utilities/IDC/NetworkLayer/Serial/SerialNetworkParams.h"
+#include "cpsCore/Utilities/IDC/NetworkLayer/Serial/SerialHandlerParams.h"
 
 class SerialHandler
 {
 public:
 
-	SerialHandler(const SerialNetworkParams& params);
+	SerialHandler(const SerialHandlerParams& params);
 
 	~SerialHandler();
 

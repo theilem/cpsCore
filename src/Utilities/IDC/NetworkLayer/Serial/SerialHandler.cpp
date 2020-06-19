@@ -8,15 +8,15 @@
 #include "cpsCore/Utilities/IDC/NetworkLayer/Serial/SerialHandler.h"
 #include "cpsCore/Utilities/DataPresentation/BinarySerialization.hpp"
 
-SerialHandler::SerialHandler(const SerialNetworkParams& params) :
-		io_(), serial_(io_, params.serialPort), delim_(
-				params.delimiterString[params.delimiterString.size() - 1]), delimString_(
-				params.delimiterString), useCRC_(params.useCRC), direction_(params.direction), sendBlocking_(
-				params.sendBlocking), handlerCanceled_(false)
+SerialHandler::SerialHandler(const SerialHandlerParams& params) :
+		io_(), serial_(io_, params.serialPort()), delim_(
+				params.delimiterString()[params.delimiterString().size() - 1]), delimString_(
+				params.delimiterString()), useCRC_(params.useCRC()), direction_(params.direction()), sendBlocking_(
+				params.sendBlocking()), handlerCanceled_(false)
 {
-	serial_.set_option(boost::asio::serial_port_base::baud_rate(params.baudRate));
-	if (params.flowControl)
-		serial_.set_option(boost::asio::serial_port_base::flow_control(*params.flowControl));
+	serial_.set_option(boost::asio::serial_port_base::baud_rate(params.baudRate()));
+	if (params.flowControl() != boost::asio::serial_port_base::flow_control::none)
+		serial_.set_option(boost::asio::serial_port_base::flow_control(params.flowControl()));
 
 	if (::tcflush(serial_.lowest_layer().native_handle(), TCIFLUSH) != 0)
 	{

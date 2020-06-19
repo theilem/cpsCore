@@ -93,7 +93,6 @@ private:
 	handleParams();
 
 
-
 	template<class Obj>
 	bool
 	populateImplBoolRet();
@@ -214,7 +213,7 @@ template<typename Type>
 inline std::enable_if_t<std::is_enum<Type>::value, JsonPopulator>&
 JsonPopulator::writeValue(const Type& value)
 {
-	jsonString_ << EnumMap<Type>::convert(value);
+	jsonString_ << "\"" << EnumMap<Type>::convert(value) << "\"";
 	return *this;
 }
 
@@ -379,7 +378,6 @@ JsonPopulator::populateImplBoolRet()
 }
 
 
-
 template<class Container>
 int
 JsonPopulator::fromMain(int argc, char** argv)
@@ -402,7 +400,6 @@ JsonPopulator::fromMain(int argc, char** argv)
 }
 
 
-
 template<class Obj, std::enable_if_t<
 		has_configure_params<Obj>::value, int>>
 void
@@ -411,7 +408,6 @@ JsonPopulator::handleParams()
 	Obj obj;
 	obj.configureParams(*this);
 }
-
 
 
 template<class Obj, std::enable_if_t<

@@ -12,11 +12,10 @@
 #include <boost/asio.hpp>
 #include <boost/signals2/signal.hpp>
 
-#include "cpsCore/Aggregation/AggregatableObject.hpp"
-#include "cpsCore/Configuration/Configuration.hpp"
-#include "cpsCore/Synchronization/IRunnableObject.h"
+#include <cpsCore/cps_object>
 #include "cpsCore/Utilities/IDC/NetworkLayer/Serial/SerialHandler.h"
 #include "cpsCore/Utilities/IDC/NetworkLayer/INetworkLayer.h"
+#include "SerialNetworkLayerParams.h"
 
 class IScheduler;
 class SignalHandler;
@@ -26,6 +25,7 @@ class SignalHandler;
  */
 class SerialNetworkLayer: public INetworkLayer,
 		public AggregatableObject<IScheduler, SignalHandler>,
+		public ConfigurableObject<SerialNetworkLayerParams>,
 		public IRunnableObject
 {
 
@@ -34,17 +34,6 @@ public:
 	static constexpr TypeId typeId = "serial";
 
 	~SerialNetworkLayer();
-
-	/**
-	 * @brief Create the SerialIDC using a config tree
-	 * @param config Configuration tree
-	 * @return IInterDeviceComm ptr of a SerialIDC
-	 */
-	static std::shared_ptr<INetworkLayer>
-	create(const Configuration& config);
-
-	bool
-	configure(const Configuration& config);
 
 	bool
 	sendPacket(const std::string& id, const Packet& packet) override;

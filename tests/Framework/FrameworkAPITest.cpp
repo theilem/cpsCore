@@ -27,9 +27,8 @@ TEST_CASE("locking")
 
 TEST_CASE("Aggregation Merge")
 {
-	TestHelper helper;
 	{
-		Aggregator agg = helper.createAggregation(test_info::test_dir() + "Utilities/config/agg1.json");
+		Aggregator agg = TestHelper::createAggregation(test_info::test_dir() + "Utilities/config/agg1.json");
 		auto lock = FrameworkAPI::lockAggregator();
 		auto globalAgg = FrameworkAPI::getAggregator();
 		globalAgg->merge(agg);
@@ -43,7 +42,7 @@ TEST_CASE("Aggregation Merge")
 	}
 
 	{
-		Aggregator agg = helper.createAggregation(test_info::test_dir() + "Utilities/config/agg2.json");
+		Aggregator agg = TestHelper::createAggregation(test_info::test_dir() + "Utilities/config/agg2.json");
 		auto lock = FrameworkAPI::lockAggregator();
 		auto globalAgg = FrameworkAPI::getAggregator();
 		globalAgg->merge(agg);

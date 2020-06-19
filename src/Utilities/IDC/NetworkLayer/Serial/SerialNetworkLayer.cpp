@@ -9,32 +9,6 @@
 #include "cpsCore/Utilities/Scheduler/IScheduler.h"
 #include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
 
-std::shared_ptr<INetworkLayer>
-SerialNetworkLayer::create(const Configuration& config)
-{
-	auto snl = std::make_shared<SerialNetworkLayer>();
-	snl->configure(config);
-	return snl;
-}
-
-bool
-SerialNetworkLayer::configure(const Configuration& config)
-{
-	PropertyMapper<Configuration> pm(config);
-	Configuration ports;
-	pm.add("ports", ports, true);
-
-	for (const auto& it : ports)
-	{
-		SerialNetworkParams params;
-		if (!params.configure(it.second))
-			return false;
-
-		handler_.emplace(it.first, std::make_shared<SerialHandler>(params));
-	}
-	return pm.map();
-}
-
 bool
 SerialNetworkLayer::sendPacket(const std::string& id, const Packet& packet)
 {
@@ -72,6 +46,10 @@ SerialNetworkLayer::run(RunStage stage)
 		{
 			CPSLOG_ERROR << "SerialNetworkLayer missing Dependencies";
 			return true;
+		}
+		for (const auto& it : params.ports())
+		{
+			handler_.emplace(it.id(), std::make_shared<SerialHandler>(it));
 		}
 		break;
 	}

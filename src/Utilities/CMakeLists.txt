@@ -28,7 +28,6 @@ set(CORE_SRCS ${CORE_SRCS}
         #IDC
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Serial/SerialHandler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Serial/SerialNetworkLayer.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Serial/SerialNetworkParams.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisPublisher.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisSubscriber.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/IDC/NetworkLayer/Redis/RedisNetworkLayer.cpp

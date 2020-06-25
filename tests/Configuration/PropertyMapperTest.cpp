@@ -60,3 +60,43 @@ TEST_CASE("Vector Test 2")
 
 	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
 }
+
+
+TEST_CASE("Map test")
+{
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
+	Configuration config;
+	boost::property_tree::read_json(test_info::test_dir() + "Utilities/config/pm_test.json",
+									config);
+
+	PropertyMapper<Configuration> pm(config);
+	std::map<std::string, int> missions;
+	pm.addMap<std::map<std::string, int>>("missions", missions, true);
+
+	REQUIRE(missions.size() == 2);
+	CHECK(missions.find("mission1")->second == 8);
+	CHECK(missions.find("mission2")->second == 10);
+	CHECK(missions.find("mission3") == missions.end());
+
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
+}
+
+
+TEST_CASE("Unordered map test")
+{
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
+	Configuration config;
+	boost::property_tree::read_json(test_info::test_dir() + "Utilities/config/pm_test.json",
+									config);
+
+	PropertyMapper<Configuration> pm(config);
+	std::unordered_map<std::string, int> missions;
+	pm.addMap<std::unordered_map<std::string, int>>("missions", missions, true);
+
+	REQUIRE(missions.size() == 2);
+	CHECK(missions.find("mission1")->second == 8);
+	CHECK(missions.find("mission2")->second == 10);
+	CHECK(missions.find("mission3") == missions.end());
+
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
+}

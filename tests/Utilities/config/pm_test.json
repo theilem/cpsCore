@@ -22,5 +22,9 @@
 			2,
 			2
 		]
-	]
+	],
+	"missions": {
+		"mission1": 8,
+		"mission2": 10
+	}
 }

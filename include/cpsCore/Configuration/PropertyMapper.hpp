@@ -52,9 +52,28 @@ public:
 			  std::vector<enable_if_not_is_parameter_set<typename T::value_type>>& val,
 			  bool mandatory);
 
-//	template<typename T>
-//	bool
-//	addVector(const std::string& key, std::vector<T>& val, bool mandatory);
+	template<typename T>
+	bool
+	addMap(const std::string& key,
+		   std::map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val, bool mandatory);
+
+	template<typename T>
+	bool
+	addMap(const std::string& key,
+		   std::map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
+		   bool mandatory);
+
+	template<typename T>
+	bool
+	addMap(const std::string& key,
+		   std::unordered_map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
+		   bool mandatory);
+
+	template<typename T>
+	bool
+	addMap(const std::string& key,
+		   std::unordered_map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
+		   bool mandatory);
 
 	bool
 	addVector(const std::string& key, std::vector<Configuration>& val, bool mandatory);
@@ -160,10 +179,15 @@ private:
 
 	template<typename Type>
 	bool
+	addSpecific(const std::string& key, enable_if_is_string_key_map<Type>& val, bool mandatory);
+
+	template<typename Type>
+	bool
 	addSpecific(const std::string& key,
 				typename std::enable_if<
 						!is_special_param<Type>::value && !std::is_enum<Type>::value
-						&& !is_vector<Type>::value && !is_angle<Type>::value, Type>::type& val,
+						&& !is_vector<Type>::value && !is_angle<Type>::value &&
+						!is_string_key_map<Type>::value, Type>::type& val,
 				bool mandatory);
 
 };
@@ -634,6 +658,15 @@ PropertyMapper<Config>::addSpecific(const std::string& key, enable_if_is_vector<
 template<typename Config>
 template<typename Type>
 bool
+PropertyMapper<Config>::addSpecific(const std::string& key, enable_if_is_string_key_map<Type>& val,
+									bool mandatory)
+{
+	return addMap<Type>(key, val, mandatory);
+}
+
+template<typename Config>
+template<typename Type>
+bool
 PropertyMapper<Config>::addSpecific(const std::string& key,
 									typename std::enable_if<is_angle<Type>::value, Type>::type& val, bool mandatory)
 {
@@ -646,7 +679,8 @@ bool
 PropertyMapper<Config>::addSpecific(const std::string& key,
 									typename std::enable_if<
 											!is_special_param<Type>::value && !std::is_enum<Type>::value
-											&& !is_vector<Type>::value && !is_angle<Type>::value, Type>::type& val,
+											&& !is_vector<Type>::value && !is_angle<Type>::value &&
+											!is_string_key_map<Type>::value, Type>::type& val,
 									bool mandatory)
 {
 	return add<Type>(key, val, mandatory);
@@ -666,5 +700,130 @@ PropertyMapper<Config>::addAngle(const std::string& key, Angle<Type>& val, bool 
 	return true;
 
 }
+
+template<typename Config>
+template<typename T>
+bool
+PropertyMapper<Config>::addMap(const std::string& key,
+							   std::map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
+							   bool mandatory)
+{
+	val.clear();
+	boost::optional<const Config&> value;
+	if (key.empty())
+		value = p_;
+	else
+		value = p_.get_child_optional(key);
+	if (value)
+	{
+		const Config& config = *value;
+		for (auto& it : config)
+		{
+			PropertyMapper<Config> pm(it.second);
+			it = val.insert(std::make_pair(it.first, typename T::value_type::second_type()));
+			it->second.configure(pm);
+		}
+		return true;
+	}
+	if (mandatory)
+	{
+		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
+		mandatoryCheck_ = false;
+	}
+	return false;
+}
+
+template<typename Config>
+template<typename T>
+bool
+PropertyMapper<Config>::addMap(const std::string& key,
+							   std::map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
+							   bool mandatory)
+{
+	val.clear();
+	boost::optional<const Config&> value;
+	if (key.empty())
+		value = p_;
+	else
+		value = p_.get_child_optional(key);
+	if (value)
+	{
+		const Config& config = *value;
+		for (auto& it : config)
+		{
+			val.insert(std::make_pair(it.first, it.second.template get_value<typename T::value_type::second_type>()));
+		}
+		return true;
+	}
+	if (mandatory)
+	{
+		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
+		mandatoryCheck_ = false;
+	}
+	return false;
+}
+
+template<typename Config>
+template<typename T>
+bool
+PropertyMapper<Config>::addMap(const std::string& key,
+							   std::unordered_map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
+							   bool mandatory)
+{
+	val.clear();
+	boost::optional<const Config&> value;
+	if (key.empty())
+		value = p_;
+	else
+		value = p_.get_child_optional(key);
+	if (value)
+	{
+		const Config& config = *value;
+		for (auto& it : config)
+		{
+			PropertyMapper<Config> pm(it.second);
+			it = val.insert(std::make_pair(it.first, typename T::value_type::second_type()));
+			it->second.configure(pm);
+		}
+		return true;
+	}
+	if (mandatory)
+	{
+		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
+		mandatoryCheck_ = false;
+	}
+	return false;
+}
+
+template<typename Config>
+template<typename T>
+bool
+PropertyMapper<Config>::addMap(const std::string& key,
+							   std::unordered_map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
+							   bool mandatory)
+{
+	val.clear();
+	boost::optional<const Config&> value;
+	if (key.empty())
+		value = p_;
+	else
+		value = p_.get_child_optional(key);
+	if (value)
+	{
+		const Config& config = *value;
+		for (auto& it : config)
+		{
+			val.insert(std::make_pair(it.first, it.second.template get_value<typename T::value_type::second_type>()));
+		}
+		return true;
+	}
+	if (mandatory)
+	{
+		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
+		mandatoryCheck_ = false;
+	}
+	return false;
+}
+
 
 #endif /* UAVAP_CORE_PROPERTYMAPPER_PROPERTYMAPPER_H_ */

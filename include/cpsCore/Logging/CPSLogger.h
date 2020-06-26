@@ -89,27 +89,27 @@ private:
 
 #else
 
-#define CPSLOG_ERROR (CPSLOG(::LogLevel::ERROR) << __FILE__ << ":" << __LINE__ << " [ERROR] ")
-#define CPSLOG_WARN (CPSLOG(::LogLevel::WARN) << __FILE__ << ":" << __LINE__ << " [WARNING] ")
+#define CPSLOG_ERROR (CPSLOG(::LogLevel::ERROR) << " [ERROR] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
+#define CPSLOG_WARN (CPSLOG(::LogLevel::WARN) << " [WARNING] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
 
 #ifdef NODEBUG
 #define CPSLOG_DEBUG if (0) CPSLOG(::LogLevel::DEBUG)
 #define CPSLOG_TRACE if (0) CPSLOG(::LogLevel::TRACE)
 #else
-#define CPSLOG_DEBUG (CPSLOG(::LogLevel::DEBUG) << __FILE__ << ":" << __LINE__ << " [DEBUG] ")
-#define CPSLOG_TRACE (CPSLOG(::LogLevel::TRACE) << __FILE__ << ":" << __LINE__ << " [TRACE] ")
+#define CPSLOG_DEBUG (CPSLOG(::LogLevel::DEBUG) << " [DEBUG] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
+#define CPSLOG_TRACE (CPSLOG(::LogLevel::TRACE) << " [TRACE] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
 #endif
 
 #define MODULE_LOG(level, module) (CPSLOGger::instance()->log(level, module))
-#define MODULE_LOG_ERROR(module) (MODULE_LOG(::LogLevel::ERROR, module) << __FILE__ << ":" << __LINE__ << " [ERROR] ")
-#define MODULE_LOG_WARN(module) (MODULE_LOG(::LogLevel::WARN, module) << __FILE__ << ":" << __LINE__ << " [WARNING] ")
+#define MODULE_LOG_ERROR(module) (MODULE_LOG(::LogLevel::ERROR, module) << " [ERROR] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
+#define MODULE_LOG_WARN(module) (MODULE_LOG(::LogLevel::WARN, module) << " [WARNING] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
 
 #ifdef NODEBUG
 #define MODULE_LOG_DEBUG(module) if (0) MODULE_LOG(::LogLevel::DEBUG, module)
 #define MODULE_LOG_TRACE(module) if (0) MODULE_LOG(::LogLevel::TRACE, module)
 #else
-#define MODULE_LOG_DEBUG(module) (MODULE_LOG(::LogLevel::DEBUG, module) << __FILE__ << ":" << __LINE__ << " [DEBUG] ")
-#define MODULE_LOG_TRACE(module) (MODULE_LOG(::LogLevel::TRACE, module) << __FILE__ << ":" << __LINE__ << " [TRACE] ")
+#define MODULE_LOG_DEBUG(module) (MODULE_LOG(::LogLevel::DEBUG, module) << " [DEBUG] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
+#define MODULE_LOG_TRACE(module) (MODULE_LOG(::LogLevel::TRACE, module) << " [TRACE] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
 #endif
 
 #endif //NO_LOGGING

@@ -28,7 +28,7 @@
 
 enum class RunStage
 {
-	INIT, NORMAL, FINAL, SYNCHRONIZE
+	SYNCHRONIZE, INIT, NORMAL, FINAL
 };
 
 class IRunnableObject

@@ -37,12 +37,12 @@ public:
 	SimpleRunner(Aggregator& agg);
 
 	bool
-	runStage(RunStage stage);
-
-	bool
 	runAllStages();
 
 private:
+
+	bool
+	runStage(RunStage stage);
 
 	Aggregator& agg_;
 };

@@ -21,7 +21,7 @@ std::unique_lock<std::mutex>
 FrameworkAPI::lockAggregator()
 {
 	std::unique_lock<std::mutex> lock(instance()->aggMutex_);
-	return std::move(lock);
+	return lock;
 }
 
 Aggregator*

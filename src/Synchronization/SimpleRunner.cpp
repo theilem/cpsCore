@@ -41,6 +41,7 @@ SimpleRunner::runStage(RunStage stage)
 		if (it->run(stage))
 			error = true;
 	}
+	agg_.signalRunStageReached(stage);
 	CPSLogger::instance()->flush(); //Synchronize stdio
 	return error;
 }
@@ -48,6 +49,7 @@ SimpleRunner::runStage(RunStage stage)
 bool
 SimpleRunner::runAllStages()
 {
+	agg_.runBegan();
 	CPSLOG_DEBUG << "Run stage INIT";
 	if (runStage(RunStage::INIT))
 	{

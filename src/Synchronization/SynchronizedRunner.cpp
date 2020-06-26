@@ -30,7 +30,6 @@
 #include "cpsCore/Synchronization/SynchronizedRunner.h"
 #include "cpsCore/Synchronization/SynchronizedRunnerMaster.h"
 #include <mutex>
-#include <string>
 
 SynchronizedRunner::SynchronizedRunner() :
 		sync_(boost::interprocess::open_only, "sync_run", boost::interprocess::read_write)
@@ -47,6 +46,8 @@ SynchronizedRunner::runSynchronized(Aggregator& agg)
 	auto runnableObjects = agg.getAll<IRunnableObject>();
 
 	RunStage lastRunStage = RunStage::SYNCHRONIZE;
+
+	agg.runBegan();
 
 	while (lastRunStage != RunStage::FINAL)
 	{
@@ -66,11 +67,12 @@ SynchronizedRunner::runSynchronized(Aggregator& agg)
 		lock.unlock();
 
 		bool failed = false;
-		for (auto it : runnableObjects)
+		for (const auto& it : runnableObjects)
 		{
 			if (it->run(stage))
 				failed = true;
 		}
+		agg.signalRunStageReached(stage);
 		if (failed)
 			return true;
 		lastRunStage = stage;

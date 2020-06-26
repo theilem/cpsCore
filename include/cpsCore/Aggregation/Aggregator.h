@@ -10,6 +10,7 @@
 
 #include "cpsCore/Aggregation/DynamicContainer/DynamicObjectContainer.h"
 #include "cpsCore/Aggregation/IAggregatableObject.h"
+#include <cpsCore/Synchronization/IRunnableObject.h>
 
 #include <memory>
 #include <vector>
@@ -69,9 +70,26 @@ public:
 	void
 	cleanUp();
 
+	size_t
+	size() const;
+
+	void
+	signalRunBegin();
+
+	void
+	signalRunStageReached(const RunStage& runstage);
+
+	bool
+	runBegan() const;
+
+	RunStage
+	highestRunStage() const;
+
 private:
 
 	ObjectContainer container_;
+	bool runBegan_;
+	RunStage highestAchieved_;
 };
 
 template<class Type>
@@ -114,7 +132,7 @@ Aggregator::add(std::tuple<std::shared_ptr<Types>...> obj)
 {
 
 	std::apply([this](auto...x)
-			   { (this->add(x),...); }, obj);
+			   { (this->add(x), ...); }, obj);
 
 }
 

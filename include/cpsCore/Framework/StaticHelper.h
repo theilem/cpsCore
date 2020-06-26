@@ -36,7 +36,7 @@ public:
 	 * @return Aggregator containing the objects
 	 */
 	inline static Aggregator
-	createAggregation(const Configuration& config)
+	createAggregation(const Configuration& config = Configuration())
 	{
 		Aggregator agg;
 		(addIfInConfig<Objects>(agg, config), ...);

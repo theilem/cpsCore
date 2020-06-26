@@ -13,6 +13,12 @@
 template<class...>
 class StaticHelper;
 
+template <typename T>
+struct is_static_helper : std::false_type {};
+
+template <class... Objs>
+struct is_static_helper<StaticHelper<Objs...>> : std::true_type {};
+
 template<class...Objects>
 class StaticHelper
 {
@@ -38,12 +44,46 @@ public:
 	inline static Aggregator
 	createAggregation(const Configuration& config)
 	{
-		Aggregator agg;
-		(addIfInConfig<Objects>(agg, config), ...);
-		return agg;
+		return createAggregationImpl<Objects...>(config);
+	}
+
+	inline static Aggregator
+	createDefaultAggregation(const Configuration& config)
+	{
+		return createDefaults(config);
 	}
 
 private:
+
+	template<class DefaultHelper, class... Objs>
+	inline static std::enable_if_t<is_static_helper<DefaultHelper>::value, Aggregator>
+	createAggregationImpl(const Configuration& config)
+	{
+		auto defaultAgg = DefaultHelper::createDefaultAggregation(config);
+		auto agg = DefaultHelper::createAggregation(config);
+
+		agg.merge(defaultAgg);
+		(addIfInConfig<Objs>(agg, config), ...);
+		return agg;
+	}
+
+	template<class Obj, class... Others>
+	inline static std::enable_if_t<!is_static_helper<Obj>::value, Aggregator>
+	createAggregationImpl(const Configuration& config)
+	{
+		Aggregator agg;
+		addIfInConfig<Obj>(agg, config);
+		(addIfInConfig<Others>(agg, config), ...);
+		return agg;
+	}
+
+	inline static Aggregator
+	createDefaults(const Configuration& config)
+	{
+		Aggregator agg;
+		(addIfNotInConfig<Objects>(agg, config), ...);
+		return agg;
+	}
 
 	template<class Object>
 	inline static void
@@ -60,6 +100,21 @@ private:
 			CPSLOG_TRACE << Object::typeId << " not found in config. It is not added.";
 	}
 
+	template<class Object>
+	inline static void
+	addIfNotInConfig(Aggregator& agg, const Configuration& config)
+	{
+		auto params = config.get_child_optional(Object::typeId);
+		if (!params)
+		{
+			CPSLOG_TRACE << "Adding " << Object::typeId << " without config";
+			auto obj = createObjectDefault<Object>();
+			agg.add(obj);
+		}
+		else
+			CPSLOG_TRACE << Object::typeId << " found in config. Not creating default.";
+	}
+
 	template<class Factory, std::enable_if_t<is_static_factory<Factory>::value, bool> B = true>
 	inline static typename Factory::ReturnType
 	createObject(const Configuration& config)
@@ -74,6 +129,20 @@ private:
 		auto obj = std::make_shared<Object>();
 		configureIfConfigurable(obj, config);
 		return obj;
+	}
+
+	template<class Factory, std::enable_if_t<is_static_factory<Factory>::value, bool> B = true>
+	inline static typename Factory::ReturnType
+	createObjectDefault()
+	{
+		return Factory::createDefault();
+	}
+
+	template<class Object, std::enable_if_t<!is_static_factory<Object>::value, bool> B = true>
+	inline static std::shared_ptr<Object>
+	createObjectDefault()
+	{
+		return std::make_shared<Object>();
 	}
 
 

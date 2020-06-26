@@ -25,10 +25,18 @@ TEST_CASE("Logging Test")
 	stream.str("");
 
 	CPSLOG_ERROR << "error";
+	auto line1 = __LINE__;
 	CPSLOG_WARN << "warn";
+	auto line2 = __LINE__;
 	CPSLOG_DEBUG << "debug";
+	auto line3 = __LINE__;
 	CPSLOG_TRACE << "trace";
-	CHECK(stream.str() == "[ERROR] error\n[WARNING] warn\n[DEBUG] debug");
+
+	std::stringstream result;
+	result << __FILE__ << ":" << line1 - 1 << " [ERROR] error\n";
+	result << __FILE__ << ":" << line2 - 1 << " [WARNING] warn\n";
+	result << __FILE__ << ":" << line3 - 1 << " [DEBUG] debug";
+	CHECK(stream.str() == result.str());
 
 	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
 	CPSLogger::instance()->flush();
@@ -38,18 +46,27 @@ TEST_CASE("Logging Test")
 	CPSLOG_WARN << "warn";
 	CPSLOG_DEBUG << "debug";
 	CPSLOG_TRACE << "trace";
-	CHECK(stream.str() == "");
+	CHECK(stream.str().empty());
 
 	CPSLogger::instance()->setLogLevel(LogLevel::TRACE);
 	CPSLogger::instance()->flush();
 	stream.str("");
+	result.str("");
 
 	CPSLOG_ERROR << "error";
+	line1 = __LINE__;
 	CPSLOG_WARN << "warn";
+	line2 = __LINE__;
 	CPSLOG_DEBUG << "debug";
+	line3 = __LINE__;
 	CPSLOG_TRACE << "trace";
+	auto line4 = __LINE__;
 
-	CHECK(stream.str() == "[ERROR] error\n[WARNING] warn\n[DEBUG] debug\n[TRACE] trace");
+	result << __FILE__ << ":" << line1 - 1 << " [ERROR] error\n";
+	result << __FILE__ << ":" << line2 - 1 << " [WARNING] warn\n";
+	result << __FILE__ << ":" << line3 - 1 << " [DEBUG] debug\n";
+	result << __FILE__ << ":" << line4 - 1 << " [TRACE] trace";
+	CHECK(stream.str() == result.str());
 
 	CPSLogger::instance()->setSink(std::cout);
 	CPSLogger::instance()->setLogLevel(LogLevel::WARN);

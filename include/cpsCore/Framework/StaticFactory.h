@@ -59,7 +59,20 @@ public:
 		return createSpecific<Objects...>(type);
 	}
 
+	static ReturnTypeSingle
+	createDefault()
+	{
+		return createDefaultImpl<Objects...>();
+	}
+
 private:
+
+	template<class FirstObj, class...>
+	static ReturnTypeSingle
+	createDefaultImpl()
+	{
+		return std::make_shared<FirstObj>();
+	}
 
 	template<class Object>
 	static ReturnTypeSingle

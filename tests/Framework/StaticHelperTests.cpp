@@ -3,6 +3,7 @@
 //
 
 #include <cpsCore/Utilities/TimeProvider/SystemTimeProvider.h>
+#include <cpsCore/Utilities/Scheduler/SchedulerFactory.h>
 #include <cpsCore/Utilities/Scheduler/MicroSimulator.h>
 #include <cpsCore/Utilities/SignalHandler/SignalHandler.h>
 #include <cpsCore/Utilities/Test/TestInfo.h>
@@ -54,4 +55,45 @@ TEST_CASE("Multi Type Static Handler")
 	CHECK(agg2.getOne<SystemTimeProvider>());
 
 	CHECK(agg2.getAll<ITimeProvider>().size() == 2);
+}
+
+TEST_CASE("Default static helper")
+{
+	using Defaults = StaticHelper<SignalHandler, SchedulerFactory>;
+	using HelperWithDefaults = StaticHelper<Defaults, SystemTimeProvider>;
+
+	Configuration config;
+
+	auto agg = HelperWithDefaults::createAggregation(config);
+
+	CHECK(agg.getOne<IScheduler>());
+	CHECK(agg.getOne<MultiThreadingScheduler>());
+	CHECK(agg.getOne<SignalHandler>());
+	CHECK_FALSE(agg.getOne<ITimeProvider>());
+
+	config.add_child("system_time", Configuration());
+
+	auto agg2 = HelperWithDefaults::createAggregation(config);
+
+	CHECK(agg2.getOne<IScheduler>());
+	CHECK(agg2.getOne<MultiThreadingScheduler>());
+	CHECK(agg2.getOne<SignalHandler>());
+	CHECK(agg2.getOne<ITimeProvider>());
+
+	CHECK(agg2.getOne<MultiThreadingScheduler>()->getParams().priority() == MultiThreadingSchedulerParams().priority());
+
+	Configuration schedConfig;
+	Configuration multiThreadSchedConfig;
+	multiThreadSchedConfig.add("priority", 10);
+	schedConfig.add_child("thread", multiThreadSchedConfig);
+	config.add_child("scheduler", schedConfig);
+
+	auto agg3 = HelperWithDefaults::createAggregation(config);
+
+	CHECK(agg3.getOne<IScheduler>());
+	REQUIRE(agg3.getOne<MultiThreadingScheduler>());
+	CHECK(agg3.getOne<SignalHandler>());
+	CHECK(agg3.getOne<ITimeProvider>());
+
+	CHECK(agg3.getOne<MultiThreadingScheduler>()->getParams().priority() == 10);
 }

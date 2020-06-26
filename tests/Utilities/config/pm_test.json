@@ -26,5 +26,6 @@
 	"missions": {
 		"mission1": 8,
 		"mission2": 10
-	}
+	},
+	"optional1": 7
 }

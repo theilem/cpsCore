@@ -23,7 +23,7 @@ DynamicObjectContainer::add(std::shared_ptr<IAggregatableObject> obj)
 void
 DynamicObjectContainer::notifyAggregationOnUpdate(const Aggregator& agg)
 {
-	for (auto it : container_)
+	for (const auto& it : container_)
 	{
 		it->notifyAggregationOnUpdate(agg);
 	}
@@ -32,14 +32,8 @@ DynamicObjectContainer::notifyAggregationOnUpdate(const Aggregator& agg)
 void
 DynamicObjectContainer::add(const DynamicObjectContainer& obj)
 {
-	for (auto it : obj.getContainer())
+	for (const auto& it : obj.container_)
 	{
 		container_.push_back(it);
 	}
-}
-
-const std::vector<std::shared_ptr<IAggregatableObject> >&
-DynamicObjectContainer::getContainer() const
-{
-	return container_;
 }

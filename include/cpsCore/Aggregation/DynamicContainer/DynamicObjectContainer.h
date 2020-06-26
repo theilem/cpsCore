@@ -37,9 +37,6 @@ public:
 	void
 	clear();
 
-	const std::vector<std::shared_ptr<IAggregatableObject> >&
-	getContainer() const;
-
 private:
 
 	std::vector<std::shared_ptr<IAggregatableObject> > container_;

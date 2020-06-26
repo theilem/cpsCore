@@ -7,6 +7,7 @@
 
 #ifndef UAVAP_CORE_PROPERTYMAPPER_PARAMETER_H_
 #define UAVAP_CORE_PROPERTYMAPPER_PARAMETER_H_
+
 #include <string>
 
 template<typename Type>
@@ -34,6 +35,12 @@ struct Parameter
 		return value;
 	}
 
+	inline Type&
+	operator()()
+	{
+		return value;
+	}
+
 	inline void
 	setValue(const Type& val)
 	{
@@ -50,21 +57,21 @@ template<typename Type>
 struct is_parameter_set
 {
 	template<typename _1>
-	static char &
+	static char&
 	chk(
 			typename std::enable_if<
 					std::is_same<void, decltype(std::declval<_1>().configure(std::declval<int&>()))>::value,
 					int>::type);
 
-	template<typename >
-	static int &
+	template<typename>
+	static int&
 	chk(...);
 
 	static constexpr bool value = sizeof(chk<Type>(0)) == sizeof(char);
 };
 
 template<typename Type>
-struct is_parameter: public std::false_type
+struct is_parameter : public std::false_type
 {
 };
 

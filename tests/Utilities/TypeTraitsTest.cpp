@@ -10,16 +10,20 @@
 #include <map>
 #include <unordered_map>
 
-TEST_CASE("TypeTraits")
+TEST_CASE("TypeTraits test")
 {
 
 	CHECK(is_string_key_map<std::map<std::string, std::string>>::value);
 	CHECK(is_string_key_map<std::map<std::string, int>>::value);
-	CHECK(!is_string_key_map<std::map<int, int>>::value);
+	CHECK_FALSE(is_string_key_map<std::map<int, int>>::value);
 
 	CHECK(is_string_key_map<std::unordered_map<std::string, std::string>>::value);
 	CHECK(is_string_key_map<std::unordered_map<std::string, int>>::value);
-	CHECK(!is_string_key_map<std::unordered_map<int, int>>::value);
+	CHECK_FALSE(is_string_key_map<std::unordered_map<int, int>>::value);
 
-	CHECK(!is_string_key_map<std::vector<int>>::value);
+	CHECK_FALSE(is_string_key_map<std::vector<int>>::value);
+
+	CHECK(is_string<std::string>::value);
+	CHECK(is_string<std::basic_string<char>>::value);
+	CHECK(is_string<std::__cxx11::basic_string<char>>::value);
 }

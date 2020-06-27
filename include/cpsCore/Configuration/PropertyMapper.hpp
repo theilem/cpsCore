@@ -665,8 +665,8 @@ PropertyMapper<Config>::addMap(const std::string& key,
 		for (auto& it : config)
 		{
 			PropertyMapper<Config> pm(it.second);
-			it = val.insert(std::make_pair(it.first, typename T::value_type::second_type()));
-			it->second.configure(pm);
+			auto i = val.insert(std::make_pair(it.first, typename T::value_type::second_type()));
+			i.first->second.configure(pm);
 		}
 		return true;
 	}

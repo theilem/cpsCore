@@ -12,10 +12,12 @@
 
 struct RedisNetworkLayerParams
 {
-	Parameter<std::vector<RedisChannelParams>> sub = {{RedisChannelParams()}, "sub", false};
-	Parameter<std::vector<RedisChannelParams>> pub = {{RedisChannelParams()}, "pub", false};
+	Parameter<std::map<std::string, RedisChannelParams>> sub = {{{"default", RedisChannelParams()}}, "sub",
+																false};
+	Parameter<std::map<std::string, RedisChannelParams>> pub = {{{"default", RedisChannelParams()}}, "pub",
+																false};
 
-	template <typename Config>
+	template<typename Config>
 	void
 	configure(Config& config)
 	{

@@ -276,7 +276,7 @@ JsonPopulator::writeValue(const Type& value)
 		if (!firstElement_)
 			jsonString_ << "," << std::endl;
 		addTabs();
-		jsonString_ << it.first << ": ";
+		jsonString_ << "\"" << it.first << "\": ";
 		writeValue(it.second);
 		firstElement_ = false;
 	}

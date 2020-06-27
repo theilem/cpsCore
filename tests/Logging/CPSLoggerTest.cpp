@@ -67,6 +67,24 @@ TEST_CASE("Logging Test")
 	result << " [DEBUG] ["<< __FILE__ << ":" << line3 - 1 << "] debug\n";
 	result << " [TRACE] ["<< __FILE__ << ":" << line4 - 1 << "] trace";
 	CHECK(stream.str() == result.str());
+	CPSLogger::instance()->flush();
+
+	stream.str("");
+	result.str("");
+
+	CPSLOG_ERROR;
+	line1 = __LINE__;
+	CPSLOG_WARN;
+	line2 = __LINE__;
+	CPSLOG_DEBUG;
+	line3 = __LINE__;
+	CPSLOG_TRACE;
+	line4 = __LINE__;
+	result << " [ERROR] ["<< __FILE__ << ":" << line1 - 1 << "] \n";
+	result << " [WARNING] ["<< __FILE__ << ":" << line2 - 1 << "] \n";
+	result << " [DEBUG] ["<< __FILE__ << ":" << line3 - 1 << "] \n";
+	result << " [TRACE] ["<< __FILE__ << ":" << line4 - 1 << "] ";
+	CHECK(stream.str() == result.str());
 
 	CPSLogger::instance()->setSink(std::cout);
 	CPSLogger::instance()->setLogLevel(LogLevel::WARN);

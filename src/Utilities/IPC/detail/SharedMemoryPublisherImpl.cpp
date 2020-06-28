@@ -18,9 +18,12 @@ SharedMemoryPublisherImpl::SharedMemoryPublisherImpl(const std::string& id, std:
 		maxPacketSize_(init)
 {
 	using namespace boost::interprocess;
+
+	bool existing = false;
 	try
 	{
 		sharedMem_ = shared_memory_object(open_only, id.c_str(), read_write);
+		existing = true;
 		CPSLOG_WARN << "Shared memory object " << id << " aready exists. Using existing.";
 	} catch (interprocess_exception&)
 	{
@@ -29,12 +32,24 @@ SharedMemoryPublisherImpl::SharedMemoryPublisherImpl(const std::string& id, std:
 	}
 
 	mapped_region region(sharedMem_, read_write);
-	MessageObjectHeader header;
-	header.maxPacketSize = maxPacketSize_;
-	header.packetSize = 0;
-	header.active = true;
 
-	memcpy(region.get_address(), &header, sizeof(header));
+	if (!existing)
+	{
+		MessageObjectHeader header;
+		header.maxPacketSize = maxPacketSize_;
+		header.packetSize = 0;
+		header.active = true;
+
+		memcpy(region.get_address(), &header, sizeof(header));
+	}
+	else
+	{
+		// if existing just set values, do not copy new conditions and mutexes so that waiting processes don't miss out.
+		auto header = static_cast<MessageObjectHeader*>(region.get_address());
+		header->maxPacketSize = maxPacketSize_;
+		header->packetSize = 0;
+		header->active = true;
+	}
 
 }
 

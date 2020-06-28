@@ -9,7 +9,7 @@
 
 
 template <typename T>
-struct is_complete_helper {
+struct is_complete_impl {
 	template <typename U>
 	static auto test(U*)  -> std::integral_constant<bool, sizeof(U) == sizeof(U)>;
 	static auto test(...) -> std::false_type;
@@ -17,7 +17,7 @@ struct is_complete_helper {
 };
 
 template <typename T>
-struct is_complete : is_complete_helper<T>::type {};
+struct is_complete : is_complete_impl<T>::type {};
 
 
 

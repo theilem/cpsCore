@@ -42,7 +42,7 @@ public:
 	 * @return Aggregator containing the objects
 	 */
 	inline static Aggregator
-	createAggregation(const Configuration& config)
+	createAggregation(const Configuration& config = Configuration())
 	{
 		return createAggregationImpl<Objects...>(config);
 	}

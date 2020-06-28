@@ -9,6 +9,7 @@
 #define UAVAP_CORE_OBJECT_DYNAMICCONTAINER_DYNAMICOBJECTCONTAINER_H_
 #include <memory>
 #include <vector>
+#include "cpsCore/Aggregation/TypeTraits.hpp"
 
 class IAggregatableObject;
 class Aggregator;
@@ -46,20 +47,24 @@ template<typename Type>
 inline std::shared_ptr<Type>
 DynamicObjectContainer::getOne(Type* self) const
 {
-#ifdef ERIKA
-	return nullptr;
-#else
-	for (auto it : container_)
+	if constexpr (is_complete<Type>::value)
 	{
-		if (auto ret = std::dynamic_pointer_cast<Type>(it))
+		for (auto it : container_)
 		{
-			if (ret.get() == self)
-				continue;
-			return ret;
+			if (auto ret = std::dynamic_pointer_cast<Type>(it))
+			{
+				if (ret.get() == self)
+					continue;
+				return ret;
+			}
 		}
+		return nullptr;
 	}
-	return nullptr;
-#endif
+	else
+	{
+		return nullptr;
+	}
+
 }
 
 template<class Type>

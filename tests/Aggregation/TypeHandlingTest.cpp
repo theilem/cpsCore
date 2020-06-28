@@ -27,8 +27,21 @@ TEST_CASE("Incomplete Type handling")
 	auto scope = CPSLogger::LogLevelScope(LogLevel::NONE);
 
 	using ThisTestCasesDefaults = StaticHelper<TestA>;
+
 	//This should compile even because it doesn't care about TestB and thus should ignore that it is of incomplete Type
 	auto agg = StaticHelper<ThisTestCasesDefaults>::createAggregation(Configuration());
+
+/*
+	using ThisTestCasesDefaults = StaticHelper<TestA, TestB>;
+//	This should not compile, since TestB is incomplete but would need to be created
+	auto agg = StaticHelper<ThisTestCasesDefaults>::createAggregation(Configuration());
+ */
+
+/*
+	using ThisTestCasesDefaults = StaticHelper<TestA>;
+//	This should not compile either, since TestB is incomplete but would need to be created potentially
+	auto agg = StaticHelper<ThisTestCasesDefaults, TestB>::createAggregation(Configuration());
+*/
 
 	CHECK(agg.getOne<TestA>());
 	CHECK_FALSE(agg.getOne<TestB>()); // TestB is incomplete Type so it should return a nullptr.

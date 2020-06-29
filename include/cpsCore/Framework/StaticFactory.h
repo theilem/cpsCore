@@ -8,11 +8,15 @@
 #include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Configuration/Configuration.hpp"
 #include "cpsCore/Configuration/TypeTraits.hpp"
+#include "cpsCore/Aggregation/TypeTraits.hpp"
 
 template<class SuperClass, bool SUPPORT_MULTI, class...Objects>
 class StaticFactory
 {
 public:
+
+	static_assert((has_typeid<Objects>::value && ...),
+				  "Missing typeid in one of the objects of this factory");
 
 	static constexpr const char* const typeId = SuperClass::typeId;
 	static constexpr bool supportsMulti = SUPPORT_MULTI;

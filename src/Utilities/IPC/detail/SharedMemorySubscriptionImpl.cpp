@@ -16,7 +16,7 @@
 
 SharedMemorySubscriptionImpl::SharedMemorySubscriptionImpl(const std::string& id) :
 		sharedMem_(boost::interprocess::open_only, id.c_str(), boost::interprocess::read_write), listenerCanceled_(
-				false)
+				false), id_(id)
 {
 }
 
@@ -29,8 +29,10 @@ SharedMemorySubscriptionImpl::subscribe(const OnPacketSlot& slot)
 void
 SharedMemorySubscriptionImpl::cancel()
 {
+	CPSLOG_DEBUG << "Calling cancel on shm sub";
 	listenerCanceled_.store(true);
 	listenerThread_.join();
+	CPSLOG_DEBUG << "Joined Listener thread";
 }
 
 SharedMemorySubscriptionImpl::~SharedMemorySubscriptionImpl()
@@ -70,6 +72,7 @@ SharedMemorySubscriptionImpl::onSharedMemory()
 	{
 		if (listenerCanceled_.load())
 		{
+			CPSLOG_DEBUG << "Listener canceled, end shm sub impl";
 			return;
 		}
 
@@ -80,7 +83,7 @@ SharedMemorySubscriptionImpl::onSharedMemory()
 		}
 		if (!message->active)
 		{
-			CPSLOG_DEBUG << "Shm object inactive. End subscription.";
+			CPSLOG_DEBUG << "Shm object " << id_ << " inactive. End subscription.";
 			return;
 		}
 		packet.getBuffer().resize(message->packetSize);

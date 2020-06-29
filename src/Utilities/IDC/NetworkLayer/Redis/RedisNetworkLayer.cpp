@@ -53,12 +53,12 @@ RedisNetworkLayer::run(RunStage stage)
 		for (const auto& it : params.sub())
 		{
 			subscribers_.emplace(it.first, std::make_shared<RedisSubscriber>(it.second));
-			CPSLOG_ERROR << "Added " << it.first << "to subs";
+			CPSLOG_DEBUG << "Added " << it.first << " to subs";
 		}
 		for (const auto& it : params.pub())
 		{
 			publishers_.emplace(it.first, std::make_shared<RedisPublisher>(it.second));
-			CPSLOG_ERROR << "Added " << it.first << "to pubs";
+			CPSLOG_DEBUG << "Added " << it.first << " to pubs";
 		}
 
 

@@ -20,6 +20,13 @@ public:
 	static constexpr TypeId typeId = "test_a";
 };
 
+class TestC : public AggregatableObject<>
+{
+public:
+	int testVal;
+	// Missing typeid
+};
+
 }
 
 TEST_CASE("Incomplete Type handling")
@@ -46,5 +53,12 @@ TEST_CASE("Incomplete Type handling")
 	CHECK(agg.getOne<TestA>());
 	CHECK_FALSE(agg.getOne<TestB>()); // TestB is incomplete Type so it should return a nullptr.
 	//This assumes that if a class is incomplete it can be ignored
+}
 
+TEST_CASE("TypeId handling")
+{
+	auto scope = CPSLogger::LogLevelScope(LogLevel::NONE);
+
+	CHECK(has_typeid<TestA>::value);
+	CHECK_FALSE(has_typeid<TestC>::value);
 }

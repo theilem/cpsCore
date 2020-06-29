@@ -19,6 +19,19 @@ struct is_complete_impl {
 template <typename T>
 struct is_complete : is_complete_impl<T>::type {};
 
+template<class AggObj>
+struct has_typeid_impl{
+	template<class U>
+	static auto test(U*) -> std::integral_constant<bool, sizeof(U::typeId) == sizeof(U::typeId)>;
+	static auto test(...) -> std::false_type;
+	using type = decltype(test((AggObj*)0));
+};
+
+template<class AggObj>
+struct has_typeid : has_typeid_impl<AggObj>::type {};
+
+
+
 
 
 #endif //CPSCORE_AGGREGATION_TYPETRAITS_HPP

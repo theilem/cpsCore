@@ -13,16 +13,23 @@
 template<class...>
 class StaticHelper;
 
-template <typename T>
-struct is_static_helper : std::false_type {};
+template<typename T>
+struct is_static_helper : std::false_type
+{
+};
 
-template <class... Objs>
-struct is_static_helper<StaticHelper<Objs...>> : std::true_type {};
+template<class... Objs>
+struct is_static_helper<StaticHelper<Objs...>> : std::true_type
+{
+};
 
 template<class...Objects>
 class StaticHelper
 {
 public:
+
+	static_assert(((has_typeid<Objects>::value || is_static_helper<Objects>::value) && ...),
+				  "Missing typeid in one of the objects");
 
 	/**
 	 * @brief Create an Aggregator containing Objects defined in a configuration loaded in from a config path.

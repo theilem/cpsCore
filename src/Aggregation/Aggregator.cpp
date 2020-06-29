@@ -39,6 +39,7 @@ void
 Aggregator::merge(Aggregator& agg)
 {
 	agg.mergeInto(*this);
+	container_.notifyAggregationOnUpdate(*this);
 }
 
 void

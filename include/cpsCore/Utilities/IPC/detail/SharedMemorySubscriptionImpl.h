@@ -45,5 +45,7 @@ private:
 	std::thread listenerThread_;
 
 	std::atomic_bool listenerCanceled_;
+
+	std::string id_;
 };
 #endif /* UAVAP_CORE_IPC_DETAIL_SHAREDMEMORYSUBSCRIPTIONIMPL_H_ */

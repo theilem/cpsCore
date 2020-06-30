@@ -12,7 +12,7 @@
 
 struct ArchiveOptions
 {
-	Parameter<bool> compressDouble = {false, "compress_double", false};
+	Parameter<bool> compressDouble = {true, "compress_double", false};
 
 	template<typename Config>
 	inline void

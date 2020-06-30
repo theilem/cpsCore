@@ -20,22 +20,6 @@ rotate2Drad(const Vector2& vec, const FloatingType& rad)
 }
 
 std::istream&
-operator>>(std::istream& is, Vector3& obj)
-{
-	is >> obj[0];
-	is >> obj[1];
-	is >> obj[2];
-	return is;
-}
-
-std::ostream&
-operator<<(std::ostream& os, const Vector3& obj)
-{
-	os << obj[0] << " " << obj[1] << " " << obj[2] << " ";
-	return os;
-}
-
-std::istream&
 operator>>(std::istream& is, EigenLine& obj)
 {
 	Vector3 origin, direction;
@@ -43,13 +27,6 @@ operator>>(std::istream& is, EigenLine& obj)
 	is >> direction;
 	obj = EigenLine(origin, direction);
 	return is;
-}
-
-std::ostream&
-operator<<(std::ostream& os, const EigenLine& obj)
-{
-	os << obj.origin() << obj.direction();
-	return os;
 }
 
 std::istream&
@@ -61,77 +38,6 @@ operator>>(std::istream& is, EigenHyperplane& obj)
 	obj.offset();
 	obj = EigenHyperplane(norm, off);
 	return is;
-}
-
-Vector3&
-degToRadRef(Vector3& vec)
-{
-	vec = vec * M_PI / 180.0;
-	return vec;
-}
-
-FloatingType&
-degToRadRef(FloatingType& deg)
-{
-	deg = deg * M_PI / 180.0;
-	return deg;
-}
-
-Vector3&
-radToDegRef(Vector3& vec)
-{
-	vec = vec * 180.0 / M_PI;
-	return vec;
-}
-
-FloatingType&
-radToDegRef(FloatingType& rad)
-{
-	rad = rad * 180.0 / M_PI;
-	return rad;
-}
-
-Vector3
-degToRad(const Vector3& vec)
-{
-	return vec * M_PI / 180.0;
-}
-
-FloatingType
-degToRad(const FloatingType& deg)
-{
-	return deg * M_PI / 180.0;
-}
-
-Vector3
-radToDeg(const Vector3& vec)
-{
-	return vec * 180.0 / M_PI;
-}
-
-FloatingType
-radToDeg(const FloatingType& rad)
-{
-	return rad * 180.0 / M_PI;
-}
-
-std::ostream&
-operator<<(std::ostream& os, const EigenHyperplane& obj)
-{
-	os << obj.normal() << obj.offset();
-	return os;
-}
-
-FloatingType
-headingFromENU(const Vector3& vec)
-{
-	return atan2(vec.y(), vec.x());
-}
-
-FloatingType
-headingFromENU(const Vector2& vec)
-{
-	return atan2(vec.y(), vec.x());
 }
 
 FloatingType
@@ -178,10 +84,4 @@ quaternionToEuler(const Eigen::Quaternion<FloatingType>& quaternion)
 	yaw = boundAngleRad(-(yaw - M_PI/2));
 
 	return Vector3(roll, pitch, yaw);
-}
-
-Vector3
-directionFromAttitude(const Vector3& att)
-{
-	return Vector3(cos(att[2]) * cos(att[1]), sin(att[2]) * cos(att[1]), sin(att[1])).normalized();
 }

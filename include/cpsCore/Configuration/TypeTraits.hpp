@@ -5,6 +5,7 @@
 #ifndef CPSCORE_CONFIGURATION_TYPETRAITS_HPP
 #define CPSCORE_CONFIGURATION_TYPETRAITS_HPP
 
+#include <type_traits>
 
 template<typename Type>
 struct is_configurable_object

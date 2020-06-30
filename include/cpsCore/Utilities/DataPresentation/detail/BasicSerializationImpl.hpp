@@ -167,7 +167,7 @@ template<class Archive, typename Type>
 inline void
 dp::load(Archive& ar, typename std::enable_if<isOptional<Type>::value, Type>::type& val)
 {
-	uint8_t init;
+	bool init;
 	ar >> init;
 	if (init)
 	{
@@ -181,7 +181,7 @@ template<class Archive, typename Type>
 inline void
 dp::store(Archive& ar, typename std::enable_if<isOptional<Type>::value, Type>::type& val)
 {
-	ar << static_cast<uint8_t>(val.has_value());
+	ar << static_cast<bool>(val.has_value());
 	if (val.has_value())
 	{
 		ar << *val;

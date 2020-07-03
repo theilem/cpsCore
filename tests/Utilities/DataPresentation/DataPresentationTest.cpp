@@ -24,26 +24,28 @@ TEST_CASE("Data Presentation Test")
 	double test1 = 5.312;
 	double test2 = 1151351.21;
 
+	ArchiveOptions opts;
+	opts.compressDouble = false;
 	std::string packet;
-	BinaryToArchive toArchive(packet);
+	BinaryToArchive toArchive(packet, opts);
 
 	toArchive << test1;
 	toArchive << test2;
 
 	std::string packet2;
-	BinaryToArchive toArchive2(packet2);
+	BinaryToArchive toArchive2(packet2, opts);
 
 	toArchive2 << test1;
 
 	std::string packet3;
-	BinaryToArchive toArchive3(packet3);
+	BinaryToArchive toArchive3(packet3, opts);
 
 	toArchive3 << test2;
 
 	CHECK(packet.size() == 16);
 
-	BinaryFromArchive fromArchive(packet);
-	BinaryFromArchive fromArchive3(packet3);
+	BinaryFromArchive fromArchive(packet, opts);
+	BinaryFromArchive fromArchive3(packet3, opts);
 
 	double check1 = 0;
 	double check2 = 0;

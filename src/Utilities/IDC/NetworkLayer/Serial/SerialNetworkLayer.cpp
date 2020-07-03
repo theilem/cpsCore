@@ -49,7 +49,7 @@ SerialNetworkLayer::run(RunStage stage)
 		}
 		for (const auto& it : params.ports())
 		{
-			handler_.emplace(it.id(), std::make_shared<SerialHandler>(it));
+			handler_.emplace(it.first, std::make_shared<SerialHandler>(it.second));
 		}
 		break;
 	}

@@ -17,7 +17,7 @@
 struct Test
 {
 	int val1;
-	double val2;
+	float val2;
 	Vector3 val3;
 } test;
 

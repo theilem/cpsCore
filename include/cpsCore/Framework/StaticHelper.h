@@ -28,8 +28,12 @@ class StaticHelper
 {
 public:
 
+	static_assert((is_complete<Objects>::value && ...),
+				  "One of the objects is of incomplete type");
+
 	static_assert(((has_typeid<Objects>::value || is_static_helper<Objects>::value) && ...),
 				  "Missing typeid in one of the objects");
+
 
 	/**
 	 * @brief Create an Aggregator containing Objects defined in a configuration loaded in from a config path.

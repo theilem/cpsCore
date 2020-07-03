@@ -12,9 +12,10 @@
 
 struct SerialNetworkLayerParams
 {
-	Parameter<std::vector<SerialHandlerParams>> ports = {{SerialHandlerParams()}, "ports",  true};
+	Parameter<std::map<std::string, SerialHandlerParams>> ports = {{{"example_id", SerialHandlerParams()}}, "ports",
+																   true};
 
-	template <typename Config>
+	template<typename Config>
 	inline void
 	configure(Config& c)
 	{

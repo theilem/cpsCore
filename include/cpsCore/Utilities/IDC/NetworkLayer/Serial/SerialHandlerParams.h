@@ -31,7 +31,6 @@ ENUMMAP_INIT(FlowControl, {
 
 struct SerialHandlerParams
 {
-	Parameter<std::string> id = {"id", "id", true};
 	Parameter<std::string> serialPort = {"/dev/ttyUSB0", "serial_port", true};
 	Parameter<unsigned> baudRate = {115200, "baud_rate", true};
 	Parameter<std::string> delimiterString = {"*-*", "delimiter_string", true};
@@ -44,7 +43,6 @@ struct SerialHandlerParams
 	inline void
 	configure(Config& c)
 	{
-		c & id;
 		c & serialPort;
 		c & baudRate;
 		c & delimiterString;

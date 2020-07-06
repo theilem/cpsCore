@@ -40,6 +40,9 @@ public:
 	bool
 	checkIsSet() const;
 
+	bool
+	checkIsSetAll() const;
+
 protected:
 
 	template<class Ret>
@@ -113,6 +116,13 @@ inline bool
 AggregatableObject<Objects...>::checkIsSet() const
 {
 	return (... && (this->template checkIsSetImpl<Checks>()));
+}
+
+template<class... Objects>
+bool
+AggregatableObject<Objects...>::checkIsSetAll() const
+{
+	return (... && (this->template checkIsSetImpl<Objects>()));
 }
 
 

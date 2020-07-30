@@ -11,6 +11,7 @@
 #define UAVAP_CORE_DATAPRESENTATION_APDATAPRESENTATION_BASICSERIALIZATION_H_
 
 #include "cpsCore/Utilities/Optional.hpp"
+#include "cpsCore/Utilities/Angle.hpp"
 #include "cpsCore/Configuration/Parameter.hpp"
 #include "cpsCore/Utilities/DataPresentation/detail/SerializeCustom.h"
 #include "cpsCore/Utilities/DataPresentation/detail/Split.h"
@@ -401,6 +402,13 @@ store(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val);
 template<class Archive, typename Type>
 inline void
 serialize(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val);
+
+/**
+ * @brief Serialize function for any Angle
+ */
+template<class Archive, typename Type>
+inline void
+serialize(Archive& ar, std::enable_if_t<is_angle<Type>::value, Type>& val);
 
 
 

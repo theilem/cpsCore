@@ -44,6 +44,12 @@ public:
 		return rad_;
 	}
 
+	Type&
+	operator()()
+	{
+		return rad_;
+	}
+
 	operator Type() const
 	{
 		return rad_;

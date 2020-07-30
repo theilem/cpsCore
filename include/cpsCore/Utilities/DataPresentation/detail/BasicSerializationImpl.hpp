@@ -312,4 +312,11 @@ dp::serialize(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& va
 	split(ar, val);
 }
 
+template<class Archive, typename Type>
+inline void
+dp::serialize(Archive& ar, std::enable_if_t<is_angle<Type>::value, Type>& val)
+{
+	ar & val();
+}
+
 #endif /* UAVAP_CORE_DATAPRESENTATION_APDATAPRESENTATION_DETAIL_BASICSERIALIZATIONIMPL_HPP_ */

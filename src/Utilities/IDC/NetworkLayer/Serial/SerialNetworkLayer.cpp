@@ -49,7 +49,15 @@ SerialNetworkLayer::run(RunStage stage)
 		}
 		for (const auto& it : params.ports())
 		{
-			handler_.emplace(it.first, std::make_shared<SerialHandler>(it.second));
+			try
+			{
+				handler_.emplace(it.first, std::make_shared<SerialHandler>(it.second));
+			}
+			catch (const boost::system::system_error& err)
+			{
+				CPSLOG_ERROR << "An error occurred when creating SerialHandler for " << it.first << ": " << err.what();
+				return true;
+			}
 		}
 		break;
 	}

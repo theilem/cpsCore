@@ -546,6 +546,7 @@ template<typename Param>
 bool
 PropertyMapper<Config>::operator&(Param& param)
 {
+	static_assert(is_parameter<Param>::value || is_parameter_ref<Param>::value, "Cannot handle non parameter objects");
 	if constexpr (is_parameter_set<typename Param::ValueType>::value)
 	{
 		auto pm = getChild(param.id, param.mandatory);

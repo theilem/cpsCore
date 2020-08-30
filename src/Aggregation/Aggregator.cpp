@@ -5,6 +5,7 @@
  *      Author: mircot
  */
 #include "cpsCore/Aggregation/Aggregator.h"
+#include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
 
 
 Aggregator::Aggregator()
@@ -19,10 +20,10 @@ Aggregator::add(std::shared_ptr<IAggregatableObject> obj)
 }
 
 Aggregator
-Aggregator::aggregate(std::vector<std::shared_ptr<IAggregatableObject> > aggregation)
+Aggregator::aggregate(const std::vector<std::shared_ptr<IAggregatableObject> >& aggregation)
 {
 	Aggregator agg;
-	for (auto it : aggregation)
+	for (const auto& it : aggregation)
 	{
 		agg.add(it);
 	}
@@ -58,6 +59,7 @@ Aggregator::clear()
 void
 Aggregator::cleanUp()
 {
+	SignalHandlerSingleton::getInstance().callSigHandlers(SIGTERM);
 	clear();
 }
 
@@ -68,4 +70,18 @@ Aggregator::add(std::vector<std::shared_ptr<IAggregatableObject>> objs)
 	{
 		add(it);
 	}
+}
+
+
+
+bool
+Aggregator::empty() const
+{
+	return container_.empty();
+}
+
+std::size_t
+Aggregator::size() const
+{
+	return container_.size();
 }

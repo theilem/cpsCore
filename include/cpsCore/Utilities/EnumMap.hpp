@@ -10,6 +10,7 @@
 
 #include <initializer_list>
 #include <map>
+#include <unordered_map>
 #include <string>
 
 #include "cpsCore/Logging/CPSLogger.h"
@@ -68,13 +69,11 @@ protected:
 
 
 	std::map<ENUM, std::string> left_;
-	std::map<std::string, ENUM> right_;
+	std::unordered_map<std::string, ENUM> right_;
 
 private:
 
-	EnumMap()
-	{
-	}
+	EnumMap() = default;
 
 
 };
@@ -111,6 +110,22 @@ findInMap(const std::map<First,Second>& map, const First& arg)
 }
 
 #define ENUMMAP_INIT(e, ...)	const EnumInitializer<e> initializer_##e(__VA_ARGS__)
+
+template<typename ENUM, typename RetType, class STRUCT>
+RetType
+enumAccess(const STRUCT& data, const std::string& string)
+{
+	static_assert(std::is_enum<ENUM>::value, "Has to be called on enums");
+	return enumAccess<RetType>(data, EnumMap<ENUM>::convert(string));
+}
+
+template<typename RetType, typename ENUM>
+RetType
+enumAccessUnknown(const ENUM& e)
+{
+	CPSLOG_ERROR << "Requested value " << EnumMap<ENUM>::convert(e) << " not available";
+	return 0;
+}
 
 
 template <class T, typename E>

@@ -37,3 +37,17 @@ DynamicObjectContainer::add(const DynamicObjectContainer& obj)
 		container_.push_back(it);
 	}
 }
+
+
+
+bool
+DynamicObjectContainer::empty() const
+{
+	return container_.empty();
+}
+
+std::size_t
+DynamicObjectContainer::size() const
+{
+	return container_.size();
+}

@@ -25,7 +25,8 @@ public:
 	void
 	operator=(const EnumMap<ENUM>&) = delete;
 
-	static EnumMap& getInstance()
+	static EnumMap&
+	getInstance()
 	{
 		static EnumMap<ENUM> instance;
 		return instance;
@@ -65,6 +66,18 @@ public:
 		return it->second;
 	}
 
+	auto
+	begin() const
+	{
+		return left_.begin();
+	}
+
+	auto
+	end() const
+	{
+		return left_.end();
+	}
+
 protected:
 
 
@@ -78,7 +91,7 @@ private:
 
 };
 
-template <typename ENUM>
+template<typename ENUM>
 class EnumInitializer
 {
 public:
@@ -89,27 +102,27 @@ public:
 	}
 };
 
-template <typename First, typename Second>
+template<typename First, typename Second>
 std::pair<const First, Second>*
-findInMap(std::map<First,Second>& map, const First& arg)
+findInMap(std::map<First, Second>& map, const First& arg)
 {
-	typename std::map<First,Second>::iterator it = map.find(arg);
+	typename std::map<First, Second>::iterator it = map.find(arg);
 	if (it == map.end())
 		return nullptr;
 	return &(*it);
 }
 
-template <typename First, typename Second>
+template<typename First, typename Second>
 const std::pair<const First, Second>*
-findInMap(const std::map<First,Second>& map, const First& arg)
+findInMap(const std::map<First, Second>& map, const First& arg)
 {
-	typename std::map<First,Second>::const_iterator it = map.find(arg);
+	typename std::map<First, Second>::const_iterator it = map.find(arg);
 	if (it == map.end())
 		return nullptr;
 	return &(*it);
 }
 
-#define ENUMMAP_INIT(e, ...)	const EnumInitializer<e> initializer_##e(__VA_ARGS__)
+#define ENUMMAP_INIT(e, ...)    const EnumInitializer<e> initializer_##e(__VA_ARGS__)
 
 template<typename ENUM, typename RetType, class STRUCT>
 RetType
@@ -128,22 +141,25 @@ enumAccessUnknown(const ENUM& e)
 }
 
 
-template <class T, typename E>
-struct TypeToEnum {
+template<class T, typename E>
+struct TypeToEnum
+{
 };
 
-template <typename E, E VALUE>
-struct EnumToType {};
+template<typename E, E VALUE>
+struct EnumToType
+{
+};
 
-#define MATCH_TYPE_AND_ENUM(TYPE, ENUM)                 	\
-  template <>                                           	\
-  struct TypeToEnum<TYPE, decltype(ENUM)> {					\
-    static decltype(ENUM) v() { return ENUM; }          	\
-    static constexpr decltype(ENUM) value = ENUM;       	\
-  };                                                    	\
-  template <>                                           	\
-  struct EnumToType<decltype(ENUM), ENUM> {             	\
-    typedef TYPE Type;                                  	\
+#define MATCH_TYPE_AND_ENUM(TYPE, ENUM)                    \
+  template <>                                            \
+  struct TypeToEnum<TYPE, decltype(ENUM)> {                    \
+    static decltype(ENUM) v() { return ENUM; }            \
+    static constexpr decltype(ENUM) value = ENUM;        \
+  };                                                        \
+  template <>                                            \
+  struct EnumToType<decltype(ENUM), ENUM> {                \
+    typedef TYPE Type;                                    \
   }
 
 #endif /* UAVAP_CORE_ENUMMAP_HPP_ */

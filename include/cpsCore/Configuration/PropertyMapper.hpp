@@ -134,6 +134,7 @@ protected:
 
 	const Configuration& p_;
 	bool mandatoryCheck_;
+	bool empty_;
 
 private:
 	template<typename Type>
@@ -373,7 +374,7 @@ PropertyMapper<Config>::addEnumVector(const std::string& key, std::vector<Enum>&
 
 template<typename Config>
 PropertyMapper<Config>::PropertyMapper(const Config& p) :
-		p_(p), mandatoryCheck_(true)
+		p_(p), mandatoryCheck_(true), empty_(p.empty())
 {
 }
 
@@ -538,7 +539,7 @@ template<typename Config>
 bool
 PropertyMapper<Config>::isEmpty() const
 {
-	return p_.empty();
+	return empty_ || p_.empty();
 }
 
 template<typename Config>

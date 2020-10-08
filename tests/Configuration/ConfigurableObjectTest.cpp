@@ -41,6 +41,18 @@ struct Params
 	}
 };
 
+struct ParamsWithOptional
+{
+	Parameter<Optional<ParamsNested>> nested = { {}, "nested", false };
+
+	template<class Configurator>
+	inline void
+	configure(Configurator& c)
+	{
+		c & nested;
+	}
+};
+
 class Test: public ConfigurableObject<Params>
 {
 public:
@@ -53,6 +65,11 @@ public:
 		CHECK(params.p3().p2() == "test1");
 		CHECK(params.p3().p3() == 700);
 	}
+};
+
+class TestOptional: public ConfigurableObject<ParamsWithOptional>
+{
+public:
 };
 
 class Test2: public ConfigurableObject<ParamsNested>
@@ -150,6 +167,39 @@ TEST_CASE("Test2 Member Config")
 	Test2 test;
 	CHECK(test.configure(configUpper));
 	test.checkParams();
+
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
+
+
+}
+
+TEST_CASE("Test3 Optional Config")
+{
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
+
+	Configuration config;
+	Configuration configWithout;
+	Configuration subConfig;
+
+	subConfig.add("p1", 3.2);
+	subConfig.add("p2", "test1");
+	subConfig.add("p3", 700);
+
+	config.add_child("nested", subConfig);
+
+	TestOptional test;
+	CHECK(test.configure(config));
+	CHECK(test.getParams().nested());
+	CHECK(test.getParams().nested()->p1() == 3.2f);
+
+	Configuration c;
+	PropertyMapper<Configuration> p(c);
+	REQUIRE(p.isEmpty());
+
+	TestOptional test2;
+	bool conf = test2.configure(configWithout);
+	CHECK(conf);
+	CHECK(!test2.getParams().nested());
 
 	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
 

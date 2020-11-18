@@ -117,6 +117,10 @@ public:
 	bool
 	addEnumVector(const std::string& key, std::vector<Enum>& e, bool mandatory);
 
+	template<typename Type, int rows, int cols, int options>
+	bool
+	addEigen(const std::string& key, Eigen::Matrix<Type, rows, cols, options>& val, bool mandatory);
+
 	template<typename Param>
 	bool
 	operator&(Param& param);
@@ -495,6 +499,28 @@ PropertyMapper<Config>::add(const std::string& key, Vector3& val, bool mandatory
 }
 
 template<typename Config>
+template<typename Type, int rows, int cols, int options>
+bool
+PropertyMapper<Config>::addEigen(const std::string& key, Eigen::Matrix<Type, rows, cols, options>& val, bool mandatory)
+{
+	std::vector<Type> vec;
+	if (!this->template addVector<std::vector<Type>>(key, vec, mandatory))
+		return false;
+
+	if (vec.size() == rows * cols)
+	{
+		val = Eigen::Matrix<Type, rows, cols, options>(vec.data());
+		return true;
+	}
+	if (mandatory)
+	{
+		CPSLOG_ERROR << "PM: Vector " << key << " does not have " << rows * cols << " values, only " << vec.size();
+		mandatoryCheck_ = false;
+	}
+	return false;
+}
+
+template<typename Config>
 bool
 PropertyMapper<Config>::add(const std::string& key, Vector2& val, bool mandatory)
 {
@@ -587,6 +613,8 @@ PropertyMapper<Config>::addSpecific(const std::string& key, Type& val, bool mand
 		return addAngle<typename Type::ValueType>(key, val, mandatory);
 	else if constexpr (is_optional<Type>::value)
 		return addOptional<typename Type::value_type>(key, val, mandatory);
+	else if constexpr (is_eigen<Type>::value)
+		return addEigen(key, val, mandatory);
 	else if constexpr (is_parameter_set<Type>::value)
 	{
 		auto pm = getChild(key, mandatory);

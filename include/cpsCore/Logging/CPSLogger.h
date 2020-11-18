@@ -10,6 +10,9 @@
 
 #include <ostream>
 #include <string>
+#include <memory>
+
+class ITimeProvider;
 
 enum class LogLevel
 {
@@ -53,6 +56,9 @@ public:
 	void
 	flush();
 
+	void
+	setTimeProvider(std::shared_ptr<ITimeProvider> timeProvider);
+
 private:
 
 	static CPSLogger* instance_;
@@ -64,6 +70,8 @@ private:
 	std::string moduleName_;
 
 	bool isFlushed_ = true;
+
+	std::weak_ptr<ITimeProvider> timeProvider_;
 
 	CPSLogger();
 

@@ -10,12 +10,14 @@
 struct MicroSimulatorParams
 {
 	Parameter<float> realTimeFactor = {0, "real_time_factor", false};
+	Parameter<unsigned> simTime = {100, "sim_time_s", false};
 
 	template<typename Config>
 	void
 	configure(Config& c)
 	{
 		c & realTimeFactor;
+		c & simTime;
 	}
 };
 

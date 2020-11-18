@@ -43,6 +43,15 @@ public:
 	virtual bool
 	run(RunStage stage) = 0;
 
+	bool
+	runAllStages(){
+		if (run(RunStage::INIT))
+			return true;
+		if (run(RunStage::NORMAL))
+			return true;
+		return run(RunStage::FINAL);
+	}
+
 };
 
 #endif /* UAVAP_CORE_OBJECT_IRUNNABLEOBJECT_H_ */

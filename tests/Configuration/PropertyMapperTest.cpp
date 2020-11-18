@@ -121,3 +121,30 @@ TEST_CASE("Optional test")
 
 	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
 }
+
+TEST_CASE("Eigen Matrix test")
+{
+	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
+	Configuration config;
+	boost::property_tree::read_json(test_info::test_dir() + "Utilities/config/pm_test.json",
+									config);
+
+	PropertyMapper<Configuration> pm(config);
+	Eigen::Matrix<int, 4, 2> matAligned;
+	Eigen::Matrix<int, 4, 2, Eigen::DontAlign> matUnaligned;
+	Eigen::Matrix<double, 3, 3> matDAligned;
+	Eigen::Matrix<double, 3, 3, Eigen::DontAlign> matDUnaligned;
+	pm.addEigen("eigen_matrix", matAligned, true);
+	pm.addEigen("eigen_matrix", matUnaligned, true);
+	pm.addEigen("eigen_matrix_d", matDAligned, true);
+	pm.addEigen("eigen_matrix_d", matDUnaligned, true);
+
+	Eigen::Matrix<int, 4, 2> correct(std::vector<int>({0, 1, 2, 3, 4, 5, 6, 7}).data());
+	Eigen::Matrix<double, 3, 3> correctD(std::vector<double>({0.1, 1.2, 2.3, 3.4, 4.5, 5.6, 6.7, 7.8, 8.9}).data());
+	CHECK(matAligned == correct);
+	CHECK(matUnaligned == correct);
+	CHECK(matDAligned == correctD);
+	CHECK(matDUnaligned == correctD);
+
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
+}

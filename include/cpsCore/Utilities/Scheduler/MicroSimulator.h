@@ -65,6 +65,9 @@ public:
 	int
 	simulate(Duration duration);
 
+	int
+	simulate();
+
 	void
 	stopOnWait();
 

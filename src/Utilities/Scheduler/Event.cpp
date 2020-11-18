@@ -12,7 +12,7 @@ Event::Event()
 {
 }
 
-Event::Event(std::weak_ptr<EventBody> body) :
+Event::Event(std::shared_ptr<EventBody> body) :
 		body_(body)
 {
 }

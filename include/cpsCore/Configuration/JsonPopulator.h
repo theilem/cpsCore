@@ -129,6 +129,10 @@ private:
 	writeValue(const Type& value);
 
 	template<typename Type>
+	std::enable_if_t<is_eigen<Type>::value, JsonPopulator>&
+	writeValue(const Type& value);
+
+	template<typename Type>
 	std::enable_if_t<is_parameter_set<Type>::value, JsonPopulator>&
 	writeValue(const Type& value);
 
@@ -136,7 +140,7 @@ private:
 	std::enable_if_t<
 			!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value &&
 			!is_vector<Type>::value && !is_parameter_set<Type>::value && !is_string_key_map<Type>::value &&
-			!is_optional<Type>::value,
+			!is_optional<Type>::value && !is_eigen<Type>::value,
 			JsonPopulator>&
 	writeValue(const Type& value);
 
@@ -241,6 +245,14 @@ JsonPopulator::writeValue(const Type& value)
 }
 
 template<typename Type>
+inline std::enable_if_t<is_eigen<Type>::value, JsonPopulator>&
+JsonPopulator::writeValue(const Type& value)
+{
+	std::vector<typename Type::value_type> vec(value.data(), value.data() + value.rows() * value.cols());
+	return writeValue(vec);
+}
+
+template<typename Type>
 inline std::enable_if_t<is_vector<Type>::value, JsonPopulator>&
 JsonPopulator::writeValue(const Type& value)
 {
@@ -326,7 +338,7 @@ template<typename Type>
 inline std::enable_if_t<
 		!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value &&
 		!is_vector<Type>::value && !is_parameter_set<Type>::value && !is_string_key_map<Type>::value &&
-		!is_optional<Type>::value, JsonPopulator>&
+		!is_optional<Type>::value && !is_eigen<Type>::value, JsonPopulator>&
 JsonPopulator::writeValue(const Type& value)
 {
 	jsonString_ << value;

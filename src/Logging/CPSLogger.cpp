@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include "cpsCore/Logging/CPSLogger.h"
+#include "cpsCore/Utilities/TimeProvider/ITimeProvider.h"
 
 CPSLogger* CPSLogger::instance_ = nullptr;
 
@@ -40,6 +41,8 @@ CPSLogger::log(LogLevel level)
 		isFlushed_ = false; //There will be some input
 		if (!moduleName_.empty())
 			sink_ << "[" << moduleName_ << "]";
+		if (auto tp = timeProvider_.lock())
+			sink_ << "[" << Clock::to_time_t(tp->now()) << "]";
 		return sink_;
 	}
 	return emptySink_;
@@ -48,14 +51,8 @@ CPSLogger::log(LogLevel level)
 std::ostream&
 CPSLogger::log(LogLevel level, const std::string& module)
 {
-	if (level >= setLevel_ && moduleName_.compare(module) == 0)
-	{
-		flush();
-		isFlushed_ = false; //There will be some input
-		if (!moduleName_.empty())
-			sink_ << "[" << moduleName_ << "]";
-		return sink_;
-	}
+	if (moduleName_ == module)
+		return log(level);
 	return emptySink_;
 }
 
@@ -93,6 +90,12 @@ LogLevel
 CPSLogger::getLogLevel() const
 {
 	return setLevel_;
+}
+
+void
+CPSLogger::setTimeProvider(std::shared_ptr<ITimeProvider> timeProvider)
+{
+	timeProvider_ = timeProvider;
 }
 
 CPSLogger::LogLevelScope::LogLevelScope(LogLevel setLevel)

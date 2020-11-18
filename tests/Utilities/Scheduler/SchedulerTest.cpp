@@ -173,3 +173,18 @@ TEST_CASE("MultiThreaded Test 4")
 	sched->stop();
 	CPSLogger::instance()->setLogLevel(LogLevel::WARN);
 }
+
+TEST_CASE("MicroSimulator cancel test")
+{
+	bool shouldCall = true;
+
+	MicroSimulator sim;
+	auto event = sim.schedule([&shouldCall](){CHECK(shouldCall);}, Milliseconds(100), Milliseconds(100));
+
+	CHECK(!event.isCanceled());
+	sim.simulate(Seconds(100));
+	CHECK(!event.isCanceled());
+	event.cancel();
+	shouldCall = false;
+	sim.simulate(Seconds(1));
+}

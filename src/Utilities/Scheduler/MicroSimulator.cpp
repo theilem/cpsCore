@@ -68,15 +68,18 @@ MicroSimulator::simulate(Duration duration)
 			CPSLOG_DEBUG << "MicroSim Scheduler was stopped.";
 			return runs_;
 		}
-
-		now_ = events_.begin()->first;
-		events_.begin()->second->body();
-		if (events_.begin()->second->period)
+		auto [time, nextEvent] = *events_.begin();
+		now_ = time;
+		if (!nextEvent->isCanceled.load())
 		{
-			schedule(events_.begin()->second->body, *events_.begin()->second->period,
-					 *events_.begin()->second->period);
+			CPSLOG_TRACE << "Calling function at " << Clock::to_time_t(now_);
+			nextEvent->body();
+			if (nextEvent->period)
+			{
+				events_.insert(std::make_pair(now_ + *nextEvent->period, nextEvent));
+			}
+			++runs_;
 		}
-		++runs_;
 		events_.erase(events_.begin());
 	}
 
@@ -162,4 +165,10 @@ bool
 MicroSimulator::isStopped()
 {
 	return stopped_;
+}
+
+int
+MicroSimulator::simulate()
+{
+	return simulate(Seconds(params.simTime()));
 }

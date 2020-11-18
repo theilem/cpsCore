@@ -14,6 +14,7 @@
 #include <map>
 #include <unordered_map>
 #include <cpsCore/Utilities/Optional.hpp>
+#include <cpsCore/Utilities/LinearAlgebra.h>
 
 template<typename T>
 struct is_vector : public std::false_type
@@ -50,6 +51,16 @@ struct is_optional : public std::false_type
 
 template<typename T>
 struct is_optional<Optional<T>> : public std::true_type
+{
+};
+
+template <typename T>
+struct is_eigen: std::false_type
+{
+};
+
+template <typename T, int r, int c, int o>
+struct is_eigen<Eigen::Matrix<T, r, c, o>>: std::true_type
 {
 };
 

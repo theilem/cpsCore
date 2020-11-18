@@ -18,7 +18,7 @@ public:
 
 	Event();
 
-	explicit Event(std::weak_ptr<EventBody> body);
+	explicit Event(std::shared_ptr<EventBody> body);
 
 	void
 	cancel();

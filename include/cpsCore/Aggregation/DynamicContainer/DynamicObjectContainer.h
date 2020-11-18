@@ -38,6 +38,12 @@ public:
 	void
 	clear();
 
+	bool
+	empty() const;
+
+	std::size_t
+	size() const;
+
 private:
 
 	std::vector<std::shared_ptr<IAggregatableObject> > container_;

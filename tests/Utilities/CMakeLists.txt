@@ -5,6 +5,7 @@ add_subdirectory(Scheduler)
 set(TEST_SRCS 	${TEST_SRCS}
                 ${CMAKE_CURRENT_SOURCE_DIR}/AngleTest.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/TypeTraitsTest.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/EnumMap.cpp
                 PARENT_SCOPE)
 
 configure_file(${PROJECT_SOURCE_DIR}/tests/Utilities/config/pm_test.json ${CMAKE_BINARY_DIR}/tests/Utilities/config/pm_test.json COPYONLY)

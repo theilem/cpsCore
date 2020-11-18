@@ -52,7 +52,7 @@ public:
 	getAll(Type* self = nullptr) const;
 
 	static Aggregator
-	aggregate(std::vector<std::shared_ptr<IAggregatableObject> > aggregation);
+	aggregate(const std::vector<std::shared_ptr<IAggregatableObject> >& aggregation);
 
 	void
 	merge(Aggregator& agg);
@@ -68,6 +68,14 @@ public:
 
 	void
 	cleanUp();
+
+	bool
+	empty() const;
+
+	std::size_t
+	size() const;
+
+
 
 private:
 

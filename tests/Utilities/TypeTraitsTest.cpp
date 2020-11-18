@@ -7,6 +7,7 @@
 
 #include <cpsCore/Utilities/Test/TestInfo.h>
 #include "cpsCore/Utilities/TypeTraits.hpp"
+#include "cpsCore/Utilities/LinearAlgebra.h"
 #include <map>
 #include <unordered_map>
 
@@ -31,4 +32,10 @@ TEST_CASE("TypeTraits test")
 	CHECK(is_eigen<Eigen::Matrix<int, 4, 2, Eigen::DontAlign>>::value);
 	CHECK(is_eigen<Eigen::Matrix<double, 4, 2>>::value);
 	CHECK(is_eigen<Eigen::Matrix<double, 4, 2, Eigen::DontAlign>>::value);
+
+	CHECK(is_eigen_vector<Vector3>::value);
+	CHECK(is_eigen_vector<Eigen::Vector3d>::value);
+	CHECK(is_eigen_vector<Eigen::Vector3f>::value);
+	CHECK(is_eigen_vector<Eigen::Vector3i>::value);
+	CHECK_FALSE(is_eigen_vector<Eigen::Matrix2d>::value);
 }

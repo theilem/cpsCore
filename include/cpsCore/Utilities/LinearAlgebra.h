@@ -42,6 +42,20 @@ using EigenHyperplane = Eigen::Hyperplane<double, 3, Eigen::DontAlign>;
 
 #endif
 
+
+/**
+ * Some useful type traits
+ */
+template<typename T>
+struct is_eigen_vector : public std::false_type
+{
+};
+
+template<typename T, int rows, int opts, int max_rows, int max_cols>
+struct is_eigen_vector<Eigen::Matrix<T, rows, 1, opts, max_rows, max_cols>> : public std::true_type
+{
+};
+
 /**
  * @brief Rotate 2D vector counter clockwise
  * @param vec Vector to be rotated

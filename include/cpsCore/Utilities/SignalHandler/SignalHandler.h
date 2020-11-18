@@ -67,7 +67,7 @@ public:
 		onExit_();
 		onExit_.disconnect_all_slots(); //Avoid double call
 
-		signalHandled_ = true;
+		joinHandler();
 	}
 
 	void

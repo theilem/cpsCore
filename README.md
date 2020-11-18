@@ -47,3 +47,6 @@ This contains the logic for the CPSLogger, the logger used in this project.
 
 ### Utilities
 Utilities contain all helper classes which can be Aggregatable, Configurable, and Runnable. This is a catchall directory for components
+
+## References
+Theile, M., Dantsker, O., Nai, R., Caccamo, M., & Yu, S. (2020). uavAP: A Modular Autopilot Framework for UAVs. In AIAA AVIATION 2020 FORUM (p. 3268).

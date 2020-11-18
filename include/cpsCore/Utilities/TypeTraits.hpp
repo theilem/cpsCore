@@ -21,9 +21,6 @@ struct is_vector : public std::false_type
 {
 };
 
-/**
- * @brief is_vector struct true_type because T is a vector
- */
 template<typename T, typename A>
 struct is_vector<std::vector<T, A>> : public std::true_type
 {

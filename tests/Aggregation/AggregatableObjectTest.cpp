@@ -62,60 +62,60 @@ SCENARIO("Checking objects can be Aggregated")
 
 			THEN("TestA Correctly aggregated")
 			{
-				CHECK(!testa->isSet<TestA>());
+//				CHECK(!testa->isSet<TestA>()); This will static assert, as TestA is not aggregated to itself
 				CHECK(testa->isSet<TestB>());
 				CHECK(testa->isSet<TestC>());
-				CHECK(!testa->isSet<TestA, TestB>());
-				CHECK(!testa->isSet<TestA, TestC>());
+//				CHECK(!testa->isSet<TestA, TestB>());  Static assert
+//				CHECK(!testa->isSet<TestA, TestC>());  Static assert
 				CHECK(testa->isSet<TestB, TestC>());
-				CHECK(!testa->isSet<TestA, TestB, TestC>());
+//				CHECK(!testa->isSet<TestA, TestB, TestC>()); Static assert
 
-				CHECK(!testa->checkIsSet<TestA>());
+//				CHECK(!testa->checkIsSet<TestA>()); Static assert
 				CHECK(testa->checkIsSet<TestB>());
 				CHECK(testa->checkIsSet<TestC>());
-				CHECK(!testa->checkIsSet<TestA, TestB>());
-				CHECK(!testa->checkIsSet<TestA, TestC>());
+//				CHECK(!testa->checkIsSet<TestA, TestB>()); Static assert
+//				CHECK(!testa->checkIsSet<TestA, TestC>()); Static assert
 				CHECK(testa->checkIsSet<TestB, TestC>());
-				CHECK(!testa->checkIsSet<TestA, TestB, TestC>());
+//				CHECK(!testa->checkIsSet<TestA, TestB, TestC>()); Static assert
 				CHECK(testa->checkIsSetAll());
 			}
 
 			THEN("TestB Correctly aggregated")
 			{
 				CHECK(testb->isSet<TestA>());
-				CHECK(!testb->isSet<TestB>());
+//				CHECK(!testb->isSet<TestB>()); Static assert
 				CHECK(testb->isSet<TestC>());
-				CHECK(!testb->isSet<TestA, TestB>());
+//				CHECK(!testb->isSet<TestA, TestB>()); Static assert
 				CHECK(testb->isSet<TestA, TestC>());
-				CHECK(!testb->isSet<TestB, TestC>());
-				CHECK(!testb->isSet<TestA, TestB, TestC>());
+//				CHECK(!testb->isSet<TestB, TestC>()); Static assert
+//				CHECK(!testb->isSet<TestA, TestB, TestC>()); Static assert
 				CHECK(testb->checkIsSetAll());
 
 				CHECK(testb->checkIsSet<TestA>());
-				CHECK(!testb->checkIsSet<TestB>());
+//				CHECK(!testb->checkIsSet<TestB>()); This will static assert, as TestB is not aggregated to itself
 				CHECK(testb->checkIsSet<TestC>());
-				CHECK(!testb->checkIsSet<TestA, TestB>());
+//				CHECK(!testb->checkIsSet<TestA, TestB>()); Static assert
 				CHECK(testb->checkIsSet<TestA, TestC>());
-				CHECK(!testb->checkIsSet<TestB, TestC>());
+//				CHECK(!testb->checkIsSet<TestB, TestC>()); Static assert
 			}
 
 			THEN("TestC Correctly aggregated")
 			{
 				CHECK(testc->isSet<TestA>());
 				CHECK(testc->isSet<TestB>());
-				CHECK(!testc->isSet<TestC>());
+//				CHECK(!testc->isSet<TestC>()); Static assert
 				CHECK(testc->isSet<TestA, TestB>());
-				CHECK(!testc->isSet<TestA, TestC>());
-				CHECK(!testc->isSet<TestB, TestC>());
-				CHECK(!testc->isSet<TestA, TestB, TestC>());
+//				CHECK(!testc->isSet<TestA, TestC>()); Static assert
+//				CHECK(!testc->isSet<TestB, TestC>()); Static assert
+//				CHECK(!testc->isSet<TestA, TestB, TestC>()); Static assert
 				CHECK(testc->checkIsSetAll());
 
 				CHECK(testc->checkIsSet<TestA>());
 				CHECK(testc->checkIsSet<TestB>());
-				CHECK(!testc->checkIsSet<TestC>());
+//				CHECK(!testc->checkIsSet<TestC>()); Static assert
 				CHECK(testc->checkIsSet<TestA, TestB>());
-				CHECK(!testc->checkIsSet<TestA, TestC>());
-				CHECK(!testc->checkIsSet<TestB, TestC>());
+//				CHECK(!testc->checkIsSet<TestA, TestC>()); Static assert
+//				CHECK(!testc->checkIsSet<TestB, TestC>()); Static assert
 			}
 
 			THEN("Values correctly set")
@@ -149,41 +149,41 @@ SCENARIO("Checking missing object in agg")
 
 			THEN("TestA Correctly aggregated")
 			{
-				CHECK(!testa->isSet<TestA>());
+//				CHECK(!testa->isSet<TestA>()); Static assert
 				CHECK(testa->isSet<TestB>());
 				CHECK(!testa->isSet<TestC>());
-				CHECK(!testa->isSet<TestA, TestB>());
-				CHECK(!testa->isSet<TestA, TestC>());
+//				CHECK(!testa->isSet<TestA, TestB>()); Static assert
+//				CHECK(!testa->isSet<TestA, TestC>()); Static assert
 				CHECK(!testa->isSet<TestB, TestC>());
-				CHECK(!testa->isSet<TestA, TestB, TestC>());
+//				CHECK(!testa->isSet<TestA, TestB, TestC>()); Static assert
 
-				CHECK(!testa->checkIsSet<TestA>());
+//				CHECK(!testa->checkIsSet<TestA>()); Static assert
 				CHECK(testa->checkIsSet<TestB>());
 				CHECK(!testa->checkIsSet<TestC>());
-				CHECK(!testa->checkIsSet<TestA, TestB>());
-				CHECK(!testa->checkIsSet<TestA, TestC>());
+//				CHECK(!testa->checkIsSet<TestA, TestB>()); Static assert
+//				CHECK(!testa->checkIsSet<TestA, TestC>()); Static assert
 				CHECK(!testa->checkIsSet<TestB, TestC>());
-				CHECK(!testa->checkIsSet<TestA, TestB, TestC>());
+//				CHECK(!testa->checkIsSet<TestA, TestB, TestC>()); Static assert
 				CHECK(!testa->checkIsSetAll());
 			}
 
 			THEN("TestB Correctly aggregated")
 			{
 				CHECK(testb->isSet<TestA>());
-				CHECK(!testb->isSet<TestB>());
+//				CHECK(!testb->isSet<TestB>()); Static assert
 				CHECK(!testb->isSet<TestC>());
-				CHECK(!testb->isSet<TestA, TestB>());
+//				CHECK(!testb->isSet<TestA, TestB>()); Static assert
 				CHECK(!testb->isSet<TestA, TestC>());
-				CHECK(!testb->isSet<TestB, TestC>());
-				CHECK(!testb->isSet<TestA, TestB, TestC>());
+//				CHECK(!testb->isSet<TestB, TestC>()); Static assert
+//				CHECK(!testb->isSet<TestA, TestB, TestC>()); Static assert
 				CHECK(!testb->checkIsSetAll());
 
 				CHECK(testb->checkIsSet<TestA>());
-				CHECK(!testb->checkIsSet<TestB>());
+//				CHECK(!testb->checkIsSet<TestB>()); Static assert
 				CHECK(!testb->checkIsSet<TestC>());
-				CHECK(!testb->checkIsSet<TestA, TestB>());
+//				CHECK(!testb->checkIsSet<TestA, TestB>()); Static assert
 				CHECK(!testb->checkIsSet<TestA, TestC>());
-				CHECK(!testb->checkIsSet<TestB, TestC>());
+//				CHECK(!testb->checkIsSet<TestB, TestC>()); Static assert
 			}
 
 			THEN("Values correctly set")

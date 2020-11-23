@@ -96,7 +96,7 @@ class EnumInitializer
 {
 public:
 
-	EnumInitializer(std::initializer_list<std::pair<ENUM, std::string>> l)
+	EnumInitializer(std::initializer_list<std::pair<ENUM, std::string>> l) noexcept
 	{
 		EnumMap<ENUM>::initialize(l);
 	}

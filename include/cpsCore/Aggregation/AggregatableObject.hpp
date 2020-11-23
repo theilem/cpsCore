@@ -12,7 +12,7 @@
 #include "cpsCore/Logging/CPSLogger.h"
 
 template<class ... Objects>
-class AggregatableObject: public IAggregatableObject
+class AggregatableObject : public IAggregatableObject
 {
 public:
 
@@ -21,7 +21,7 @@ public:
 	template<class Type>
 	using WeakPtrType = std::weak_ptr<Type>;
 
-	template <class Agg>
+	template<class Agg>
 	void
 	notifyAggregationOnUpdate(const Agg& agg);
 
@@ -44,6 +44,10 @@ public:
 	checkIsSetAll() const;
 
 protected:
+
+	template<class Ret>
+	static constexpr bool
+	isGettable();
 
 	template<class Ret>
 	bool
@@ -78,9 +82,9 @@ template<class Ret>
 inline typename AggregatableObject<Objects...>::template PtrType<Ret>
 AggregatableObject<Objects...>::get() const
 {
+	static_assert(AggregatableObject<Objects...>::isGettable<Ret>(), "Requested class not gettable");
 	return container_.template get<Ret>();
 }
-
 
 
 template<class ... Objects>
@@ -88,6 +92,7 @@ template<class Ret>
 inline bool
 AggregatableObject<Objects...>::isSetImpl() const
 {
+	static_assert(AggregatableObject<Objects...>::isGettable<Ret>(), "Requested class not gettable");
 	return container_.template isSet<Ret>();
 }
 
@@ -123,6 +128,14 @@ bool
 AggregatableObject<Objects...>::checkIsSetAll() const
 {
 	return (... && (this->template checkIsSetImpl<Objects>()));
+}
+
+template<class... Objects>
+template<class Ret>
+constexpr bool
+AggregatableObject<Objects...>::isGettable()
+{
+	return ObjectHandleContainer<Objects...>::template canContain<Ret>();
 }
 
 

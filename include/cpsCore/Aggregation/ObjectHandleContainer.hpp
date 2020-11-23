@@ -26,22 +26,22 @@ public:
 	template<class Ret>
 	PtrType<
 			typename std::enable_if<
-					(std::is_base_of<Ret, Object> { } || std::is_same<Ret, Object> { }), Ret>::type>
+					(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}), Ret>::type>
 	get() const;
 
 	template<class Ret>
 	PtrType<
 			typename std::enable_if<
-					!(std::is_base_of<Ret, Object> { } || std::is_same<Ret, Object> { }), Ret>::type>
+					!(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}), Ret>::type>
 	get() const;
 
 	template<class Ret>
-	typename std::enable_if<(std::is_base_of<Ret, Object> { } || std::is_same<Ret, Object> { }),
+	typename std::enable_if<(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
 			bool>::type
 	isSet() const;
 
 	template<class Ret>
-	typename std::enable_if<!(std::is_base_of<Ret, Object> { } || std::is_same<Ret, Object> { }),
+	typename std::enable_if<!(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
 			bool>::type
 	isSet() const;
 
@@ -51,6 +51,10 @@ public:
 
 	void
 	setFromAggregationIfNotSet(const Aggregator& agg);
+
+	template<class Ret>
+	static constexpr bool
+	canContain();
 
 private:
 
@@ -93,12 +97,31 @@ public:
 	setFromAggregationIfNotSet(const Aggregator& agg)
 	{
 	}
+
+
+	template<class Ret>
+	static constexpr bool
+	canContain()
+	{
+		return false;
+	}
 };
+
+template<class Object, class... Others>
+template<class Ret>
+constexpr bool
+ObjectHandleContainer<Object, Others...>::canContain()
+{
+	if constexpr (std::is_base_of_v<Ret, Object>)
+		return true;
+	else
+		return ObjectHandleContainer<Others...>::template canContain<Ret>();
+}
 
 template<class Object, class ... Others>
 template<class Ret>
 inline typename ObjectHandleContainer<Object, Others...>::template PtrType<
-		typename std::enable_if<(std::is_base_of<Ret, Object> { } || std::is_same<Ret, Object> { }),
+		typename std::enable_if<(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
 				Ret>::type>
 ObjectHandleContainer<Object, Others...>::get() const
 {
@@ -109,7 +132,7 @@ template<class Object, class ... Others>
 template<class Ret>
 inline typename ObjectHandleContainer<Object, Others...>::template PtrType<
 		typename std::enable_if<
-				!(std::is_base_of<Ret, Object> { } || std::is_same<Ret, Object> { }), Ret>::type>
+				!(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}), Ret>::type>
 ObjectHandleContainer<Object, Others...>::get() const
 {
 	return others_.template get<Ret>();
@@ -135,10 +158,9 @@ ObjectHandleContainer<Object, Others ...>::setFromAggregationIfNotSet(const Aggr
 }
 
 
-
 template<class Object, class ... Others>
 template<class Ret>
-inline typename std::enable_if<(std::is_base_of<Ret, Object> { } || std::is_same<Ret, Object> { }),
+inline typename std::enable_if<(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
 		bool>::type
 ObjectHandleContainer<Object, Others...>::isSet() const
 {
@@ -147,7 +169,7 @@ ObjectHandleContainer<Object, Others...>::isSet() const
 
 template<class Object, class ... Others>
 template<class Ret>
-inline typename std::enable_if<!(std::is_base_of<Ret, Object> { } || std::is_same<Ret, Object> { }),
+inline typename std::enable_if<!(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
 		bool>::type
 ObjectHandleContainer<Object, Others...>::isSet() const
 {

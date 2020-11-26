@@ -76,7 +76,6 @@ public:
 	size() const;
 
 
-
 private:
 
 	ObjectContainer container_;
@@ -122,7 +121,7 @@ Aggregator::add(std::tuple<std::shared_ptr<Types>...> obj)
 {
 
 	std::apply([this](auto...x)
-			   { (this->add(x),...); }, obj);
+			   { (this->add(x), ...); }, obj);
 
 }
 

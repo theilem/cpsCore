@@ -54,6 +54,9 @@ public:
 	TimePoint
 	now() override;
 
+	Duration
+	timeSinceStart() override;
+
 	bool
 	waitFor(Duration duration, std::condition_variable& interrupt,
 			std::unique_lock<std::mutex>& lock) override;

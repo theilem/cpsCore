@@ -164,7 +164,7 @@ JsonPopulator::operator&(Type& param)
 	addTabs();
 
 	firstElement_ = false;
-	jsonString_ << "\"" << param.id << "\":";
+	jsonString_ << "\"" << param.id << "\": ";
 	this->template writeValue<typename Type::ValueType>(param.value);
 
 	return *this;
@@ -180,7 +180,7 @@ JsonPopulator::operator&(Type& param)
 	}
 	addTabs();
 
-	jsonString_ << "\"" << param.id << "\":{" << std::endl;
+	jsonString_ << "\"" << param.id << "\": {" << std::endl;
 
 	firstElement_ = true;
 	tabCounter_++;
@@ -205,7 +205,7 @@ JsonPopulator::operator&(Type& param)
 	}
 	addTabs();
 
-	jsonString_ << "\"" << param.id << "\":{" << std::endl;
+	jsonString_ << "\"" << param.id << "\": {" << std::endl;
 
 	firstElement_ = true;
 	tabCounter_++;
@@ -267,6 +267,7 @@ JsonPopulator::writeValue(const Type& value)
 		writeValue(it);
 		firstElement_ = false;
 	}
+	firstElement_ = false;
 
 	outdent();
 	jsonString_ << std::endl;
@@ -341,7 +342,10 @@ inline std::enable_if_t<
 		!is_optional<Type>::value && !is_eigen<Type>::value, JsonPopulator>&
 JsonPopulator::writeValue(const Type& value)
 {
-	jsonString_ << value;
+	if constexpr (std::is_same_v<Type, bool>)
+		jsonString_ << (value ? "true" : "false");
+	else
+		jsonString_ << value;
 	return *this;
 }
 
@@ -377,7 +381,7 @@ JsonPopulator::populateImpl()
 		jsonString_ << "," << std::endl;
 	}
 	addTabs();
-	jsonString_ << "\"" << Obj::typeId << "\"" << ":{" << std::endl;
+	jsonString_ << "\"" << Obj::typeId << "\"" << ": {" << std::endl;
 //	addTabs();
 	indent();
 	firstElement_ = true;
@@ -441,7 +445,7 @@ JsonPopulator::populateImpl()
 	}
 	addTabs();
 	firstElement_ = false;
-	jsonString_ << "\"" << Obj::typeId << "\"" << ":{" << std::endl;
+	jsonString_ << "\"" << Obj::typeId << "\"" << ": {" << std::endl;
 	addTabs();
 	jsonString_ << "}";
 }

@@ -24,6 +24,9 @@ public:
 	virtual TimePoint
 	now() = 0;
 
+	virtual Duration
+	timeSinceStart() = 0;
+
 	virtual bool
 	waitFor(Duration duration, std::condition_variable& interrupt,
 			Lock& lock) = 0;

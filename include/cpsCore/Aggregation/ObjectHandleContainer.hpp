@@ -24,25 +24,11 @@ public:
 	using WeakPtrType = std::weak_ptr<Type>;
 
 	template<class Ret>
-	PtrType<
-			typename std::enable_if<
-					(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}), Ret>::type>
+	PtrType<Ret>
 	get() const;
 
 	template<class Ret>
-	PtrType<
-			typename std::enable_if<
-					!(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}), Ret>::type>
-	get() const;
-
-	template<class Ret>
-	typename std::enable_if<(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
-			bool>::type
-	isSet() const;
-
-	template<class Ret>
-	typename std::enable_if<!(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
-			bool>::type
+	bool
 	isSet() const;
 
 	template<class Agg>
@@ -120,22 +106,13 @@ ObjectHandleContainer<Object, Others...>::canContain()
 
 template<class Object, class ... Others>
 template<class Ret>
-inline typename ObjectHandleContainer<Object, Others...>::template PtrType<
-		typename std::enable_if<(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
-				Ret>::type>
+inline typename ObjectHandleContainer<Object, Others...>::template PtrType<Ret>
 ObjectHandleContainer<Object, Others...>::get() const
 {
-	return object_.lock();
-}
-
-template<class Object, class ... Others>
-template<class Ret>
-inline typename ObjectHandleContainer<Object, Others...>::template PtrType<
-		typename std::enable_if<
-				!(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}), Ret>::type>
-ObjectHandleContainer<Object, Others...>::get() const
-{
-	return others_.template get<Ret>();
+	if constexpr (std::is_base_of_v<Ret, Object>)
+		return object_.lock();
+	else
+		return others_.template get<Ret>();
 }
 
 template<class Object, class ... Others>
@@ -160,21 +137,13 @@ ObjectHandleContainer<Object, Others ...>::setFromAggregationIfNotSet(const Aggr
 
 template<class Object, class ... Others>
 template<class Ret>
-inline typename std::enable_if<(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
-		bool>::type
+inline bool
 ObjectHandleContainer<Object, Others...>::isSet() const
 {
-	return object_.lock() != nullptr;
+	if constexpr (std::is_base_of_v<Ret, Object>)
+		return object_.lock() != nullptr;
+	else
+		return others_.template isSet<Ret>();
 }
-
-template<class Object, class ... Others>
-template<class Ret>
-inline typename std::enable_if<!(std::is_base_of<Ret, Object>{} || std::is_same<Ret, Object>{}),
-		bool>::type
-ObjectHandleContainer<Object, Others...>::isSet() const
-{
-	return others_.template isSet<Ret>();
-}
-
 
 #endif /* UAVAP_CORE_OBJECT_OBJECTHANDLECONTAINER_HPP_ */

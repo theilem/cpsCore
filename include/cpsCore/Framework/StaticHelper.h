@@ -46,6 +46,19 @@ public:
 		return createAggregation(parseConfigFile(configPath));
 	}
 
+/**
+	 * @brief Create an Aggregator containing Objects defined in a configuration loaded in from a config path.
+	 * @param configPath path to the configuration .json file
+	 * @return Aggregator containing the objects
+	 */
+	inline static Aggregator
+	createAggregation(const std::string& configPath, const std::vector<std::string>& paramOverrides)
+	{
+		auto config = parseConfigFile(configPath);
+		applyParamOverrides(config, paramOverrides);
+		return createAggregation(config);
+	}
+
 
 	/**
 	 * @brief Create an Aggregator containing Objects defined in a configuration.
@@ -65,6 +78,27 @@ public:
 	}
 
 private:
+
+	static void
+	applyParamOverrides(Configuration& config, const std::vector<std::string>& paramOverrides)
+	{
+		if (paramOverrides.size() % 2 != 0)
+		{
+			CPSLOG_ERROR << "Parameter override number not divisible by two...";
+			return;
+		}
+		for (int k = 0; k < paramOverrides.size(); k += 2)
+		{
+			try
+			{
+				CPSLOG_DEBUG << "Overriding " << paramOverrides[k] << " from " << config.get<std::string>(paramOverrides[k])
+							 << " to " << paramOverrides[k + 1];
+			} catch (boost::property_tree::ptree_error&)
+			{
+			}
+			config.put(paramOverrides[k], paramOverrides[k + 1]);
+		}
+	}
 
 	template<class DefaultHelper, class... Objs>
 	inline static std::enable_if_t<is_static_helper<DefaultHelper>::value, Aggregator>

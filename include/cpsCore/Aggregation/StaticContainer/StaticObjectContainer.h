@@ -13,8 +13,6 @@
 
 template<class ... Objects>
 struct StaticObjectContainer;
-template<class ... Objects>
-class StaticAggregator;
 
 template<>
 struct StaticObjectContainer<>
@@ -33,9 +31,9 @@ struct StaticObjectContainer<>
 		return std::vector<std::shared_ptr<Ret>>();
 	}
 
-	template<class ...Objects>
+	template<class StaticAggregator>
 	void
-	notifyAggregationOnUpdate(const StaticAggregator<Objects...>& agg);
+	notifyAggregationOnUpdate(const StaticAggregator& agg);
 };
 
 template<class Object, class ... Others>
@@ -75,13 +73,11 @@ struct StaticObjectContainer<Object, Others...>
 							Ret>::type>>
 	getAll() const;
 
-	template<class ...Objects>
+	template<class StaticAggregator>
 	void
-	notifyAggregationOnUpdate(const StaticAggregator<Objects...>& agg);
+	notifyAggregationOnUpdate(const StaticAggregator& agg);
 
 };
-
-#include <uavAP/Core/Object/StaticAggregator.h>
 
 template<class Object, class ... Others>
 inline
@@ -136,18 +132,18 @@ StaticObjectContainer<Object, Others...>::getAll() const
 }
 
 template<class Object, class ... Others>
-template<class ...Objects>
+template<class StaticAggregator>
 inline void
 StaticObjectContainer<Object, Others ...>::notifyAggregationOnUpdate(
-		const StaticAggregator<Objects...>& agg)
+		const StaticAggregator& agg)
 {
 	object.notifyAggregationOnUpdate(agg);
 	others.notifyAggregationOnUpdate(agg);
 }
 
-template<class ... Objects>
+template<class StaticAggregator>
 inline void
-StaticObjectContainer<>::notifyAggregationOnUpdate(const StaticAggregator<Objects...>& agg)
+StaticObjectContainer<>::notifyAggregationOnUpdate(const StaticAggregator& agg)
 {
 }
 

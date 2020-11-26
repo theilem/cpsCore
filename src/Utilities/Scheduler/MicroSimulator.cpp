@@ -172,3 +172,9 @@ MicroSimulator::simulate()
 {
 	return simulate(Seconds(params.simTime()));
 }
+
+Duration
+MicroSimulator::timeSinceStart()
+{
+	return now() - TimePoint();
+}

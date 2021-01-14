@@ -9,6 +9,7 @@
 #define UAVAP_CORE_IPC_DETAIL_SHAREDMEMORYSUBSCRIPTIONIMPL_H_
 
 #include <thread>
+#include <atomic>
 
 #include <boost/interprocess/shared_memory_object.hpp>
 

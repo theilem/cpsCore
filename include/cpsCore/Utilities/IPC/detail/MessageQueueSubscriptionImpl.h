@@ -8,6 +8,7 @@
 #ifndef UAVAP_CORE_IPC_DETAIL_MESSAGEQUEUESUBSCRIPTIONIMPL_H_
 #define UAVAP_CORE_IPC_DETAIL_MESSAGEQUEUESUBSCRIPTIONIMPL_H_
 #include <thread>
+#include <atomic>
 
 #include <boost/interprocess/ipc/message_queue.hpp>
 

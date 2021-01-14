@@ -75,9 +75,9 @@ TEST_CASE("IPC Test 1")
 	int counter1 = 0;
 	int counter2 = 0;
 	Subscription sub1 = ipc->subscribe<Test>("test",
-											 boost::bind(&checkValue, _1, boost::ref(counter1)));
+											 boost::bind(&checkValue, boost::placeholders::_1, boost::ref(counter1)));
 	Subscription sub2 = ipc->subscribe<Test>("test",
-											 boost::bind(&checkValue, _1, boost::ref(counter2)));
+											 boost::bind(&checkValue, boost::placeholders::_1, boost::ref(counter2)));
 	REQUIRE(sub1.connected());
 	REQUIRE(sub2.connected());
 	SimpleRunner run(agg);

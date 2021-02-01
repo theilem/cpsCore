@@ -71,4 +71,18 @@ protected:
 	ParameterSet params;
 };
 
+
+/**
+ * For use with nested configurable objects, where the root object doesn't need to be configured
+ */
+struct PlaceholderParams
+{
+	template <typename Config>
+	void
+	configure(Config& c)
+	{
+
+	}
+};
+
 #endif /* UAVAP_CORE_PROPERTYMAPPER_CONFIGURABLEOBJECT_HPP_ */

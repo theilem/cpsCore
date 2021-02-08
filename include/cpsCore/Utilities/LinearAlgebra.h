@@ -31,6 +31,7 @@ using EigenHyperplane = Eigen::Hyperplane<float, 3, Eigen::DontAlign>;
 #else
 
 using FloatingType = double;
+
 using Vector2 = Eigen::Vector2d;
 using Vector3 = Eigen::Vector3d;
 using Matrix3 = Eigen::Matrix3d;
@@ -42,6 +43,8 @@ using EigenHyperplane = Eigen::Hyperplane<double, 3, Eigen::DontAlign>;
 
 #endif
 
+template<int N>
+using Vector = Eigen::Matrix<FloatingType, N, 1>;
 
 /**
  * Some useful type traits

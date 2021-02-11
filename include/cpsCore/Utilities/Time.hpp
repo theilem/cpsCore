@@ -37,6 +37,17 @@ getTimeOfDay(const TimePoint& time)
 	return time.time_since_epoch() - Hours((sinceEpoch.count() / 24)*24);
 }
 
+inline long
+durationToNanoseconds(const Duration& duration)
+{
+	return std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+}
+
+inline long
+timePointToNanoseconds(const TimePoint& timePoint)
+{
+	return durationToNanoseconds(timePoint.time_since_epoch());
+}
 
 namespace dp
 {

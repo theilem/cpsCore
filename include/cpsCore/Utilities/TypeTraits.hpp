@@ -31,13 +31,28 @@ struct is_string_key_map : public std::false_type
 {
 };
 
-template<typename T, typename A>
-struct is_string_key_map<std::map<std::string, T, A>> : public std::true_type
+template<typename T>
+struct is_string_key_map<std::map<std::string, T>> : public std::true_type
 {
 };
 
-template<typename T, typename A>
-struct is_string_key_map<std::unordered_map<std::string, T, A>> : public std::true_type
+template<typename T>
+struct is_string_key_map<std::unordered_map<std::string, T>> : public std::true_type
+{
+};
+
+template<typename T>
+struct is_enum_map : public std::false_type
+{
+};
+
+template<typename K, typename T>
+struct is_enum_map<std::map<K, T>> : public std::is_enum<K>
+{
+};
+
+template<typename K, typename T>
+struct is_enum_map<std::unordered_map<K, T>> : public std::is_enum<K>
 {
 };
 
@@ -51,13 +66,13 @@ struct is_optional<Optional<T>> : public std::true_type
 {
 };
 
-template <typename T>
-struct is_eigen: std::false_type
+template<typename T>
+struct is_eigen : std::false_type
 {
 };
 
-template <typename T, int r, int c, int o>
-struct is_eigen<Eigen::Matrix<T, r, c, o>>: std::true_type
+template<typename T, int r, int c, int o>
+struct is_eigen<Eigen::Matrix<T, r, c, o>> : std::true_type
 {
 };
 

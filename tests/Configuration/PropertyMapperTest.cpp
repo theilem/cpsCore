@@ -5,11 +5,32 @@
  *      Author: mircot
  */
 
+#include <cpsCore/Utilities/EnumMap.hpp>
+
+
 #include <cpsCore/Utilities/Test/TestInfo.h>
 #include <boost/property_tree/json_parser.hpp>
 #include <cpsCore/Configuration/Configuration.hpp>
 #include <cpsCore/Configuration/PropertyMapper.hpp>
 
+
+namespace
+{
+
+enum class TestEnum
+{
+	TEST1,
+	TEST2,
+	TEST3
+};
+
+ENUMMAP_INIT(TestEnum,
+			 {
+				 { TestEnum::TEST1, "test1" },
+				 { TestEnum::TEST2, "test2" },
+				 { TestEnum::TEST3, "test3" }
+			 });
+}
 
 TEST_CASE("Vector of Doubles")
 {
@@ -99,6 +120,25 @@ TEST_CASE("Unordered map test")
 	CHECK(missions.find("mission3") == missions.end());
 
 	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
+}
+
+
+TEST_CASE("Enum Map test")
+{
+	auto lvl = CPSLogger::LogLevelScope(LogLevel::NONE);
+	Configuration config;
+	boost::property_tree::read_json(test_info::test_dir() + "Utilities/config/pm_test.json",
+									config);
+
+	PropertyMapper<Configuration> pm(config);
+	std::map<TestEnum, int> enums;
+	pm.addEnumMap<std::map<TestEnum, int>>("enums", enums, true);
+
+	CHECK(enums.size() == 2);
+	CHECK(enums.find(TestEnum::TEST1)->second == 8);
+	CHECK(enums.find(TestEnum::TEST2)->second == 10);
+	CHECK(enums.find(TestEnum::TEST3) == enums.end());
+
 }
 
 

@@ -61,6 +61,20 @@ public:
 		return rad_ * radToDegFactor;
 	}
 
+	void
+	setRad(const Type& rad)
+	{
+		rad_ = rad;
+	}
+
+	static Angle<Type>
+	fromRad(const Type& rad)
+	{
+		auto a = Angle<Type>();
+		a.setRad(rad);
+		return a;
+	}
+
 private:
 
 	Type rad_;

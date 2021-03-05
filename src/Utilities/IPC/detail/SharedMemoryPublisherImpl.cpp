@@ -62,7 +62,7 @@ SharedMemoryPublisherImpl::publish(const Packet& packet)
 
 	if (size > maxPacketSize_)
 	{
-		CPSLOG_ERROR << "Packet to big, cannot copy to shm.";
+		CPSLOG_ERROR << "Packet of size " << size << " too big, cannot copy to shm.";
 		return false;
 	}
 

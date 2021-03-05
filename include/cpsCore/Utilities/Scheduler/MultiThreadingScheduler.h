@@ -15,8 +15,8 @@
 #include "cpsCore/Utilities/Scheduler/IScheduler.h"
 #include "cpsCore/Utilities/Scheduler/MultiThreadingSchedulerParams.h"
 
-class ITimeProvider;
 class SignalHandler;
+class ITimeProvider;
 
 class MultiThreadingScheduler: public IScheduler,
 		public AggregatableObject<ITimeProvider, SignalHandler>,

@@ -13,7 +13,7 @@ struct is_complete_impl {
 	template <typename U>
 	static auto test(U*)  -> std::integral_constant<bool, sizeof(U) == sizeof(U)>;
 	static auto test(...) -> std::false_type;
-	using type = decltype(test((T*)0));
+	using type = decltype(test((T*)nullptr));
 };
 
 template <typename T>

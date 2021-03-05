@@ -53,6 +53,7 @@ template<typename Type>
 inline std::shared_ptr<Type>
 DynamicObjectContainer::getOne(Type* self) const
 {
+	// If it is incomplete that means that this process cannot create this object so it should return a nullptr
 	if constexpr (is_complete<Type>::value)
 	{
 		for (auto it : container_)

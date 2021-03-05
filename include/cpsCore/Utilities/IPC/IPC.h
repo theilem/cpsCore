@@ -108,11 +108,13 @@ template<typename Type>
 inline Publisher<Type>
 IPC::publish(const std::string& id, const IPCOptions& options)
 {
-	auto packetSize = forwardToPacket(Type()).getSize();
+	auto packetSize = params.maxPacketSize();
+	if (!options.variableSize)
+		packetSize = forwardToPacket(Type()).getSize();
 	auto forwarding = std::bind(&IPC::forwardToPacket<Type>, this, std::placeholders::_1);
 	if (params.useRedis())
 	{
-		return Publisher<Type>(publishOnRedis(id, packetSize),forwarding);
+		return Publisher<Type>(publishOnRedis(id, packetSize), forwarding);
 	}
 	if (options.multiTarget)
 	{

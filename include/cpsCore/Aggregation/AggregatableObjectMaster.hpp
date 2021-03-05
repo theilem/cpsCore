@@ -7,6 +7,13 @@
 
 #include "cpsCore/Aggregation/AggregatableObject.hpp"
 
+/**
+ * !!!IMPORTANT!!!:
+ * An AggregatableObjectMaster needs to be able to aggregate objects. Therefore, wherever it is calling
+ * notifyAggregationOnUpdate of its AggregatableObjects it has to include everything that they might aggregate with.
+ * This can be solved by including the respective Helper at this point
+ */
+
 template<class ... Objects>
 class AggregatableObjectMaster : public AggregatableObject<Objects...>
 {

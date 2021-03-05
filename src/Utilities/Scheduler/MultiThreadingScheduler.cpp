@@ -6,7 +6,6 @@
  */
 
 #include "cpsCore/Utilities/LockTypes.hpp"
-#include "cpsCore/Aggregation/AggregatableObject.hpp"
 #include "cpsCore/Utilities/TimeProvider/ITimeProvider.h"
 #include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h"

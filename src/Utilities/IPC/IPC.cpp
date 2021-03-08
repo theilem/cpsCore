@@ -113,9 +113,13 @@ IPC::publishOnMessageQueue(const std::string& id, unsigned maxPacketSize, unsign
 std::shared_ptr<IPublisherImpl>
 IPC::publishOnRedis(const std::string& id, unsigned)
 {
+	RedisHostParams localhost;
+	localhost.ip = "127.0.0.1";
+	localhost.port = 6379;
+	localhost.auth = "";
 	RedisChannelParams params;
 	params.channel.setValue(id);
-	auto impl = std::make_shared<RedisPublisher>(params);
+	auto impl = std::make_shared<RedisPublisher>(params, localhost);
 	publications_.push_back(impl);
 
 	return impl;
@@ -283,9 +287,13 @@ IPC::subscribeOnRedis(const std::string& id, const std::function<void
 	}
 	else
 	{
+		RedisHostParams localhost;
+		localhost.ip = "127.0.0.1";
+		localhost.port = 6379;
+		localhost.auth = "";
 		RedisChannelParams channelParams;
 		channelParams.channel.setValue(id);
-		auto sub = std::make_shared<RedisSubscriber>(channelParams);
+		auto sub = std::make_shared<RedisSubscriber>(channelParams, localhost);
 		if (auto sched = get<IScheduler>())
 		{
 			sched->schedule(std::bind(&RedisSubscriber::start, sub),

@@ -21,7 +21,7 @@ class RedisSubscriber : public ISubscriptionImpl
 {
 public:
 
-	RedisSubscriber(const RedisChannelParams& params);
+	RedisSubscriber(const RedisChannelParams& params, const RedisHostParams& host);
 
 	~RedisSubscriber();
 

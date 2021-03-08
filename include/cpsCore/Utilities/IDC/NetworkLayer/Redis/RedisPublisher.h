@@ -23,7 +23,7 @@ class RedisPublisher : public IPublisherImpl
 {
 public:
 
-	RedisPublisher(const RedisChannelParams& params);
+	RedisPublisher(const RedisChannelParams& params, const RedisHostParams& host);
 
 	~RedisPublisher();
 

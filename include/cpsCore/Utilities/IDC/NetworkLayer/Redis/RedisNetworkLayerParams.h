@@ -12,6 +12,8 @@
 
 struct RedisNetworkLayerParams
 {
+	Parameter<std::map<std::string, RedisHostParams>> hosts = {{{"localhost", RedisHostParams()}}, "hosts",
+																false};
 	Parameter<std::map<std::string, RedisChannelParams>> sub = {{{"default", RedisChannelParams()}}, "sub",
 																false};
 	Parameter<std::map<std::string, RedisChannelParams>> pub = {{{"default", RedisChannelParams()}}, "pub",
@@ -21,6 +23,7 @@ struct RedisNetworkLayerParams
 	void
 	configure(Config& config)
 	{
+		config & hosts;
 		config & sub;
 		config & pub;
 	}

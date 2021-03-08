@@ -52,12 +52,24 @@ RedisNetworkLayer::run(RunStage stage)
 
 		for (const auto& it : params.sub())
 		{
-			subscribers_.emplace(it.first, std::make_shared<RedisSubscriber>(it.second));
+			auto hostIt = params.hosts().find(it.second.host());
+			if (hostIt == params.hosts().end())
+			{
+				CPSLOG_ERROR << "Host for " << it.first << " not found. Cannot Sub";
+				continue;
+			}
+			subscribers_.emplace(it.first, std::make_shared<RedisSubscriber>(it.second, hostIt->second));
 			CPSLOG_DEBUG << "Added " << it.first << " to subs";
 		}
 		for (const auto& it : params.pub())
 		{
-			publishers_.emplace(it.first, std::make_shared<RedisPublisher>(it.second));
+			auto hostIt = params.hosts().find(it.second.host());
+			if (hostIt == params.hosts().end())
+			{
+				CPSLOG_ERROR << "Host for " << it.first << " not found. Cannot Pub";
+				continue;
+			}
+			publishers_.emplace(it.first, std::make_shared<RedisPublisher>(it.second, hostIt->second));
 			CPSLOG_DEBUG << "Added " << it.first << " to pubs";
 		}
 

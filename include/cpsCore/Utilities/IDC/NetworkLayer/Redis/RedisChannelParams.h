@@ -13,19 +13,31 @@
 
 struct RedisChannelParams
 {
-	Parameter<std::string> hostIP = {"127.0.0.1", "host_ip", false};
-	Parameter<std::string> auth = {"", "auth", false};
-	Parameter<unsigned int> port = {6379, "port", false};
+	Parameter<std::string> host = {"localhost", "host", false};
 	Parameter<std::string> channel = {"", "channel", true};
 
 	template <typename Config>
 	void
 	configure(Config& config)
 	{
-		config & hostIP;
+		config & host;
+		config & channel;
+	}
+};
+
+struct RedisHostParams
+{
+	Parameter<std::string> ip = {"127.0.0.1", "ip", false};
+	Parameter<std::string> auth = {"", "auth", false};
+	Parameter<unsigned int> port = {6379, "port", false};
+
+	template <typename Config>
+	void
+	configure(Config& config)
+	{
+		config & ip;
 		config & auth;
 		config & port;
-		config & channel;
 	}
 };
 

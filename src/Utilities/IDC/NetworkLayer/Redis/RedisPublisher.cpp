@@ -9,10 +9,10 @@
 #include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Utilities/Time.hpp"
 
-RedisPublisher::RedisPublisher(const RedisChannelParams& params) :
-		channel_(params.channel()), auth_(params.auth())
+RedisPublisher::RedisPublisher(const RedisChannelParams& params, const RedisHostParams& host) :
+		channel_(params.channel()), auth_(host.auth())
 {
-	client_.connect(params.hostIP(), params.port(),
+	client_.connect(host.ip(), host.port(),
 			std::bind(&RedisPublisher::onConnectionEvent, this, std::placeholders::_1,
 					std::placeholders::_2, std::placeholders::_3));
 
@@ -58,13 +58,13 @@ RedisPublisher::onConnectionEvent(const std::string& host, std::size_t port,
 		auto future = client_.auth(auth_);
 		client_.commit();
 
-		auto status = future.wait_for(Seconds(1));
-		if (status == std::future_status::timeout)
+		auto st = future.wait_for(Seconds(1));
+		if (st == std::future_status::timeout)
 		{
 			CPSLOG_ERROR << "Authentication timed out";
 			return;
 		}
-		if (status == std::future_status::deferred)
+		if (st == std::future_status::deferred)
 		{
 			CPSLOG_ERROR << "Authentication deferred";
 			return;

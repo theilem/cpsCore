@@ -752,7 +752,10 @@ PropertyMapper<Config>::addMap(const std::string& key,
 		const Config& config = *value;
 		for (auto& it : config)
 		{
-			val.insert(std::make_pair(it.first, it.second.template get_value<typename T::value_type::second_type>()));
+			if constexpr (std::is_same_v<typename T::value_type::second_type, Config>)
+				val.insert(std::make_pair(it.first, it.second));
+			else
+				val.insert(std::make_pair(it.first, it.second.template get_value<typename T::value_type::second_type>()));
 		}
 		return true;
 	}

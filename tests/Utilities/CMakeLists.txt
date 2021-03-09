@@ -4,6 +4,7 @@ add_subdirectory(Scheduler)
 
 set(TEST_SRCS 	${TEST_SRCS}
                 ${CMAKE_CURRENT_SOURCE_DIR}/AngleTest.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/FilterTest.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/TypeTraitsTest.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/EnumMap.cpp
                 PARENT_SCOPE)

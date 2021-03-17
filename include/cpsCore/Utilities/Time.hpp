@@ -11,6 +11,7 @@
 #include <chrono>
 #include <ctime>
 #include <cpsCore/Utilities/DataPresentation/detail/Split.h>
+#include <sstream>
 
 //using Clock = std::chrono::high_resolution_clock;
 using Clock = std::chrono::system_clock;
@@ -34,7 +35,7 @@ inline Duration
 getTimeOfDay(const TimePoint& time)
 {
 	Hours sinceEpoch = std::chrono::duration_cast<Hours>(time.time_since_epoch());
-	return time.time_since_epoch() - Hours((sinceEpoch.count() / 24)*24);
+	return time.time_since_epoch() - Hours((sinceEpoch.count() / 24) * 24);
 }
 
 inline long
@@ -47,6 +48,22 @@ inline long
 timePointToNanoseconds(const TimePoint& timePoint)
 {
 	return durationToNanoseconds(timePoint.time_since_epoch());
+}
+
+inline std::string
+humanReadableTimeOfDay(const TimePoint& timePoint)
+{
+	auto tod = std::chrono::duration_cast<Nanoseconds>(getTimeOfDay(timePoint));
+	auto h = std::chrono::duration_cast<Hours>(tod);
+	tod -= h;
+	auto m = std::chrono::duration_cast<Minutes>(tod);
+	tod -= m;
+	auto s = std::chrono::duration_cast<Seconds>(tod);
+	tod -= s;
+	auto ms = std::chrono::duration_cast<Milliseconds>(tod);
+	std::stringstream ss;
+	ss << h.count() << "h:" << m.count() << "m:" << s.count() << "s:" << ms.count() << "ms";
+	return ss.str();
 }
 
 namespace dp

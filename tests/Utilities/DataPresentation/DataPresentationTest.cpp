@@ -142,3 +142,47 @@ TEST_CASE("Test Eigen Matrix")
 	CHECK(matFloat == matFloatRes);
 }
 
+TEST_CASE("Test ordered maps")
+{
+	std::map<std::string, std::string> data;
+	data["cde"] = "fgh";
+	data["bcd"] = "efg";
+	data["abc"] = "def";
+
+	DataPresentation dp;
+
+	Packet p = dp.serialize(data);
+
+	auto reconstruct = dp.deserialize<std::map<std::string, std::string>>(p);
+
+	CHECK(reconstruct["cde"] == "fgh");
+	CHECK(reconstruct["bcd"] == "efg");
+	CHECK(reconstruct["abc"] == "def");
+	CHECK(reconstruct.size() == 3);
+
+	// std::map needs to preserve order
+	std::vector<std::string> expectedKey = {"abc", "bcd", "cde"};
+	for (auto [idx, it] = std::tuple{unsigned{0}, reconstruct.begin()}; idx < reconstruct.size(); it++, idx++)
+	{
+		CHECK(it->first == expectedKey[idx]);
+	}
+}
+
+TEST_CASE("Test unordered maps")
+{
+	std::unordered_map<std::string, std::string> data;
+	data["abc"] = "def";
+	data["bcd"] = "efg";
+	data["cde"] = "fgh";
+
+	DataPresentation dp;
+
+	Packet p = dp.serialize(data);
+
+	auto reconstruct = dp.deserialize<std::unordered_map<std::string, std::string>>(p);
+
+	CHECK(reconstruct["abc"] == "def");
+	CHECK(reconstruct["bcd"] == "efg");
+	CHECK(reconstruct["cde"] == "fgh");
+	CHECK(reconstruct.size() == 3);
+}

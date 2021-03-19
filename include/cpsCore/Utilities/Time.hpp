@@ -62,7 +62,7 @@ humanReadableTimeOfDay(const TimePoint& timePoint)
 	tod -= s;
 	auto ms = std::chrono::duration_cast<Milliseconds>(tod);
 	std::stringstream ss;
-	ss << h.count() << "h:" << m.count() << "m:" << s.count() << "s:" << ms.count() << "ms";
+	ss << h.count() << "h_" << m.count() << "m_" << s.count() << "s_" << ms.count() << "ms";
 	return ss.str();
 }
 

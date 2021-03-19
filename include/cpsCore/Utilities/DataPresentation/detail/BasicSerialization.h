@@ -17,6 +17,7 @@
 #include "cpsCore/Utilities/DataPresentation/detail/Split.h"
 
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <Eigen/Dense>
 
@@ -217,6 +218,14 @@ struct is_map: public std::false_type
  */
 template<typename K, typename T, typename C, typename A>
 struct is_map<std::map<K, T, C, A>> : public std::true_type
+{
+};
+
+/**
+ * @brief is_map struct true_type because T is an unordered_map
+ */
+template<typename K, typename T, typename H, typename E, typename A>
+struct is_map<std::unordered_map<K, T, H, E, A>> : public std::true_type
 {
 };
 

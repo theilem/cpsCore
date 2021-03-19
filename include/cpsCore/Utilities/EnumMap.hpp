@@ -136,7 +136,7 @@ template<typename RetType, typename ENUM>
 RetType
 enumAccessUnknown(const ENUM& e)
 {
-	CPSLOG_ERROR << "Requested value " << EnumMap<ENUM>::convert(e) << " not available";
+	CPSLOG_ERROR << "Requested value " << EnumMap<ENUM>::convert(e) << " of " << typeid(ENUM).name() << " not available";
 	return 0;
 }
 

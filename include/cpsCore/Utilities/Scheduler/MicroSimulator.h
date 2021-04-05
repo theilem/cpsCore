@@ -86,6 +86,12 @@ public:
 
 private:
 
+	void
+	logProgress(const TimePoint end, const Duration duration);
+
+	void
+	drawProgressBar(float progress);
+
 	std::multimap<TimePoint, std::shared_ptr<EventBody> > events_;
 
 	TimePoint now_;

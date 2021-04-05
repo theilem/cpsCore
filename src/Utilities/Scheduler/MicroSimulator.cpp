@@ -46,6 +46,10 @@ MicroSimulator::simulate(Duration duration)
 {
 	runs_ = 0;
 	TimePoint endSim = now_ + duration;
+	if (params.showProgress())
+	{
+		schedule([this, endSim, duration](){ logProgress(endSim, duration);}, duration / 100, duration / 100);
+	}
 	while (now_ <= endSim)
 	{
 		if (events_.empty())
@@ -177,4 +181,26 @@ Duration
 MicroSimulator::timeSinceStart()
 {
 	return now() - TimePoint();
+}
+
+void
+MicroSimulator::drawProgressBar(float progress)
+{
+	int barWidth = 70;
+
+	std::cout << "[";
+	int pos = barWidth * progress;
+	for (int i = 0; i < barWidth; ++i) {
+		if (i < pos) std::cout << "=";
+		else if (i == pos) std::cout << ">";
+		else std::cout << " ";
+	}
+	std::cout << "] " << int(progress * 100.0) << " %\r";
+	std::cout.flush();
+}
+
+void
+MicroSimulator::logProgress(const TimePoint point, const Duration duration)
+{
+	drawProgressBar(1 - (point - now_).count() / float(duration.count()));
 }

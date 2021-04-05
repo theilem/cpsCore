@@ -11,6 +11,7 @@ struct MicroSimulatorParams
 {
 	Parameter<float> realTimeFactor = {0, "real_time_factor", false};
 	Parameter<unsigned> simTime = {100, "sim_time_s", false};
+	Parameter<bool> showProgress = {false, "show_progress", false};
 
 	template<typename Config>
 	void
@@ -18,6 +19,7 @@ struct MicroSimulatorParams
 	{
 		c & realTimeFactor;
 		c & simTime;
+		c & showProgress;
 	}
 };
 

@@ -8,6 +8,7 @@
 #include "cpsCore/Logging/CPSLogger.h"
 #include "cpsCore/Utilities/Scheduler/MicroSimulator.h"
 #include "cpsCore/Utilities/Scheduler/EventBody.h"
+#include <iostream>
 #include <utility>
 
 MicroSimulator::MicroSimulator() :

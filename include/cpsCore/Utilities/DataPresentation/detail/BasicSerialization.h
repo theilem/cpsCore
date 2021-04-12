@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <vector>
 #include <Eigen/Dense>
+#include <cpsCore/Configuration/Configuration.hpp>
 
 class BinaryFromArchive;
 class BinaryToArchive;
@@ -419,9 +420,17 @@ template<class Archive, typename Type>
 inline void
 serialize(Archive& ar, std::enable_if_t<is_angle<Type>::value, Type>& val);
 
+template<class Archive, typename Type>
+void
+load(Archive& ar, Configuration& c);
 
+template<class Archive, typename Type>
+void
+store(Archive& ar, Configuration& c);
 
-
+template<class Archive, typename Type>
+void
+serialize(Archive& ar, Configuration& c);
 
 } /* dp */
 

@@ -9,6 +9,8 @@
 #define UAVAP_CORE_DATAPRESENTATION_APDATAPRESENTATION_DETAIL_BASICSERIALIZATIONIMPL_HPP_
 
 #include "cpsCore/Utilities/DataPresentation/detail/BasicSerialization.h"
+#include <cpsCore/Configuration/Configuration.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 template<class Type>
 inline void
@@ -317,6 +319,33 @@ inline void
 dp::serialize(Archive& ar, std::enable_if_t<is_angle<Type>::value, Type>& val)
 {
 	ar & val();
+}
+
+
+template<class Archive, typename Type>
+void
+dp::load(Archive& ar, Configuration& c)
+{
+	std::string data;
+	ar >> data;
+	std::stringstream ss(data);
+	boost::property_tree::read_json(ss, c);
+}
+
+template<class Archive, typename Type>
+void
+dp::store(Archive& ar, Configuration& c)
+{
+	std::stringstream ss;
+	boost::property_tree::write_json(ss, c, false);
+	ar << ss.str();
+}
+
+template<class Archive, typename Type>
+void
+dp::serialize(Archive& ar, Configuration& c)
+{
+	split(ar, c);
 }
 
 #endif /* UAVAP_CORE_DATAPRESENTATION_APDATAPRESENTATION_DETAIL_BASICSERIALIZATIONIMPL_HPP_ */

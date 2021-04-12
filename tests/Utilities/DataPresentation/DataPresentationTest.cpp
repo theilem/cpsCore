@@ -186,3 +186,33 @@ TEST_CASE("Test unordered maps")
 	CHECK(reconstruct["cde"] == "fgh");
 	CHECK(reconstruct.size() == 3);
 }
+
+TEST_CASE("Test Configuration")
+{
+	Configuration c;
+	c.put("asd", "abc");
+	c.put("a1s", 123);
+	c.put("a2d", 3.45);
+
+	Configuration d;
+	d.put("az", 1);
+	d.put("ay", 1.2);
+	d.put("ad", "ab");
+	c.add_child("d", d);
+
+	DataPresentation dp;
+	Packet p = dp.serialize(c);
+	auto reconstruct = dp.deserialize<Configuration>(p);
+
+	CHECK(reconstruct.size() == 4);
+	CHECK(reconstruct.get<std::string>("asd") == "abc");
+	CHECK(reconstruct.get<int>("a1s") == 123);
+	CHECK(reconstruct.get<double>("a2d") == 3.45);
+
+	auto reconstructChild = reconstruct.get_child("d");
+
+	CHECK(reconstructChild.size() == 3);
+	CHECK(reconstructChild.get<int>("az") == 1);
+	CHECK(reconstructChild.get<double>("ay") == 1.2);
+	CHECK(reconstructChild.get<std::string>("ad") == "ab");
+}

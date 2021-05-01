@@ -44,7 +44,7 @@ using EigenHyperplane = Eigen::Hyperplane<double, 3, Eigen::DontAlign>;
 #endif
 
 template<int N>
-using VectorN = Eigen::Matrix<FloatingType, N, 1>;
+using VectorN = Eigen::Matrix<FloatingType, N, 1, Eigen::DontAlign>;
 
 /**
  * Some useful type traits

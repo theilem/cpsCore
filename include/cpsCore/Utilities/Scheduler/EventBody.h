@@ -12,6 +12,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <thread>
+#include <optional>
 
 #include "cpsCore/Utilities/Time.hpp"
 

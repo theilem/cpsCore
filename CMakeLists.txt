@@ -3,7 +3,7 @@ project (cpsCore)
 
 set (CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -static-libstdc++ -std=c++1z")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -static-libstdc++ -std=c++1z -fPIC")
 
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system)
@@ -28,8 +28,12 @@ endif(TACOPIE_LIBRARY)
 set(SYSTEM_LIBS pthread
         dl)
 
+set(SYSTEM_LIBS_STATIC pthread
+        dl)
+
 if (NOT APPLE)
     set(SYSTEM_LIBS ${SYSTEM_LIBS} rt)
+    set(SYSTEM_LIBS_STATIC ${SYSTEM_LIBS_STATIC} rt.a)
 endif(NOT APPLE)
 
 if (NOT CMAKE_BUILD_TYPE)

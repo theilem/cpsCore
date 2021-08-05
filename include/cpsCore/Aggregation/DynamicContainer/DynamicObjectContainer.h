@@ -56,7 +56,7 @@ DynamicObjectContainer::getOne(Type* self) const
 	// If it is incomplete that means that this process cannot create this object so it should return a nullptr
 	if constexpr (is_complete<Type>::value)
 	{
-		for (auto it : container_)
+		for (auto& it : container_)
 		{
 			if (auto ret = std::dynamic_pointer_cast<Type>(it))
 			{

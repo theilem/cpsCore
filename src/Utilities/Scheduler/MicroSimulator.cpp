@@ -10,10 +10,15 @@
 #include "cpsCore/Utilities/Scheduler/EventBody.h"
 #include <iostream>
 #include <utility>
+#include <iostream>
 
 MicroSimulator::MicroSimulator() :
 		now_(), runs_(0), stopOnWait_(false), waitCondition_(
 		nullptr), waitReleased_(false), stopped_(false)
+{
+}
+
+MicroSimulator::~MicroSimulator()
 {
 }
 

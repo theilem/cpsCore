@@ -6,7 +6,7 @@
 #define CPSCORE_AGGREGATABLEOBJECTMASTER_H
 
 #include "cpsCore/Aggregation/AggregatableObject.hpp"
-
+#include <iostream>
 /**
  * !!!IMPORTANT!!!:
  * An AggregatableObjectMaster needs to be able to aggregate objects. Therefore, wherever it is calling

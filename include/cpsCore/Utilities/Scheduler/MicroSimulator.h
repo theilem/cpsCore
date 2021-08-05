@@ -34,6 +34,8 @@ public:
 
 	MicroSimulator();
 
+	~MicroSimulator();
+
 	Event
 	schedule(const std::function<void
 			()>& task, Duration initialFromNow) override;

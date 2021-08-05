@@ -16,12 +16,13 @@
 #include "cpsCore/Utilities/Scheduler/MultiThreadingSchedulerParams.h"
 
 class SignalHandler;
+
 class ITimeProvider;
 
-class MultiThreadingScheduler: public IScheduler,
-		public AggregatableObject<ITimeProvider, SignalHandler>,
-		public ConfigurableObject<MultiThreadingSchedulerParams>,
-		public IRunnableObject
+class MultiThreadingScheduler : public IScheduler,
+								public AggregatableObject<ITimeProvider, SignalHandler>,
+								public ConfigurableObject<MultiThreadingSchedulerParams>,
+								public IRunnableObject
 {
 public:
 
@@ -36,11 +37,11 @@ public:
 
 	Event
 	schedule(const std::function<void
-	()>& task, Duration initialFromNow) override;
+			()>& task, Duration initialFromNow) override;
 
 	Event
 	schedule(const std::function<void
-	()>& task, Duration initialFromNow, Duration period) override;
+			()>& task, Duration initialFromNow, Duration period) override;
 
 	void
 	stop() override;

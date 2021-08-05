@@ -64,9 +64,9 @@ Aggregator::cleanUp()
 }
 
 void
-Aggregator::add(std::vector<std::shared_ptr<IAggregatableObject>> objs)
+Aggregator::add(const std::vector<std::shared_ptr<IAggregatableObject>>& objs)
 {
-	for (auto it : objs)
+	for (const auto& it : objs)
 	{
 		add(it);
 	}

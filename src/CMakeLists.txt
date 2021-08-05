@@ -8,6 +8,7 @@ add_subdirectory(Logging)
 add_subdirectory(Utilities)
 
 add_library(cps_core SHARED ${CORE_SRCS})
+add_library(cps_core_static STATIC ${CORE_SRCS})
 
 include_directories(${SUBMODULE_DIR}/Catch2/single_include
         ${CMAKE_CURRENT_SOURCE_DIR})
@@ -27,7 +28,15 @@ target_link_libraries(cps_core
         ${CPP_REDIS_LIB}
         ${TACOPIE_LIB})
 
-install(TARGETS cps_core
+
+target_link_libraries(cps_core_static
+        ${SYSTEM_LIBS_STATIC}
+        Eigen3::Eigen
+        ${Boost_LIBRARIES}
+        ${CPP_REDIS_LIB}
+        ${TACOPIE_LIB})
+
+install(TARGETS cps_core cps_core_static
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)

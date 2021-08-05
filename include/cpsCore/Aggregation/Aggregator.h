@@ -22,6 +22,16 @@ public:
 
 	Aggregator();
 
+	Aggregator&
+	operator=(const Aggregator&) = delete;
+
+	Aggregator(const Aggregator&) = delete;
+
+	Aggregator&
+	operator=(Aggregator&&) = default;
+
+	Aggregator(Aggregator&&) = default;
+
 	template<class Type>
 	void
 	add(std::shared_ptr<Type> obj);
@@ -34,7 +44,7 @@ public:
 	add(std::shared_ptr<IAggregatableObject> obj);
 
 	void
-	add(std::vector<std::shared_ptr<IAggregatableObject>> objs);
+	add(const std::vector<std::shared_ptr<IAggregatableObject>>& objs);
 
 	template<class...Types>
 	void

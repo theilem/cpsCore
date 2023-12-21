@@ -34,7 +34,7 @@ class FrameworkError
 {
 public:
 
-	FrameworkError(const std::string& what) :
+	explicit FrameworkError(const std::string& what) :
 			what_(what)
 	{
 	}
@@ -56,7 +56,7 @@ private:
 class InvalidTypeError: public FrameworkError
 {
 public:
-	InvalidTypeError(const std::string& what) :
+	explicit InvalidTypeError(const std::string& what) :
 			FrameworkError(what)
 	{
 	}
@@ -68,7 +68,7 @@ public:
 class FactoryInitializationError: public FrameworkError
 {
 public:
-	FactoryInitializationError(const std::string& what) :
+	explicit FactoryInitializationError(const std::string& what) :
 			FrameworkError(what)
 	{
 	}

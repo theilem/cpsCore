@@ -1,12 +1,22 @@
 cmake_minimum_required (VERSION 3.0.0)
 project (cpsCore)
+if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
+    message(FATAL_ERROR "Cannot compile, need c++17")
+endif (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
 
-set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -fPIC -static-libstdc++")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -static-libstdc++ -std=c++1z -fPIC")
+find_package (Eigen3 REQUIRED NO_MODULE)
+include_directories(/usr/include/eigen3)
 
-find_package(Eigen3 REQUIRED NO_MODULE)
-find_package(Boost REQUIRED COMPONENTS system)
+if (DEPLOY_PATH)
+    message("Deploying to ${DEPLOY_PATH}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -static-libstdc++")
+    set(COMPILE_REDIS 1)
+    link_directories(BEFORE ${DEPLOY_PATH}/lib/)
+    set(CMAKE_INSTALL_PREFIX ${DEPLOY_PATH})
+endif(DEPLOY_PATH)
+
 
 if (NOT COMPILE_REDIS)
     find_library(CPP_REDIS_LIBRARY cpp_redis)
@@ -51,7 +61,13 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 if (NOT CPP_REDIS_LIBRARY)
+    add_compile_definitions(_GLIBCXX_USE_NANOSLEEP)
+    add_definitions(-D_GLIBCXX_USE_NANOSLEEP)
     add_subdirectory(${SUBMODULE_DIR}/cpp_redis)
+
+    if (DEPLOY_PATH)
+        add_subdirectory(${SUBMODULE_DIR}/cpp_redis/tacopie)
+    endif(DEPLOY_PATH)
 endif(NOT CPP_REDIS_LIBRARY)
 
 install(DIRECTORY include/cpsCore DESTINATION include)

@@ -23,16 +23,12 @@ endif ()
 
 target_link_libraries(cps_core
         ${SYSTEM_LIBS}
-        Eigen3::Eigen
-        ${Boost_LIBRARIES}
         ${CPP_REDIS_LIB}
         ${TACOPIE_LIB})
 
 
 target_link_libraries(cps_core_static
         ${SYSTEM_LIBS_STATIC}
-        Eigen3::Eigen
-        ${Boost_LIBRARIES}
         ${CPP_REDIS_LIB}
         ${TACOPIE_LIB})
 

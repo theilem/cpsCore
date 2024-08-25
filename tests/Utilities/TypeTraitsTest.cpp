@@ -54,7 +54,7 @@ TEST_CASE("TypeTraits test")
 
 	CHECK(is_string<std::string>::value);
 	CHECK(is_string<std::basic_string<char>>::value);
-	CHECK(is_string<std::__cxx11::basic_string<char>>::value);
+	CHECK_FALSE(is_string<int>::value);
 
 	CHECK(is_eigen<Eigen::Matrix<int, 4, 2>>::value);
 	CHECK(is_eigen<Eigen::Matrix<int, 4, 2, Eigen::DontAlign>>::value);

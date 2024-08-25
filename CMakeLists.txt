@@ -7,7 +7,9 @@ endif (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -fPIC -static-libstdc++")
 
 find_package (Eigen3 REQUIRED NO_MODULE)
-include_directories(/usr/include/eigen3)
+find_package(Boost REQUIRED COMPONENTS system)
+include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${Boost_INCLUDE_DIRS})
 
 if (DEPLOY_PATH)
     message("Deploying to ${DEPLOY_PATH}")

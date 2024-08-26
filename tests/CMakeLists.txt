@@ -10,6 +10,6 @@ add_subdirectory(Utilities)
 include_directories(${SUBMODULE_DIR}/Catch2/single_include
         ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(tests EXCLUDE_FROM_ALL ${TEST_SRCS})
+add_executable(cps_core_tests EXCLUDE_FROM_ALL ${TEST_SRCS})
 
-target_link_libraries(tests cps_core cps_framework_api)
+target_link_libraries(cps_core_tests cps_core cps_framework_api)

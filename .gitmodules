@@ -5,3 +5,4 @@
 [submodule "extern/cpp_redis"]
 	path = extern/cpp_redis
 	url = https://github.com/theilem/cpp_redis.git
+	branch = main

@@ -53,9 +53,9 @@ if (NOT CMAKE_BUILD_TYPE)
 endif (NOT CMAKE_BUILD_TYPE)
 
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-set(SUBMODULE_DIR ${CMAKE_SOURCE_DIR}/extern)
+set(SUBMODULE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern)
 include_directories(${SUBMODULE_DIR}/cpp_redis/includes)
 include_directories(${SUBMODULE_DIR}/cpp_redis/tacopie/includes)
 

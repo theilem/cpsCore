@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0.0)
+cmake_minimum_required (VERSION 3.13)
 project (cpsCore)
 if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
     message(FATAL_ERROR "Cannot compile, need c++17")

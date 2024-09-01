@@ -15,6 +15,7 @@ MessageQueueSubscriptionImpl::MessageQueueSubscriptionImpl(const std::string& id
 		messageQueue_(boost::interprocess::open_only, id.c_str()), listenerCanceled_(false), maxPacketSize_(
 				maxPacketSize), id_(id)
 {
+
 }
 
 MessageQueueSubscriptionImpl::~MessageQueueSubscriptionImpl()
@@ -49,7 +50,7 @@ MessageQueueSubscriptionImpl::onMessageQueue()
 {
 	using namespace boost::interprocess;
 
-	for (;;)
+	while (true)
 	{
 		if (listenerCanceled_.load())
 		{
@@ -69,26 +70,5 @@ MessageQueueSubscriptionImpl::onMessageQueue()
 		packet.resize(size);
 		packet += ' ';
 		onMessageQueue_(Packet(packet));
-	}
-
-	Packet packet;
-	packet.getBuffer().resize(maxPacketSize_);
-
-	for (;;)
-	{
-		if (listenerCanceled_.load())
-		{
-			return;
-		}
-		void* buffer = packet.getStartAddress();
-		message_queue::size_type size;
-		unsigned int priority;
-		auto timeout = boost::get_system_time() + boost::posix_time::milliseconds(100);
-		if (!messageQueue_.timed_receive(buffer, maxPacketSize_, size, priority, timeout))
-		{
-			continue;
-		}
-
-		onMessageQueue_(packet);
 	}
 }

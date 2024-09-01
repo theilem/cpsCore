@@ -23,179 +23,170 @@
 
 class SignalHandler;
 
-class IPC : public IRunnableObject, public AggregatableObject<IScheduler, DataPresentation,
-		SignalHandler>, public ConfigurableObject<IPCParams>
+class IPC : public IRunnableObject,
+            public AggregatableObject<IScheduler,
+                                      DataPresentation,
+                                      SignalHandler>,
+            public ConfigurableObject<IPCParams>
 {
-
 public:
+    static constexpr TypeId typeId = "ipc";
 
-	static constexpr TypeId typeId = "ipc";
+    IPC() = default;
 
-	IPC() = default;
+    ~IPC();
 
-	~IPC();
+    template <typename Type>
+    Subscription
+    subscribe(const std::string& id, const std::function<void
+                  (const Type&)>& slot, const IPCOptions& options = IPCOptions());
 
-	template<typename Type>
-	Subscription
-	subscribe(const std::string& id, const std::function<void
-			(const Type&)>& slot, const IPCOptions& options = IPCOptions());
+    Subscription
+    subscribeOnPackets(const std::string& id, const std::function<void
+                           (const Packet&)>& slot, const IPCOptions& options = IPCOptions());
 
-	Subscription
-	subscribeOnPackets(const std::string& id, const std::function<void
-			(const Packet&)>& slot, const IPCOptions& options = IPCOptions());
+    template <typename Type>
+    Publisher<Type>
+    publish(const std::string& id, const IPCOptions& options = IPCOptions());
 
-	template<typename Type>
-	Publisher<Type>
-	publish(const std::string& id, const IPCOptions& options = IPCOptions());
+    Publisher<Packet>
+    publishPackets(const std::string& id, const IPCOptions& options = IPCOptions());
 
-	Publisher<Packet>
-	publishPackets(const std::string& id, const IPCOptions& options = IPCOptions());
-
-	bool
-	run(RunStage stage) override;
+    bool
+    run(RunStage stage) override;
 
 private:
+    Subscription
+    subscribeOnSharedMemory(const std::string& id, const std::function<void
+                                (const Packet&)>& slot);
 
-	Subscription
-	subscribeOnSharedMemory(const std::string& id, const std::function<void
-			(const Packet&)>& slot);
+    Subscription
+    subscribeOnMessageQueue(const std::string& id, const std::function<void
+                                (const Packet&)>& slot);
 
-	Subscription
-	subscribeOnMessageQueue(const std::string& id, const std::function<void
-			(const Packet&)>& slot);
+    Subscription
+    subscribeOnRedis(const std::string& id, const std::function<void
+                         (const Packet&)>& slot);
 
-	Subscription
-	subscribeOnRedis(const std::string& id, const std::function<void
-			(const Packet&)>& slot);
+    std::shared_ptr<IPublisherImpl>
+    publishOnSharedMemory(const std::string& id, unsigned maxPacketSize);
 
-	std::shared_ptr<IPublisherImpl>
-	publishOnSharedMemory(const std::string& id, unsigned maxPacketSize);
+    std::shared_ptr<IPublisherImpl>
+    publishOnMessageQueue(const std::string& id, unsigned maxPacketSize, unsigned numPackets);
 
-	std::shared_ptr<IPublisherImpl>
-	publishOnMessageQueue(const std::string& id, unsigned maxPacketSize, unsigned numPackets);
+    std::shared_ptr<IPublisherImpl>
+    publishOnRedis(const std::string& id, unsigned maxPacketSize);
 
-	std::shared_ptr<IPublisherImpl>
-	publishOnRedis(const std::string& id, unsigned maxPacketSize);
+    void
+    sigintHandler(int sig);
 
-	void
-	sigintHandler(int sig);
+    template <typename Type>
+    void
+    forwardFromPacket(const Packet& packet, const std::function<void
+                          (const Type&)>& func) const;
 
-	template<typename Type>
-	void
-	forwardFromPacket(const Packet& packet, const std::function<void
-			(const Type&)>& func) const;
+    template <typename Type>
+    Packet
+    forwardToPacket(const Type& val) const;
 
-	template<typename Type>
-	Packet
-	forwardToPacket(const Type& val) const;
+    void
+    retrySubscriptions();
 
-	void
-	retrySubscriptions();
+    std::vector<std::shared_ptr<IPublisherImpl>> publications_;
 
-	std::vector<std::shared_ptr<IPublisherImpl>> publications_;
+    Mutex subscribeMutex_;
+    std::map<std::string, std::shared_ptr<ISubscriptionImpl>> subscriptions_;
 
-	Mutex subscribeMutex_;
-	std::map<std::string, std::shared_ptr<ISubscriptionImpl>> subscriptions_;
-
-	Mutex retryVectorMutex_;
-	std::vector<std::pair<std::function<void
-			(const Subscription&)>, std::function<Subscription
-			()>>> retryVector_;
-
+    Mutex retryVectorMutex_;
+    std::vector<std::pair<std::function<void
+                              (const Subscription&)>, std::function<Subscription
+                              ()>>> retryVector_;
 };
 
-template<typename Type>
+template <typename Type>
 inline Publisher<Type>
 IPC::publish(const std::string& id, const IPCOptions& options)
 {
-	auto packetSize = params.maxPacketSize();
-	if (!options.variableSize)
-		packetSize = forwardToPacket(Type()).getSize();
-	auto forwarding = std::bind(&IPC::forwardToPacket<Type>, this, std::placeholders::_1);
-	if (params.useRedis())
-	{
-		return Publisher<Type>(publishOnRedis(id, packetSize), forwarding);
-	}
-	if (options.multiTarget)
-	{
-		return Publisher<Type>(publishOnSharedMemory(id, packetSize), forwarding);
-	}
-	else
-	{
-		return Publisher<Type>(publishOnMessageQueue(id, packetSize, params.maxNumPackets()),
-							   forwarding);
-	}
+    auto packetSize = params.maxPacketSize();
+    if (!options.variableSize)
+        packetSize = forwardToPacket(Type()).getSize();
+    auto forwarding = std::bind(&IPC::forwardToPacket<Type>, this, std::placeholders::_1);
+    if (params.useRedis())
+        return Publisher<Type>(publishOnRedis(id, packetSize), forwarding);
+
+    if (options.multiTarget)
+        return Publisher<Type>(publishOnSharedMemory(id, packetSize), forwarding);
+
+    return Publisher<Type>(publishOnMessageQueue(id, packetSize, params.maxNumPackets()),
+                           forwarding);
 }
 
-template<typename Type>
+template <typename Type>
 inline Subscription
 IPC::subscribe(const std::string& id, const std::function<void
-		(const Type&)>& slot, const IPCOptions& options)
+                   (const Type&)>& slot, const IPCOptions& options)
 {
-	Subscription result;
-	std::function<void(const Packet&)> packetSlot = std::bind(&IPC::forwardFromPacket<Type>, this,
-															  std::placeholders::_1, slot);
+    Subscription result;
+    std::function<void(const Packet&)> packetSlot = std::bind(&IPC::forwardFromPacket<Type>, this,
+                                                              std::placeholders::_1, slot);
 
-	if (params.useRedis())
-	{
-		result = subscribeOnRedis(id, packetSlot);
-	}
-	else
-	{
-		if (options.multiTarget)
-		{
-			result = subscribeOnSharedMemory(id, packetSlot);
-		}
-		else
-		{
-			result = subscribeOnMessageQueue(id, packetSlot);
-		}
-	}
+    if (params.useRedis())
+    {
+        result = subscribeOnRedis(id, packetSlot);
+    }
+    else
+    {
+        if (options.multiTarget)
+        {
+            result = subscribeOnSharedMemory(id, packetSlot);
+        }
+        else
+        {
+            result = subscribeOnMessageQueue(id, packetSlot);
+        }
+    }
 
-	if (!result.connected() && options.retry)
-	{
-		LockGuard l(retryVectorMutex_);
-		CPSLOG_DEBUG << "Queuing " << id << " for retry";
-		//Schedule retry
-		if (options.multiTarget)
-		{
-			retryVector_.push_back(
-					std::make_pair(options.retrySuccessCallback,
-								   std::bind(&IPC::subscribeOnSharedMemory, this, id, packetSlot)));
-		}
-		else
-		{
-			retryVector_.push_back(
-					std::make_pair(options.retrySuccessCallback,
-								   std::bind(&IPC::subscribeOnMessageQueue, this, id, packetSlot)));
-		}
-	}
+    if (!result.connected() && options.retry)
+    {
+        LockGuard l(retryVectorMutex_);
+        CPSLOG_DEBUG << "Queuing " << id << " for retry";
+        //Schedule retry
+        if (options.multiTarget)
+        {
+            retryVector_.push_back(
+                std::make_pair(options.retrySuccessCallback,
+                               std::bind(&IPC::subscribeOnSharedMemory, this, id, packetSlot)));
+        }
+        else
+        {
+            retryVector_.push_back(
+                std::make_pair(options.retrySuccessCallback,
+                               std::bind(&IPC::subscribeOnMessageQueue, this, id, packetSlot)));
+        }
+    }
 
-	return result;
+    return result;
 }
 
-template<typename Type>
+template <typename Type>
 inline void
 IPC::forwardFromPacket(const Packet& packet, const std::function<void
-		(const Type&)>& func) const
+                           (const Type&)>& func) const
 {
-
-	if (auto dp = get<DataPresentation>())
-		func(dp->deserialize<Type>(packet));
-	else
-		func(dp::deserialize<Type>(packet));
-
+    if (auto dp = get<DataPresentation>())
+        func(dp->deserialize<Type>(packet));
+    else
+        func(dp::deserialize<Type>(packet));
 }
 
-template<typename Type>
+template <typename Type>
 inline Packet
 IPC::forwardToPacket(const Type& val) const
 {
-	if (auto dp = get<DataPresentation>())
-		return dp->serialize(val);
-	else
-		return dp::serialize(val);
-
+    if (auto dp = get<DataPresentation>())
+        return dp->serialize(val);
+    else
+        return dp::serialize(val);
 }
 
 #endif /* UAVAP_CORE_IPC_IPC_H_ */

@@ -200,26 +200,23 @@ IPC::subscribeOnSharedMemory(const std::string& id, const std::function<void
 		auto con = impl->subscribe(slot);
 		return Subscription(subscription->second, con);
 	}
-	else
+	try
 	{
-		try
+		auto sub = std::make_shared<SharedMemorySubscriptionImpl>(id);
+		if (auto sched = get<IScheduler>())
 		{
-			auto sub = std::make_shared<SharedMemorySubscriptionImpl>(id);
-			if (auto sched = get<IScheduler>())
-			{
-				sched->schedule(std::bind(&SharedMemorySubscriptionImpl::start, sub),
-								Milliseconds(0));
-			}
-			else
-			{
-				CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
-			}
-			impl = sub;
-			subscriptions_.insert(std::make_pair(id, impl));
-		} catch (boost::interprocess::interprocess_exception& err)
-		{
-			return Subscription();
+			sched->schedule(std::bind(&SharedMemorySubscriptionImpl::start, sub),
+							Milliseconds(0));
 		}
+		else
+		{
+			CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
+		}
+		impl = sub;
+		subscriptions_.insert(std::make_pair(id, impl));
+	} catch (boost::interprocess::interprocess_exception& err)
+	{
+		return Subscription();
 	}
 
 	auto con = impl->subscribe(slot);
@@ -242,26 +239,23 @@ IPC::subscribeOnMessageQueue(const std::string& id, const std::function<void
 		auto con = impl->subscribe(slot);
 		return Subscription(subscription->second, con);
 	}
-	else
+	try
 	{
-		try
+		auto sub = std::make_shared<MessageQueueSubscriptionImpl>(id, params.maxPacketSize());
+		if (auto sched = get<IScheduler>())
 		{
-			auto sub = std::make_shared<MessageQueueSubscriptionImpl>(id, params.maxPacketSize());
-			if (auto sched = get<IScheduler>())
-			{
-				sched->schedule(std::bind(&MessageQueueSubscriptionImpl::start, sub),
-								Milliseconds(0));
-			}
-			else
-			{
-				CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
-			}
-			impl = sub;
-			subscriptions_.insert(std::make_pair(id, impl));
-		} catch (boost::interprocess::interprocess_exception&)
-		{
-			return Subscription();
+			sched->schedule(std::bind(&MessageQueueSubscriptionImpl::start, sub),
+							Milliseconds(0));
 		}
+		else
+		{
+			CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
+		}
+		impl = sub;
+		subscriptions_.insert(std::make_pair(id, impl));
+	} catch (boost::interprocess::interprocess_exception&)
+	{
+		return Subscription();
 	}
 
 	auto con = impl->subscribe(slot);

@@ -10,7 +10,7 @@
 
 #include <boost/asio/serial_port_base.hpp>
 
-enum SerialDirection
+enum class SerialDirection
 {
 	BOTH = 0, SEND, RECEIVE
 };

@@ -59,7 +59,7 @@ Aggregator::clear()
 void
 Aggregator::cleanUp()
 {
-	SignalHandlerSingleton::getInstance().callSigHandlers(SIGTERM);
+	// SignalHandlerSingleton::getInstance().callSigHandlers(SIGTERM);
 	clear();
 }
 

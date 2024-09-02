@@ -11,6 +11,8 @@
 
 #include <boost/signals2.hpp>
 
+#include "NetworkStats.h"
+
 struct INetworkParams;
 
 /**
@@ -22,30 +24,35 @@ struct INetworkParams;
 class INetworkLayer
 {
 public:
+    static constexpr const char* const typeId = "network";
 
-	static constexpr const char* const typeId = "network";
+    virtual
+    ~INetworkLayer() = default;
 
-	virtual
-	~INetworkLayer() = default;
+    /**
+     * @brief 	Create a Sender object that allows to send packets though IDC using the IIDCParams
+     * 			defined in params
+     * @param params Parameters defining the IDC settings
+     * @return A Sender object
+     */
+    virtual bool
+    sendPacket(const std::string& id, const Packet& packet) = 0;
 
-	/**
-	 * @brief 	Create a Sender object that allows to send packets though IDC using the IIDCParams
-	 * 			defined in params
-	 * @param params Parameters defining the IDC settings
-	 * @return A Sender object
-	 */
-	virtual bool
-	sendPacket(const std::string& id, const Packet& packet) = 0;
+    using OnPacket = boost::signals2::signal<void(const Packet&)>;
 
-	using OnPacket = boost::signals2::signal<void(const Packet&)>;
+    /**
+     * @brief Subscribe on packets coming through IDC. Uses the params to set up the reception.
+     * @param params Parameters defining the IDC settings
+     * @param handle Handle to be called with the received packet
+     */
+    virtual boost::signals2::connection
+    subscribeOnPacket(const std::string& id, const OnPacket::slot_type& handle) = 0;
 
-	/**
-	 * @brief Subscribe on packets coming through IDC. Uses the params to set up the reception.
-	 * @param params Parameters defining the IDC settings
-	 * @param handle Handle to be called with the received packet
-	 */
-	virtual boost::signals2::connection
-	subscribeOnPacket(const std::string& id, const OnPacket::slot_type& handle) = 0;
+    virtual std::map<std::string, NetworkStats>
+    getStats() const = 0;
+
+    virtual void
+    resetStats(const std::string& id) = 0;
 };
 
 #endif /* UAVAP_CORE_IDC_INETWORKLAYER_H_ */

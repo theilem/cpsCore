@@ -39,9 +39,7 @@ add_subdirectory(${SUBMODULE_DIR}/cpp_redis)
 
 
 set (TEST_SRCS ${TEST_SRCS})
-message(STATUS "Test sources core: ${TEST_SRCS}")
 add_subdirectory(tests)
-message(STATUS "Test sources core after: ${TEST_SRCS}")
 if (CPS_CORE_DONT_BUILD_TESTS)
     set (TEST_SRCS ${TEST_SRCS} PARENT_SCOPE)
 endif (CPS_CORE_DONT_BUILD_TESTS)

@@ -40,6 +40,8 @@ public:
 	IDCSender
 	createSender(const std::string& id);
 
+
+
 };
 
 #endif /* UAVAP_CORE_IDC_IDC_H_ */

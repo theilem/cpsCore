@@ -50,6 +50,12 @@ public:
 	bool
 	run(RunStage stage) override;
 
+	std::map<std::string, NetworkStats>
+	getStats() const override;
+
+	void
+	resetStats(const std::string& id) override;
+
 private:
 
 	void

@@ -95,3 +95,14 @@ RedisNetworkLayer::run(RunStage stage)
 	}
 	return false;
 }
+
+std::map<std::string, NetworkStats>
+RedisNetworkLayer::getStats() const
+{
+	return std::map<std::string, NetworkStats>();
+}
+
+void
+RedisNetworkLayer::resetStats(const std::string& id)
+{
+}

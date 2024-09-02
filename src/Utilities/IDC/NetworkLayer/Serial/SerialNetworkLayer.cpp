@@ -82,6 +82,32 @@ SerialNetworkLayer::run(RunStage stage)
 	return false;
 }
 
+std::map<std::string, NetworkStats>
+SerialNetworkLayer::getStats() const
+{
+	std::map<std::string, NetworkStats> stats;
+	for (const auto& it : handler_)
+	{
+		if (it.second)
+			stats.insert(std::make_pair(it.first, it.second->getStats()));
+	}
+	return stats;
+}
+
+void
+SerialNetworkLayer::resetStats(const std::string& id)
+{
+	auto handler = handler_.find(id);
+	if (handler != handler_.end())
+	{
+		handler->second->resetStats();
+	}
+	else
+	{
+		CPSLOG_ERROR << "Cannot reset stats for: " << id;
+	}
+}
+
 void
 SerialNetworkLayer::onSigInt(int sig)
 {

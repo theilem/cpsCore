@@ -9,6 +9,7 @@
 #define UAVAP_CORE_SCHEDULER_EVENT_H_
 
 #include <memory>
+#include <cpsCore/Utilities/Time.hpp>
 
 struct EventBody;
 
@@ -24,7 +25,10 @@ public:
 	cancel();
 
 	bool
-	isCanceled();
+	isCanceled() const;
+
+	void
+	changePeriod(const Duration& period);
 
 private:
 

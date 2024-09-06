@@ -14,6 +14,8 @@ class FrameworkAPI
 {
 public:
 
+	~FrameworkAPI() = default;
+
 	static FrameworkAPI*
 	instance();
 
@@ -25,7 +27,7 @@ public:
 
 private:
 
-	FrameworkAPI();
+	FrameworkAPI() = default;
 
 	class CGuard
 	{

@@ -9,84 +9,144 @@
 #define CPSCORE_UTILITIES_NAMEDVALUE_HPP_
 
 #include <string>
+#include <cpsCore/Utilities/LinearAlgebra.h>
 
-template<typename Type>
+template <typename Type>
 struct NamedValue
 {
-	using ValueType = Type;
+    using ValueType = Type;
 
-	NamedValue<Type>&
-	operator=(const NamedValue<Type>& other)
-	{
-		value = other.value;
-		return *this;
-	}
+    NamedValue<Type>&
+    operator=(const NamedValue<Type>& other)
+    {
+        value = other.value;
+        return *this;
+    }
 
-	NamedValue<Type>&
-	operator=(const Type& val)
-	{
-		value = val;
-		return *this;
-	}
+    NamedValue<Type>&
+    operator=(const Type& val)
+    {
+        value = val;
+        return *this;
+    }
 
-	inline const Type&
-	operator()() const
-	{
-		return value;
-	}
+    inline const Type&
+    operator()() const
+    {
+        return value;
+    }
 
-	inline Type&
-	operator()()
-	{
-		return value;
-	}
+    inline Type&
+    operator()()
+    {
+        return value;
+    }
 
-	inline void
-	setValue(const Type& val)
-	{
-		value = val;
-	}
+    inline void
+    setValue(const Type& val)
+    {
+        value = val;
+    }
 
-	Type value;
-	const std::string id;
-
+    Type value;
+    const std::string id;
 };
 
-template<typename Type>
-struct is_named_value_set
+template <typename Type>
+class NamedValueParser
 {
-	template<typename _1>
-	static char&
-	chk(
-			typename std::enable_if<
-					std::is_same<void, decltype(std::declval<_1>().parse(std::declval<int&>()))>::value,
-					int>::type);
+public:
+    NamedValueParser() = default;
 
-	template<typename>
-	static int&
-	chk(...);
+    template <typename NamedValueSet>
+    const std::map<std::string, Type>&
+    parse(const NamedValueSet& set)
+    {
+        set.parse(*this);
+        return values_;
+    }
 
-	static constexpr bool value = sizeof(chk<Type>(0)) == sizeof(char);
+    template <typename NamedValueType>
+    void
+    operator&(const NamedValueType& value)
+    {
+        if constexpr (std::is_convertible_v<typename NamedValueType::ValueType, Type>)
+            values_[value.id] = static_cast<Type>(value.value);
+        else if constexpr (is_eigen_vector<typename NamedValueType::ValueType>::value)
+        {
+            values_[value.id + "_x"] = static_cast<Type>(value.value.x());
+            values_[value.id + "_y"] = static_cast<Type>(value.value.y());
+            values_[value.id + "_z"] = static_cast<Type>(value.value.z());
+        }
+    }
+
+private:
+    std::map<std::string, Type> values_;
 };
 
-template<typename Type>
+class NamedValuePrinter
+{
+public:
+    explicit
+    NamedValuePrinter(std::ostream& os) :
+        os_(os)
+    {
+    }
+
+    template <typename Type>
+    NamedValuePrinter&
+    operator&(const NamedValue<Type>& value)
+    {
+        os_ << value.id << ": " << value.value << std::endl;
+        return *this;
+    }
+
+    template <typename NamedValueSet>
+    std::ostream&
+    operator<<(const NamedValueSet& set)
+    {
+        return print(set);
+    }
+
+    template <typename NamedValueSet>
+    std::ostream&
+    print(const NamedValueSet& set)
+    {
+        os_ << set.name << std::endl;
+        set.parse(*this);
+        return os_;
+    }
+
+private:
+    std::ostream& os_;
+};
+
+
+template<typename, typename = void>
+struct is_named_value_set : std::false_type {};
+
+template<typename T>
+struct is_named_value_set<T, std::void_t<decltype(std::declval<T>().parse(std::declval<int&>()))>> : std::true_type {};
+
+
+template <typename Type>
 struct is_named_value : public std::false_type
 {
 };
 
-template<typename Type>
+template <typename Type>
 struct is_named_value<NamedValue<Type>> : public std::true_type
 {
 };
 
-template<typename Type>
-using enable_if_is_named_value = typename std::enable_if<is_named_value<Type>::value, Type>::type;
-template<typename Type>
-using enable_if_not_is_named_value = typename std::enable_if<!is_named_value<Type>::value, Type>::type;
 
-template<typename Type>
-using enable_if_is_named_value_set = typename std::enable_if<is_named_value_set<Type>::value, Type>::type;
-template<typename Type>
-using enable_if_not_is_named_value_set = typename std::enable_if<!(is_named_value_set<Type>::value), Type>::type;
+template <typename Type>
+std::ostream& operator<<(std::ostream& os, const std::enable_if_t<is_named_value_set<Type>::value, Type>& value)
+{
+    NamedValuePrinter printer(os);
+    printer << value;
+    return os;
+}
+
 
 #endif /* CPSCORE_UTILITIES_NAMEDVALUE_HPP_ */

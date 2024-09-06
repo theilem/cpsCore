@@ -57,7 +57,6 @@ SerialHandler::sendPacket(const Packet& packet)
         return false;
     }
 
-    boost::system::error_code error;
     std::string message = packet.getBuffer();
 
     if (useCRC_)
@@ -161,7 +160,6 @@ SerialHandler::receive(const boost::system::error_code& err, std::size_t bytes_t
         {
             stats_.dataCorrupted() += packetString.size();
             stats_.packetsCorrupted()++;
-            CPSLOG_ERROR << "CRC does not match";
             return;
         }
     }

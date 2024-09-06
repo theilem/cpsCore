@@ -19,7 +19,7 @@ public:
 
 	JsonPopulator();
 
-	JsonPopulator(std::ofstream& file);
+	explicit JsonPopulator(std::ofstream& file);
 
 	~JsonPopulator();
 
@@ -114,10 +114,14 @@ private:
 
 	template<typename Type>
 	std::enable_if_t<is_angle<Type>::value, JsonPopulator>&
-	writeValue(const Type& value);
+		writeValue(const Type& value);
 
 	template<typename Type>
 	std::enable_if_t<is_vector<Type>::value, JsonPopulator>&
+		writeValue(const Type& value);
+
+	template<typename Type>
+	std::enable_if_t<is_enum_map<Type>::value, JsonPopulator>&
 	writeValue(const Type& value);
 
 	template<typename Type>
@@ -140,7 +144,7 @@ private:
 	std::enable_if_t<
 			!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value &&
 			!is_vector<Type>::value && !is_parameter_set<Type>::value && !is_string_key_map<Type>::value &&
-			!is_optional<Type>::value && !is_eigen<Type>::value,
+			!is_optional<Type>::value && !is_eigen<Type>::value && !is_enum_map<Type>::value,
 			JsonPopulator>&
 	writeValue(const Type& value);
 
@@ -276,6 +280,31 @@ JsonPopulator::writeValue(const Type& value)
 	return *this;
 }
 
+template <typename Type>
+std::enable_if_t<is_enum_map<Type>::value, JsonPopulator>&
+JsonPopulator::writeValue(const Type& value)
+{
+	jsonString_ << "{" << std::endl;
+	indent();
+	firstElement_ = true;
+	for (const auto& it : value)
+	{
+		if (!firstElement_)
+			jsonString_ << "," << std::endl;
+		addTabs();
+		writeValue(it.first);
+		jsonString_ << ": ";
+		writeValue(it.second);
+		firstElement_ = false;
+	}
+
+	outdent();
+	jsonString_ << std::endl;
+	addTabs();
+	jsonString_ << "}";
+	return *this;
+}
+
 
 template<typename Type>
 std::enable_if_t<is_string_key_map<Type>::value, JsonPopulator>&
@@ -339,7 +368,7 @@ template<typename Type>
 inline std::enable_if_t<
 		!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value &&
 		!is_vector<Type>::value && !is_parameter_set<Type>::value && !is_string_key_map<Type>::value &&
-		!is_optional<Type>::value && !is_eigen<Type>::value, JsonPopulator>&
+		!is_optional<Type>::value && !is_eigen<Type>::value && !is_enum_map<Type>::value, JsonPopulator>&
 JsonPopulator::writeValue(const Type& value)
 {
 	if constexpr (std::is_same_v<Type, bool>)
@@ -351,9 +380,9 @@ JsonPopulator::writeValue(const Type& value)
 
 template<typename Type>
 inline JsonPopulator&
-JsonPopulator::operator<<(const Type& text)
+JsonPopulator::operator<<(const Type& value)
 {
-	jsonString_ << text;
+	writeValue(value);
 	return *this;
 }
 

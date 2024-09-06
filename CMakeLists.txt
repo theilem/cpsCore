@@ -4,7 +4,7 @@ if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
     message(FATAL_ERROR "Cannot compile, need c++17")
 endif (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0.0)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -fPIC -static-libstdc++")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z -Wall -fPIC")
 
 find_package (Eigen3 REQUIRED NO_MODULE)
 find_package(Boost REQUIRED COMPONENTS system)

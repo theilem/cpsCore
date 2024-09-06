@@ -9,6 +9,7 @@
 #define UAVAP_CORE_PROPERTYMAPPER_PARAMETER_H_
 
 #include <string>
+#include <iostream>
 
 template<typename Type>
 struct Parameter
@@ -41,6 +42,12 @@ struct Parameter
 		return value;
 	}
 
+	bool
+	operator==(const Parameter<Type>& other) const
+	{
+		return value == other.value;
+	}
+
 	inline void
 	setValue(const Type& val)
 	{
@@ -53,22 +60,48 @@ struct Parameter
 
 };
 
-template<typename Type>
-struct is_parameter_set
+class ParameterPrinter
 {
-	template<typename _1>
-	static char&
-	chk(
-			typename std::enable_if<
-					std::is_same<void, decltype(std::declval<_1>().configure(std::declval<int&>()))>::value,
-					int>::type);
+public:
+	explicit
+	ParameterPrinter(std::ostream& os) :
+		os_(os)
+	{
+	}
 
-	template<typename>
-	static int&
-	chk(...);
+	template <typename Type>
+	ParameterPrinter&
+	operator&(const Parameter<Type>& value)
+	{
+		os_ << value.id << ": " << value.value << std::endl;
+		return *this;
+	}
 
-	static constexpr bool value = sizeof(chk<Type>(0)) == sizeof(char);
+	template <typename ParameterSet>
+	std::ostream&
+	operator<<(const ParameterSet& set)
+	{
+		return print(set);
+	}
+
+	template <typename ParameterSet>
+	std::ostream&
+	print(const ParameterSet& set)
+	{
+		const_cast<ParameterSet&>(set).configure(*this);
+		return os_;
+	}
+
+private:
+	std::ostream& os_;
 };
+
+template<typename, typename = void>
+struct is_parameter_set : std::false_type {};
+
+template<typename T>
+struct is_parameter_set<T, std::void_t<decltype(std::declval<T>().configure(std::declval<int&>()))>> : std::true_type {};
+
 
 template<typename Type>
 struct is_parameter : public std::false_type
@@ -89,5 +122,16 @@ template<typename Type>
 using enable_if_is_parameter_set = typename std::enable_if<is_parameter_set<Type>::value, Type>::type;
 template<typename Type>
 using enable_if_not_is_parameter_set = typename std::enable_if<!(is_parameter_set<Type>::value), Type>::type;
+
+
+template <typename Type, typename ParameterSetType = std::enable_if_t<is_parameter_set<Type>::value>>
+std::ostream&
+operator<<(std::ostream& os, const Type& value)
+{
+	ParameterPrinter printer(os);
+	printer << value;
+	return os;
+}
+
 
 #endif /* UAVAP_CORE_PROPERTYMAPPER_PARAMETER_H_ */

@@ -89,28 +89,41 @@ TEST_CASE("IPC Test 1")
         test.val2 = 1.2;
         test.val3 = Vector3(1, 2, 3);
 
-        CHECK(counter1 == 0);
-        CHECK(counter2 == 0);
+        int checkCounter1 = counter1;
+        int checkCounter2 = counter2;
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-        CHECK(counter1 == 0);
-        CHECK(counter2 == 0);
+        int checkCounter1_2 = counter1;
+        int checkCounter2_2 = counter2;
         publisher.publish(test);
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-        CHECK(counter1 == 1);
-        CHECK(counter2 == 1);
+        int checkCounter1_3 = counter1;
+        int checkCounter2_3 = counter2;
 
         test.val1 = 2;
         test.val2 = 2.2;
         test.val3 = Vector3(2, 3, 4);
 
         publisher.publish(test);
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-        CHECK(counter1 == 2);
-        CHECK(counter2 == 2);
+        int checkCounter1_4 = counter1;
+        int checkCounter2_4 = counter2;
+
+        CHECK(checkCounter1 == 0);
+        CHECK(checkCounter2 == 0);
+
+        CHECK(checkCounter1_2 == 0);
+        CHECK(checkCounter2_2 == 0);
+
+        CHECK(checkCounter1_3 == 1);
+        CHECK(checkCounter2_3 == 1);
+
+        CHECK(checkCounter1_4 == 2);
+        CHECK(checkCounter2_4 == 2);
+
     }
     // Test if shared memory was cleaned up
     CHECK_THROWS_AS(

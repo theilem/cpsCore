@@ -26,6 +26,17 @@ struct is_vector<std::vector<T, A>> : public std::true_type
 {
 };
 
+//is std::map
+template<typename T>
+struct is_map : public std::false_type
+{
+};
+
+template<typename K, typename T, typename C, typename A>
+struct is_map<std::map<K, T, C, A>> : public std::true_type
+{
+};
+
 template<typename T>
 struct is_string_key_map : public std::false_type
 {

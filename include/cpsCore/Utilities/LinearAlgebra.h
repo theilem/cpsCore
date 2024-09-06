@@ -15,33 +15,17 @@
 #include <cpsCore/Utilities/DataPresentation/detail/Split.h>
 
 
-#ifdef FLOAT_SINGLE
-#error This is wrong
-
 using FloatingType = float;
-using Vector2 = Eigen::Matrix<float, 2, 1, Eigen::DontAlign>;
-using Vector3 = Eigen::Matrix<float, 3, 1, Eigen::DontAlign>;
-using Matrix3 = Eigen::Matrix<float, 3, 3, Eigen::DontAlign>;
+
+using Vector2 = Eigen::Vector2f;
+using Vector3 = Eigen::Vector3f;
+using Matrix3 = Eigen::Matrix3f;
 using AngleAxis = Eigen::AngleAxisf;
 using Rotation2 = Eigen::Rotation2Df;
-using EigenLine = Eigen::ParametrizedLine<float, 3, Eigen::DontAlign>;
-using EigenLine2 = Eigen::ParametrizedLine<float, 2, Eigen::DontAlign>;
-using EigenHyperplane = Eigen::Hyperplane<float, 3, Eigen::DontAlign>;
+using EigenLine = Eigen::ParametrizedLine<FloatingType, 3>;
+using EigenLine2 = Eigen::ParametrizedLine<FloatingType, 2>;
+using EigenHyperplane = Eigen::Hyperplane<FloatingType, 3, Eigen::DontAlign>;
 
-#else
-
-using FloatingType = double;
-
-using Vector2 = Eigen::Vector2d;
-using Vector3 = Eigen::Vector3d;
-using Matrix3 = Eigen::Matrix3d;
-using AngleAxis = Eigen::AngleAxisd;
-using Rotation2 = Eigen::Rotation2Dd;
-using EigenLine = Eigen::ParametrizedLine<double, 3>;
-using EigenLine2 = Eigen::ParametrizedLine<double, 2>;
-using EigenHyperplane = Eigen::Hyperplane<double, 3, Eigen::DontAlign>;
-
-#endif
 
 template<int N>
 using VectorN = Eigen::Matrix<FloatingType, N, 1, Eigen::DontAlign>;

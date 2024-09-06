@@ -30,10 +30,6 @@ FrameworkAPI::getAggregator()
 	return &instance()->agg_;
 }
 
-FrameworkAPI::FrameworkAPI()
-{
-}
-
 FrameworkAPI::CGuard::~CGuard()
 {
 	if (FrameworkAPI::instance_ != nullptr)

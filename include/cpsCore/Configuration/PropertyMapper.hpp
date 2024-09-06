@@ -506,8 +506,8 @@ template<typename Config>
 bool
 PropertyMapper<Config>::add(const std::string& key, Vector3& val, bool mandatory)
 {
-	std::vector<double> vec;
-	if (!this->template addVector<std::vector<double>>(key, vec, mandatory))
+	std::vector<FloatingType> vec;
+	if (!this->template addVector<std::vector<FloatingType>>(key, vec, mandatory))
 		return false;
 
 	if (vec.size() == 3)
@@ -549,8 +549,8 @@ template<typename Config>
 bool
 PropertyMapper<Config>::add(const std::string& key, Vector2& val, bool mandatory)
 {
-	std::vector<double> vec;
-	if (!this->template addVector<std::vector<double>>(key, vec, mandatory))
+	std::vector<FloatingType> vec;
+	if (!this->template addVector<std::vector<FloatingType>>(key, vec, mandatory))
 		return false;
 
 	if (vec.size() == 2)

@@ -41,6 +41,7 @@ SharedMemoryPublisherImpl::SharedMemoryPublisherImpl(const std::string& id, std:
 		header.active = true;
 
 		memcpy(region.get_address(), &header, sizeof(header));
+		owner_ = true;
 	}
 	else
 	{
@@ -49,6 +50,7 @@ SharedMemoryPublisherImpl::SharedMemoryPublisherImpl(const std::string& id, std:
 		header->maxPacketSize = maxPacketSize_;
 		header->packetSize = 0;
 		header->active = true;
+		owner_ = false;
 	}
 
 }
@@ -67,7 +69,7 @@ SharedMemoryPublisherImpl::publish(const Packet& packet)
 	}
 
 	mapped_region region(sharedMem_, read_write);
-	MessageObjectHeader* message = static_cast<MessageObjectHeader*>(region.get_address());
+	auto* message = static_cast<MessageObjectHeader*>(region.get_address());
 
 	boost::unique_lock<boost::interprocess::interprocess_sharable_mutex> lock(message->mtx);
 
@@ -80,8 +82,9 @@ SharedMemoryPublisherImpl::publish(const Packet& packet)
 
 SharedMemoryPublisherImpl::~SharedMemoryPublisherImpl()
 {
+	if (!owner_)
+		return;
 	teardown();
-	std::this_thread::sleep_for(Milliseconds(10)); //allow subscribers to disconnect
 
 	std::string name = sharedMem_.get_name();
 	if (sharedMem_.remove(name.c_str()))
@@ -92,7 +95,7 @@ void
 SharedMemoryPublisherImpl::teardown()
 {
 	boost::interprocess::mapped_region region(sharedMem_, boost::interprocess::read_write);
-	MessageObjectHeader* message = static_cast<MessageObjectHeader*>(region.get_address());
+	auto* message = static_cast<MessageObjectHeader*>(region.get_address());
 
 	boost::unique_lock<boost::interprocess::interprocess_sharable_mutex> lock(message->mtx);
 

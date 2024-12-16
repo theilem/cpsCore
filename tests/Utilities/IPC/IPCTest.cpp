@@ -175,16 +175,6 @@ TEST_CASE("IPC Test 2")
 namespace
 {
     void
-    retrySuccessCallback(const Subscription& sub, bool& called)
-    {
-        CHECK(sub.connected());
-        static int retryCounter = 0;
-        called = true;
-        retryCounter++;
-        CHECK(retryCounter == 1);
-    }
-
-    void
     onPacket(const Packet& p, int& packetCounter)
     {
         std::string test = "abc";
@@ -208,26 +198,20 @@ TEST_CASE("Test Retry Functionality")
     IPCParams params;
     params.retryPeriod = 100;
 
-    bool retryCalled = false;
-    bool retryCalled2 = false;
     int packetCounter = 0;
     int packetCounter2 = 0;
 
     IPCOptions opts;
     opts.multiTarget = true; //SHM
     opts.retry = true;
-    opts.retrySuccessCallback = std::bind(retrySuccessCallback, std::placeholders::_1,
-                                          std::ref(retryCalled));
 
     IPCOptions opts2;
     opts2.multiTarget = true; //SHM
     opts2.retry = false;
-    opts2.retrySuccessCallback = std::bind(retrySuccessCallback, std::placeholders::_1,
-                                           std::ref(retryCalled2));
 
     auto sub1 = ipc->subscribeOnPackets("test_packets",
                                         std::bind(onPacket, std::placeholders::_1, std::ref(packetCounter)), opts);
-    auto sub2 = ipc->subscribeOnPackets("test_packets",
+    auto sub2 = ipc->subscribeOnPackets("test_packets_2",
                                         std::bind(onPacket, std::placeholders::_1, std::ref(packetCounter2)), opts2);
 
     CHECK(!sub1.connected());
@@ -240,19 +224,21 @@ TEST_CASE("Test Retry Functionality")
     sim->releaseWait(); //One retry
     std::this_thread::sleep_for(Milliseconds(10)); //Let scheduler start
 
-    CHECK(!retryCalled);
-    CHECK(!retryCalled2);
+    CHECK(!sub1.connected());
+    CHECK(!sub2.connected());
 
     auto pub = ipc->publishPackets("test_packets");
+	auto pub2 = ipc->publishPackets("test_packets_2");
 
     sim->releaseWait(); //next retry, should be successful
 
     std::this_thread::sleep_for(Milliseconds(10)); //Let scheduler start
 
-    CHECK(retryCalled);
-    CHECK(!retryCalled2);
+    CHECK(sub1.connected());
+    CHECK(!sub2.connected());
 
     pub.publish(Packet("abc"));
+    pub2.publish(Packet("abc"));
 
     std::this_thread::sleep_for(Milliseconds(10)); //Let scheduler start
 
@@ -260,13 +246,14 @@ TEST_CASE("Test Retry Functionality")
 
     std::this_thread::sleep_for(Milliseconds(10)); //Let scheduler start
 
-    CHECK(retryCalled);
-    CHECK(!retryCalled2);
+    CHECK(sub1.connected());
+    CHECK(!sub2.connected());
 
     CHECK(packetCounter == 1);
     CHECK(packetCounter2 == 0);
 
     pub.publish(Packet("abc"));
+    pub2.publish(Packet("abc"));
 
     std::this_thread::sleep_for(Milliseconds(10)); //Let scheduler start
 

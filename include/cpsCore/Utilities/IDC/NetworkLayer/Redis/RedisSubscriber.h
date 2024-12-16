@@ -23,7 +23,7 @@ public:
 
 	RedisSubscriber(const RedisChannelParams& params, const RedisHostParams& host);
 
-	~RedisSubscriber();
+	~RedisSubscriber() override;
 
 	using OnPacket = boost::signals2::signal<void(const Packet&)>;
 
@@ -36,10 +36,19 @@ public:
 	void
 	start() override;
 
+	bool
+	connect() override;
+
+	bool
+	connected() const override;
+
 private:
 
 	void
 	onChannel(const std::string& channel, const std::string& message);
+
+	RedisChannelParams params_;
+	RedisHostParams host_;
 
 	cpp_redis::subscriber subscriber_;
 

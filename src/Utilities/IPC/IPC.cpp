@@ -16,7 +16,7 @@
 IPC::~IPC()
 {
 	std::lock_guard<std::mutex> lock(subscribeMutex_);
-	for (auto& it : subscriptions_)
+	for (auto& it: subscriptions_)
 	{
 		it.second->cancel();
 	}
@@ -40,7 +40,8 @@ IPC::run(RunStage stage)
 			if (auto sh = get<SignalHandler>())
 			{
 				CPSLOG_DEBUG << "IPC subscribing on SIGINT";
-				sh->subscribeOnSigint(std::bind(&IPC::sigintHandler, this, std::placeholders::_1));
+				sh->subscribeOnSigint([this](int sig)
+									  { sigintHandler(sig); });
 			}
 
 			if (params.retryPeriod() != 0)
@@ -48,8 +49,9 @@ IPC::run(RunStage stage)
 				if (auto sched = get<IScheduler>())
 				{
 					CPSLOG_DEBUG << "Schedule retries";
-					sched->schedule(std::bind(&IPC::retrySubscriptions, this), Milliseconds(0),
-									Milliseconds(params.retryPeriod()));
+					sched->schedule([this]
+									{ retrySubscriptions(); }, Milliseconds(0),
+									Milliseconds(params.retryPeriod()), "ipc_retry_subscriptions");
 				}
 			}
 			break;
@@ -65,22 +67,22 @@ IPC::publishPackets(const std::string& id, const IPCOptions& options)
 {
 	if (params.useRedis())
 	{
-		return Publisher<Packet>(publishOnRedis(id, params.maxPacketSize()),
-								 [](const Packet& p)
-								 { return p; });
+		return {publishOnRedis(id, params.maxPacketSize()),
+				[](const Packet& p)
+				{ return p; }};
 	}
 	if (options.multiTarget)
 	{
-		return Publisher<Packet>(publishOnSharedMemory(id, params.maxPacketSize()),
-								 [](const Packet& p)
-								 { return p; });
+		return {publishOnSharedMemory(id, params.maxPacketSize()),
+				[](const Packet& p)
+				{ return p; }};
 	}
 	else
 	{
-		return Publisher<Packet>(
+		return {
 				publishOnMessageQueue(id, params.maxPacketSize(), params.maxNumPackets()),
 				[](const Packet& p)
-				{ return p; });
+				{ return p; }};
 	}
 }
 
@@ -132,7 +134,7 @@ IPC::sigintHandler(int sig)
 	{
 		CPSLOG_DEBUG << "Caught signal " << sig << ". Deleting subscriptions and publications.";
 		CPSLogger::instance()->flush();
-		for (const auto& sub : subscriptions_)
+		for (const auto& sub: subscriptions_)
 		{
 			sub.second->cancel();
 		}
@@ -146,163 +148,86 @@ Subscription
 IPC::subscribeOnPackets(const std::string& id, const std::function<void
 		(const Packet&)>& slot, const IPCOptions& options)
 {
-	Subscription result;
-	if (params.useRedis())
+	std::lock_guard<std::mutex> lock(subscribeMutex_);
+
+	auto subscription = subscriptions_.find(id);
+	if (subscription != subscriptions_.end())
 	{
-		result = subscribeOnRedis(id, slot);
+		auto impl = subscription->second;
+		auto con = impl->subscribe(slot);
+		return {subscription->second, con};
 	}
-	else
+
+	auto sub = subscribeOnPacketsImpl(id, options);
+	if (sub->connected())
 	{
-		if (options.multiTarget)
+		if (auto sched = get<IScheduler>())
 		{
-			result = subscribeOnSharedMemory(id, slot);
+			sched->schedule([sub]
+							{ sub->start(); },
+							Milliseconds(0), "start_shared_memory_subscription_" + id);
 		}
 		else
 		{
-			result = subscribeOnMessageQueue(id, slot);
+			CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
 		}
 	}
 
-	if (!result.connected() && options.retry)
+	auto connection = sub->subscribe(slot);
+	subscriptions_.insert(std::make_pair(id, sub));
+
+	if (options.retry)
 	{
 		LockGuard l(retryVectorMutex_);
 		CPSLOG_DEBUG << "Queuing " << id << " for retry";
-		//Schedule retry
-		if (options.multiTarget)
-		{
-			retryVector_.push_back(
-					std::make_pair(options.retrySuccessCallback,
-								   std::bind(&IPC::subscribeOnSharedMemory, this, id, slot)));
-		}
-		else
-		{
-			retryVector_.push_back(
-					std::make_pair(options.retrySuccessCallback,
-								   std::bind(&IPC::subscribeOnMessageQueue, this, id, slot)));
-		}
+		retryVector_.push_back(id);
 	}
 
-	return result;
+	return {sub, connection};
 }
 
-Subscription
-IPC::subscribeOnSharedMemory(const std::string& id, const std::function<void
-		(const Packet&)>& slot)
+std::shared_ptr<ISubscriptionImpl>
+IPC::subscribeOnPacketsImpl(const std::string& id, const IPCOptions& options)
 {
-	std::shared_ptr<ISubscriptionImpl> impl;
-
-	std::lock_guard<std::mutex> lock(subscribeMutex_);
-
-	auto subscription = subscriptions_.find(id);
-	if (subscription != subscriptions_.end())
+	if (params.useRedis())
 	{
-		impl = subscription->second;
-		auto con = impl->subscribe(slot);
-		return Subscription(subscription->second, con);
-	}
-	try
-	{
-		auto sub = std::make_shared<SharedMemorySubscriptionImpl>(id);
-		if (auto sched = get<IScheduler>())
-		{
-			sched->schedule(std::bind(&SharedMemorySubscriptionImpl::start, sub),
-							Milliseconds(0));
-		}
-		else
-		{
-			CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
-		}
-		impl = sub;
-		subscriptions_.insert(std::make_pair(id, impl));
-	} catch (boost::interprocess::interprocess_exception& err)
-	{
-		return Subscription();
-	}
-
-	auto con = impl->subscribe(slot);
-
-	return Subscription(impl, con);
-}
-
-Subscription
-IPC::subscribeOnMessageQueue(const std::string& id, const std::function<void
-		(const Packet&)>& slot)
-{
-	std::shared_ptr<ISubscriptionImpl> impl;
-
-	std::lock_guard<std::mutex> lock(subscribeMutex_);
-
-	auto subscription = subscriptions_.find(id);
-	if (subscription != subscriptions_.end())
-	{
-		impl = subscription->second;
-		auto con = impl->subscribe(slot);
-		return Subscription(subscription->second, con);
-	}
-	try
-	{
-		auto sub = std::make_shared<MessageQueueSubscriptionImpl>(id, params.maxPacketSize());
-		if (auto sched = get<IScheduler>())
-		{
-			sched->schedule(std::bind(&MessageQueueSubscriptionImpl::start, sub),
-							Milliseconds(0));
-		}
-		else
-		{
-			CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
-		}
-		impl = sub;
-		subscriptions_.insert(std::make_pair(id, impl));
-	} catch (boost::interprocess::interprocess_exception&)
-	{
-		return Subscription();
-	}
-
-	auto con = impl->subscribe(slot);
-
-	return Subscription(impl, con);
-}
-
-Subscription
-IPC::subscribeOnRedis(const std::string& id, const std::function<void
-		(const Packet&)>& slot)
-{
-
-	std::shared_ptr<ISubscriptionImpl> impl;
-
-	std::lock_guard<std::mutex> lock(subscribeMutex_);
-
-	auto subscription = subscriptions_.find(id);
-	if (subscription != subscriptions_.end())
-	{
-		impl = subscription->second;
-		auto con = impl->subscribe(slot);
-		return Subscription(subscription->second, con);
+		return subscribeOnRedis(id);
 	}
 	else
 	{
-		RedisHostParams localhost;
-		localhost.ip = "127.0.0.1";
-		localhost.port = 6379;
-		localhost.auth = "";
-		RedisChannelParams channelParams;
-		channelParams.channel.setValue(id);
-		auto sub = std::make_shared<RedisSubscriber>(channelParams, localhost);
-		if (auto sched = get<IScheduler>())
+		if (options.multiTarget)
 		{
-			sched->schedule(std::bind(&RedisSubscriber::start, sub),
-							Milliseconds(0));
+			return subscribeOnSharedMemory(id);
 		}
 		else
 		{
-			CPSLOG_ERROR << "Scheduler missing. Cannot start subscription.";
+			return subscribeOnMessageQueue(id);
 		}
-		impl = sub;
-		subscriptions_.insert(std::make_pair(id, impl));
 	}
+}
 
-	auto con = impl->subscribe(slot);
-	return Subscription(impl, con);
+std::shared_ptr<ISubscriptionImpl>
+IPC::subscribeOnSharedMemory(const std::string& id)
+{
+	return std::make_shared<SharedMemorySubscriptionImpl>(id);
+}
+
+std::shared_ptr<ISubscriptionImpl>
+IPC::subscribeOnMessageQueue(const std::string& id)
+{
+	return std::make_shared<MessageQueueSubscriptionImpl>(id, params.maxPacketSize());
+}
+
+std::shared_ptr<ISubscriptionImpl>
+IPC::subscribeOnRedis(const std::string& id)
+{
+	RedisHostParams localhost;
+	localhost.ip = "127.0.0.1";
+	localhost.port = 6379;
+	localhost.auth = "";
+	RedisChannelParams channelParams;
+	channelParams.channel.setValue(id);
+	return std::make_shared<RedisSubscriber>(channelParams, localhost);
 }
 
 void
@@ -310,19 +235,19 @@ IPC::retrySubscriptions()
 {
 	LockGuard l(retryVectorMutex_);
 
-	auto it = retryVector_.begin();
-	while (it != retryVector_.end())
+	for (const auto& id: retryVector_)
 	{
-		auto sub = it->second();
-
-		if (sub.connected())
+		auto sub = subscriptions_.find(id);
+		if (sub != subscriptions_.end())
 		{
-			if (it->first)
-				it->first(sub);
-			it = retryVector_.erase(it);
+			if (!sub->second->connected())
+			{
+				CPSLOG_DEBUG << "Retrying " << id;
+				if (sub->second->connect())
+				{
+					sub->second->start();
+				}
+			}
 		}
-		else
-			it++;
 	}
-
 }

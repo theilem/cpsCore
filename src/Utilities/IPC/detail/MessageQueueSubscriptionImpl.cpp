@@ -11,24 +11,25 @@
 #include "cpsCore/Utilities/IPC/detail/MessageQueueSubscriptionImpl.h"
 
 MessageQueueSubscriptionImpl::MessageQueueSubscriptionImpl(const std::string& id,
-		std::size_t maxPacketSize) :
-		messageQueue_(boost::interprocess::open_only, id.c_str()), listenerCanceled_(false), maxPacketSize_(
-				maxPacketSize), id_(id)
+														   std::size_t maxPacketSize) :
+		listenerCanceled_(true), maxPacketSize_(
+		maxPacketSize), id_(id)
 {
-
+	connect();
 }
 
 MessageQueueSubscriptionImpl::~MessageQueueSubscriptionImpl()
 {
-	if (!listenerCanceled_.load())
-	{
-		cancel();
-	}
+	cancel();
 }
 
 void
 MessageQueueSubscriptionImpl::cancel()
 {
+	if (listenerCanceled_.load())
+	{
+		return;
+	}
 	listenerCanceled_.store(true);
 	listenerThread_.join();
 }
@@ -36,7 +37,13 @@ MessageQueueSubscriptionImpl::cancel()
 void
 MessageQueueSubscriptionImpl::start()
 {
-	listenerThread_ = std::thread(std::bind(&MessageQueueSubscriptionImpl::onMessageQueue, this));
+	listenerCanceled_.store(false);
+	if (listenerThread_.joinable())
+	{
+		listenerThread_.join();
+	}
+	listenerThread_ = std::thread([this]
+								  { onMessageQueue(); });
 }
 
 boost::signals2::connection
@@ -62,8 +69,8 @@ MessageQueueSubscriptionImpl::onMessageQueue()
 		unsigned int priority;
 
 		auto timeout = boost::get_system_time() + boost::posix_time::milliseconds(100);
-		if (!messageQueue_.timed_receive(static_cast<void*>(&packet[0]), maxPacketSize_, size,
-				priority, timeout))
+		if (!messageQueue_->timed_receive(static_cast<void*>(&packet[0]), maxPacketSize_, size,
+										  priority, timeout))
 		{
 			continue;
 		}
@@ -71,4 +78,26 @@ MessageQueueSubscriptionImpl::onMessageQueue()
 		packet += ' ';
 		onMessageQueue_(Packet(packet));
 	}
+}
+
+bool
+MessageQueueSubscriptionImpl::connect()
+{
+	try
+	{
+		messageQueue_ = std::make_unique<boost::interprocess::message_queue>(boost::interprocess::open_only,
+																			 id_.c_str());
+		return true;
+	} catch (const boost::interprocess::interprocess_exception& e)
+	{
+		CPSLOG_WARN << "Could not connect to message queue: " << e.what();
+		messageQueue_.reset();
+		return false;
+	}
+}
+
+bool
+MessageQueueSubscriptionImpl::connected() const
+{
+	return messageQueue_ != nullptr;
 }

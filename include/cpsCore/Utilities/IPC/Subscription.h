@@ -14,7 +14,7 @@ class Subscription
 {
 public:
 
-	Subscription();
+	Subscription() = default;
 
 	Subscription(std::shared_ptr<ISubscriptionImpl> impl, const boost::signals2::connection& con);
 

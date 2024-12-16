@@ -34,15 +34,15 @@ public:
 
 	MicroSimulator();
 
-	~MicroSimulator();
+	~MicroSimulator() override;
 
 	Event
 	schedule(const std::function<void
-			()>& task, Duration initialFromNow) override;
+			()>& task, Duration initialFromNow, const std::string& eventName = "") override;
 
 	Event
 	schedule(const std::function<void
-			()>& task, Duration initialFromNow, Duration period) override;
+			()>& task, Duration initialFromNow, Duration period, const std::string& eventName = "") override;
 
 	void
 	stop() override;

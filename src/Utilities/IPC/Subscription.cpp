@@ -6,10 +6,6 @@
  */
 #include "cpsCore/Utilities/IPC/Subscription.h"
 
-Subscription::Subscription()
-{
-}
-
 Subscription::Subscription(std::shared_ptr<ISubscriptionImpl> impl,
 		const boost::signals2::connection& con) :
 		subscriptionImpl_(impl), connection_(con)
@@ -26,7 +22,10 @@ Subscription::cancel()
 bool
 Subscription::connected() const
 {
-	return subscriptionImpl_.lock() != nullptr;
+	auto impl = subscriptionImpl_.lock();
+	if (impl)
+		return impl->connected();
+	return false;
 }
 
 void

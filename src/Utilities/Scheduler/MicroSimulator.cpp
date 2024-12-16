@@ -24,18 +24,18 @@ MicroSimulator::~MicroSimulator()
 
 Event
 MicroSimulator::schedule(const std::function<void
-		()>& task, Duration initialFromNow)
+		()>& task, Duration initialFromNow, const std::string& eventName)
 {
-	auto body = std::make_shared<EventBody>(task);
+	auto body = std::make_shared<EventBody>(task, eventName);
 	events_.insert(std::make_pair(now_ + initialFromNow, body));
 	return Event(body);
 }
 
 Event
 MicroSimulator::schedule(const std::function<void
-		()>& task, Duration initialFromNow, Duration period)
+		()>& task, Duration initialFromNow, Duration period, const std::string& eventName)
 {
-	auto body = std::make_shared<EventBody>(task, period);
+	auto body = std::make_shared<EventBody>(task, period, eventName);
 	events_.insert(std::make_pair(now_ + initialFromNow, body));
 	return Event(body);
 }
@@ -54,7 +54,7 @@ MicroSimulator::simulate(Duration duration)
 	TimePoint endSim = now_ + duration;
 	if (params.showProgress())
 	{
-		schedule([this, endSim, duration](){ logProgress(endSim, duration);}, duration / 100, duration / 100);
+		schedule([this, endSim, duration](){ logProgress(endSim, duration);}, duration / 100, duration / 100, "progress");
 	}
 	while (now_ <= endSim)
 	{

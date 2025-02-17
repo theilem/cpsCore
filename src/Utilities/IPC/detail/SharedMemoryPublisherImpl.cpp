@@ -23,13 +23,14 @@ SharedMemoryPublisherImpl::SharedMemoryPublisherImpl(const std::string& id, std:
 	try
 	{
 		sharedMem_ = shared_memory_object(open_only, id.c_str(), read_write);
-		existing = true;
-		CPSLOG_WARN << "Shared memory object " << id << " aready exists. Using existing.";
+		existing = false;
+		CPSLOG_WARN << "Shared memory object " << id << " aready exists. Removing and creating new.";
+		shared_memory_object::remove(id.c_str());
 	} catch (interprocess_exception&)
 	{
-		sharedMem_ = shared_memory_object(create_only, id.c_str(), read_write);
-		sharedMem_.truncate(sizeof(MessageObjectHeader) + maxPacketSize_);
 	}
+	sharedMem_ = shared_memory_object(create_only, id.c_str(), read_write);
+	sharedMem_.truncate(sizeof(MessageObjectHeader) + maxPacketSize_);
 
 	mapped_region region(sharedMem_, read_write);
 

@@ -25,6 +25,12 @@ public:
 	virtual void
 	start() = 0;
 
+	virtual bool
+	connect() = 0;
+
+	virtual bool
+	connected() const = 0;
+
 	using OnPacket = boost::signals2::signal<void(const Packet&)>;
 	using OnPacketSlot = OnPacket::slot_type;
 

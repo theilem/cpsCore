@@ -22,13 +22,20 @@ public:
 
 	MessageQueueSubscriptionImpl(const std::string& id, std::size_t maxPacketSize);
 
-	~MessageQueueSubscriptionImpl();
+	~MessageQueueSubscriptionImpl() override;
 
 	void
 	cancel() override;
 
 	void
 	start() override;
+
+	bool
+	connect() override;
+
+	bool
+	connected() const override;
+
 
 	boost::signals2::connection
 	subscribe(const OnPacketSlot& slot) override;
@@ -38,12 +45,14 @@ private:
 	void
 	onMessageQueue();
 
-	boost::interprocess::message_queue messageQueue_;
+	std::unique_ptr<boost::interprocess::message_queue> messageQueue_;
 
 	OnPacket onMessageQueue_;
 
 	std::thread listenerThread_;
 	std::atomic_bool listenerCanceled_;
+
+	bool connected_;
 
 	std::size_t maxPacketSize_;
 

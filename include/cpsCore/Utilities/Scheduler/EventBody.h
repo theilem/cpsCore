@@ -19,8 +19,7 @@
 struct EventBody
 {
 
-	std::function<void
-			()> body;
+	std::function<void()> body;
 	std::optional<Duration> period;
 	std::atomic_bool isCanceled;
 	std::atomic_bool isStarted;
@@ -30,11 +29,13 @@ struct EventBody
 	std::thread periodicThread;
 	std::condition_variable intervalCondition;
 
+	std::string eventName;
+
 	explicit EventBody(std::function<void
-			()> b);
+			()> b, const std::string& name = "");
 
 	EventBody(std::function<void
-			()> b, const Duration& p);
+			()> b, const Duration& p, const std::string& name = "");
 
 };
 

@@ -33,15 +33,14 @@ public:
 	 */
 	MultiThreadingScheduler();
 
-	~MultiThreadingScheduler();
+	~MultiThreadingScheduler() override;
+
+	Event
+	schedule(const std::function<void()>& task, Duration initialFromNow, const std::string& eventName = "") override;
 
 	Event
 	schedule(const std::function<void
-			()>& task, Duration initialFromNow) override;
-
-	Event
-	schedule(const std::function<void
-			()>& task, Duration initialFromNow, Duration period) override;
+			()>& task, Duration initialFromNow, Duration period, const std::string& eventName = "") override;
 
 	void
 	stop() override;
@@ -59,9 +58,6 @@ private:
 
 	void
 	runSchedule();
-
-	void
-	sleepUntil(TimePoint timepoint);
 
 	using EventMap = std::multimap<Duration, std::shared_ptr<EventBody> >;
 
@@ -83,7 +79,7 @@ private:
 	std::condition_variable wakeupCondition_;
 	std::mutex eventsMutex_;
 
-	bool started_;
+	std::atomic_bool started_;
 	TimePoint startingTime_;
 
 	bool mainThread_;

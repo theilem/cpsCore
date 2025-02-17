@@ -18,7 +18,7 @@ public:
 
 	SharedMemoryPublisherImpl(const std::string& id, std::size_t maxPacketSize);
 
-	~SharedMemoryPublisherImpl();
+	~SharedMemoryPublisherImpl() override;
 
 	bool
 	publish(const Packet& obj) override;
@@ -30,6 +30,7 @@ private:
 
 	boost::interprocess::shared_memory_object sharedMem_;
 	std::size_t maxPacketSize_;
+	bool owner_;
 
 };
 

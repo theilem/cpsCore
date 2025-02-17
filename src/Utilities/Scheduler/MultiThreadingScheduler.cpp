@@ -19,18 +19,20 @@ MultiThreadingScheduler::MultiThreadingScheduler() :
 
 MultiThreadingScheduler::~MultiThreadingScheduler()
 {
-	if (started_)
+	if (started_.load())
 		stop();
 
 	CPSLOG_TRACE << "Scheduler destroyed.";
 }
 
 Event
-MultiThreadingScheduler::schedule(const std::function<void
-		()>& task, Duration initialFromNow)
+MultiThreadingScheduler::schedule(const std::function<void()>& task, Duration initialFromNow,
+								  const std::string& eventName)
 {
-	auto body = std::make_shared<EventBody>(task);
+	auto body = std::make_shared<EventBody>(task, eventName);
 	auto element = createSchedule(initialFromNow, body);
+
+	CPSLOG_TRACE << "Scheduling " << eventName << " at " << element.first.count();
 
 	std::unique_lock<std::mutex> lock(eventsMutex_);
 	events_.insert(element);
@@ -39,11 +41,13 @@ MultiThreadingScheduler::schedule(const std::function<void
 }
 
 Event
-MultiThreadingScheduler::schedule(const std::function<void
-		()>& task, Duration initialFromNow, Duration period)
+MultiThreadingScheduler::schedule(const std::function<void()>& task, Duration initialFromNow, Duration period,
+								  const std::string& eventName)
 {
-	auto body = std::make_shared<EventBody>(task, period);
+	auto body = std::make_shared<EventBody>(task, period, eventName);
 	auto element = createSchedule(initialFromNow, body);
+
+	CPSLOG_TRACE << "Scheduling " << eventName << " at " << element.first.count() << " with period " << period.count();
 
 	std::unique_lock<std::mutex> lock(eventsMutex_);
 	events_.insert(element);
@@ -55,39 +59,32 @@ void
 MultiThreadingScheduler::stop()
 {
 	std::unique_lock<std::mutex> lock(eventsMutex_);
-	started_ = false;
+	started_.store(false);
 
-	for (auto& event : events_)
+	for (auto& event: events_)
 	{
 		Lock l(event.second->executionMutex);
 		event.second->isCanceled.store(true);
 		event.second->intervalCondition.notify_all();
 		l.unlock();
 	}
-	for (auto& event : events_)
+	for (auto& event: events_)
 	{
-		if (event.second->periodicThread.joinable())
-		{
-			CPSLOG_TRACE << "Joining " << event.second->body.target_type().name();
-			CPSLogger::instance()->flush();
-			event.second->periodicThread.join();
-			CPSLOG_TRACE << "Joined " << event.second->body.target_type().name();
-			CPSLogger::instance()->flush();
-		}
-		else
-		{
-			CPSLOG_WARN << event.second->body.target_type().name() << " not joinable";
-		}
+		CPSLOG_DEBUG << "Joining " << event.second->eventName;
+		CPSLogger::instance()->flush();
+		event.second->periodicThread.join();
+		CPSLOG_DEBUG << "Joined " << event.second->eventName;
+		CPSLogger::instance()->flush();
 	}
 
-	for (auto event : nonPeriodicEvents_)
+	for (auto& event: nonPeriodicEvents_)
 	{
 		if (event->periodicThread.joinable())
 		{
-			CPSLOG_TRACE << "Joining non-periodic " << event->body.target_type().name();
+			CPSLOG_DEBUG << "Joining non-periodic " << event->body.target_type().name();
 			CPSLogger::instance()->flush();
 			event->periodicThread.join();
-			CPSLOG_TRACE << "Joined non-periodic " << event->body.target_type().name();
+			CPSLOG_DEBUG << "Joined non-periodic " << event->body.target_type().name();
 			CPSLogger::instance()->flush();
 		}
 	}
@@ -121,15 +118,15 @@ MultiThreadingScheduler::run(RunStage stage)
 		{
 
 			if (auto sigHand = get<SignalHandler>())
-				sigHand->subscribeOnExit(std::bind(&MultiThreadingScheduler::stop, this));
+				sigHand->subscribeOnExit([this] { stop(); });
 			break;
 		}
 		case RunStage::FINAL:
 		{
-			started_ = true;
 			if (!mainThread_)
 			{
-				invokerThread_ = std::thread(std::bind(&MultiThreadingScheduler::runSchedule, this));
+				invokerThread_ = std::thread([this]
+											 { runSchedule(); });
 
 				if (params.priority() != 20)
 					pthread_setschedparam(invokerThread_.native_handle(), SCHED_FIFO,
@@ -164,17 +161,32 @@ MultiThreadingScheduler::runSchedule()
 	std::unique_lock<std::mutex> lock(eventsMutex_);
 
 	startingTime_ = timeProvider->now();
+	started_.store(true);
 	for (;;)
 	{
 		TimePoint now = timeProvider->now();
+		if (!events_.empty())
+		{
+			if (startingTime_ + events_.begin()->first > now)
+			{
+				//Sleep until next event
+				timeProvider->waitUntil(startingTime_ + events_.begin()->first, wakeupCondition_, lock);
+				now = timeProvider->now();
+			}
+		}
+		else
+		{
+			wakeupCondition_.wait(lock);
+		}
+		CPSLOG_TRACE << "Waking up at " << timeProvider->now().time_since_epoch().count() - startingTime_.time_since_epoch().count();
 		while (!events_.empty())
 		{
 			if (startingTime_ + events_.begin()->first > now)
 				break;
-			CPSLOG_TRACE << "Executing task";
 			auto it = events_.begin();
 
 			auto eventBody = it->second;
+			CPSLOG_TRACE << "Executing task " << eventBody->eventName;
 
 			if (eventBody->period)
 			{
@@ -183,12 +195,12 @@ MultiThreadingScheduler::runSchedule()
 				if (eventBody->isStarted.load())
 				{
 					//Thread is already started
-					std::unique_lock<std::mutex> lock(eventBody->executionMutex, std::try_to_lock);
-					if (lock)
+					std::unique_lock<std::mutex> l(eventBody->executionMutex, std::try_to_lock);
+					if (l)
 					{
 						//The task is waiting at the condition variable
 						eventBody->intervalCondition.notify_one(); //Only one should be waiting on it
-						lock.unlock();
+						l.unlock();
 					}
 					else
 					{
@@ -209,9 +221,8 @@ MultiThreadingScheduler::runSchedule()
 					if (!eventBody->isCanceled.load())
 					{
 						//Thread not started yet
-						eventBody->periodicThread = std::thread(
-								std::bind(&MultiThreadingScheduler::periodicTask, this,
-										  eventBody));
+						eventBody->periodicThread = std::thread([this, eventBody]
+																{ periodicTask(eventBody); });
 						if (params.priority() != 20)
 							if (int r = pthread_setschedparam(
 									eventBody->periodicThread.native_handle(),
@@ -238,18 +249,10 @@ MultiThreadingScheduler::runSchedule()
 //					std::thread(it->second->body).detach();
 				}
 			}
-			//Remove current schedule from events as it was handeled
+			//Remove current schedule from events as it was handled
 			events_.erase(events_.begin());
 		}
-		if (!events_.empty())
-		{
-			timeProvider->waitUntil(startingTime_ + events_.begin()->first, wakeupCondition_, lock);
-		}
-		else
-		{
-			wakeupCondition_.wait(lock);
-		}
-		if (!started_)
+		if (!started_.load())
 		{
 			CPSLOG_DEBUG << "Scheduler was stopped.";
 			return;
@@ -269,7 +272,7 @@ MultiThreadingScheduler::createSchedule(Duration start, std::shared_ptr<EventBod
 
 	Duration fromStart = start;
 
-	if (started_)
+	if (started_.load())
 	{
 		auto now = tp->now();
 		fromStart += now - startingTime_;
@@ -312,7 +315,7 @@ MultiThreadingScheduler::startSchedule()
 void
 MultiThreadingScheduler::handleMissedDeadline(std::shared_ptr<EventBody> body)
 {
-	CPSLOG_WARN << body->body.target_type().name() << " Missed Deadline. Waiting...";
+	CPSLOG_WARN << body->eventName << " Missed Deadline. Waiting...";
 	//Reschedule Task
 	auto element = std::make_pair(events_.begin()->first + *body->period, body);
 	events_.insert(element);

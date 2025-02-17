@@ -17,19 +17,25 @@
 
 class Packet;
 
-class SharedMemorySubscriptionImpl: public ISubscriptionImpl
+class SharedMemorySubscriptionImpl : public ISubscriptionImpl
 {
 public:
 
 	explicit SharedMemorySubscriptionImpl(const std::string& id);
 
-	~SharedMemorySubscriptionImpl();
+	~SharedMemorySubscriptionImpl() override;
 
 	void
 	cancel() override;
 
 	void
 	start() override;
+
+	bool
+	connected() const override;
+
+	bool
+	connect() override;
 
 	boost::signals2::connection
 	subscribe(const OnPacketSlot& slot) override;
@@ -47,6 +53,9 @@ private:
 
 	std::atomic_bool listenerCanceled_;
 
+	bool connected_;
+
 	std::string id_;
 };
+
 #endif /* UAVAP_CORE_IPC_DETAIL_SHAREDMEMORYSUBSCRIPTIONIMPL_H_ */

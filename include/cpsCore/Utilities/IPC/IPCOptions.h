@@ -17,9 +17,6 @@ struct IPCOptions
 	bool multiTarget = true;
 	bool retry = false;
 	bool variableSize = false;
-
-	std::function<void(const Subscription&)> retrySuccessCallback;
-
 };
 
 

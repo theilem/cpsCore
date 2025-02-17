@@ -8,17 +8,11 @@
 #include "cpsCore/Utilities/IDC/NetworkLayer/Redis/RedisSubscriber.h"
 #include "cpsCore/Logging/CPSLogger.h"
 
-RedisSubscriber::RedisSubscriber(const RedisChannelParams& params, const RedisHostParams& host)
+RedisSubscriber::RedisSubscriber(const RedisChannelParams& params, const RedisHostParams& host):
+	params_(params),
+	host_(host)
 {
-	subscriber_.connect(host.ip(), host.port(),
-			[](const std::string& host, std::size_t port, cpp_redis::connect_state status)
-			{	if (status == cpp_redis::connect_state::dropped)
-				{	CPSLOG_ERROR << "Client disconnected from " << host << ": " << port;}});
-	if (!host.auth().empty())
-		subscriber_.auth(host.auth());
-	subscriber_.subscribe(params.channel(),
-			std::bind(&RedisSubscriber::onChannel, this, std::placeholders::_1,
-					std::placeholders::_2));
+	connect();
 }
 
 RedisSubscriber::~RedisSubscriber()
@@ -48,4 +42,25 @@ void
 RedisSubscriber::cancel()
 {
 	subscriber_.disconnect(false);
+}
+
+bool
+RedisSubscriber::connect()
+{
+	subscriber_.connect(host_.ip(), host_.port(),
+						[](const std::string& host, std::size_t port, cpp_redis::connect_state status)
+						{	if (status == cpp_redis::connect_state::dropped)
+						{	CPSLOG_ERROR << "Client disconnected from " << host << ": " << port;}});
+	if (!host_.auth().empty())
+		subscriber_.auth(host_.auth());
+	subscriber_.subscribe(params_.channel(),
+						  std::bind(&RedisSubscriber::onChannel, this, std::placeholders::_1,
+									std::placeholders::_2));
+	return true;
+}
+
+bool
+RedisSubscriber::connected() const
+{
+	return true;
 }

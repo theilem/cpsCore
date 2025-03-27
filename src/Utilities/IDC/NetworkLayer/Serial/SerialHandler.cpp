@@ -154,7 +154,7 @@ SerialHandler::receive(const boost::system::error_code& err, std::size_t bytes_t
     if (useCRC_)
     {
         NetworkHeader header = dp::extract<NetworkHeader>(packet);
-        uint16_t crc = packet.getCRC16();
+        auto crc = packet.getCRC16();
         CPSLOG_TRACE << "Receive Header CRC: " << header.crc << ", Packet CRC: " << crc;
         if (header.crc != crc)
         {

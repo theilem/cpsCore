@@ -70,7 +70,7 @@ public:
 	std::string
 	consume(std::size_t length);
 
-	uint16_t
+	std::uint16_t
 	getCRC16() const;
 
 private:

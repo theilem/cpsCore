@@ -238,7 +238,7 @@ inline void
 dp::load(Archive& ar,
 		 typename std::enable_if<std::is_same<Type, std::string>::value, Type>::type& val)
 {
-	uint16_t size;
+	std::uint16_t size;
 	ar >> size;
 	val.resize(size);
 	ar.read(const_cast<char*>(val.data()), size);
@@ -249,7 +249,7 @@ inline void
 dp::store(Archive& ar,
 		  typename std::enable_if<std::is_same<Type, std::string>::value, Type>::type& val)
 {
-	ar << static_cast<uint16_t>(val.size());
+	ar << static_cast<std::uint16_t>(val.size());
 	ar.append(val.c_str(), val.size());
 }
 

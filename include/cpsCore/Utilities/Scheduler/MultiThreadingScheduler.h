@@ -20,71 +20,69 @@ class SignalHandler;
 class ITimeProvider;
 
 class MultiThreadingScheduler : public IScheduler,
-								public AggregatableObject<ITimeProvider, SignalHandler>,
-								public ConfigurableObject<MultiThreadingSchedulerParams>,
-								public IRunnableObject
+                                public AggregatableObject<ITimeProvider, SignalHandler>,
+                                public ConfigurableObject<MultiThreadingSchedulerParams>,
+                                public IRunnableObject
 {
 public:
+    static constexpr TypeId typeId = "thread";
 
-	static constexpr TypeId typeId = "thread";
+    /**
+     * @brief
+     */
+    MultiThreadingScheduler();
 
-	/**
-	 * @brief
-	 */
-	MultiThreadingScheduler();
+    ~MultiThreadingScheduler() override;
 
-	~MultiThreadingScheduler() override;
+    Event
+    schedule(const std::function<void()>& task, Duration initialFromNow, const std::string& eventName = "") override;
 
-	Event
-	schedule(const std::function<void()>& task, Duration initialFromNow, const std::string& eventName = "") override;
+    Event
+    schedule(const std::function<void()>& task, Duration initialFromNow, Duration period,
+             const std::string& eventName = "") override;
 
-	Event
-	schedule(const std::function<void
-			()>& task, Duration initialFromNow, Duration period, const std::string& eventName = "") override;
+    void
+    stop() override;
 
-	void
-	stop() override;
+    bool
+    run(RunStage stage) override;
 
-	bool
-	run(RunStage stage) override;
+    void
+    setMainThread() override;
 
-	void
-	setMainThread() override;
-
-	void
-	startSchedule() override;
+    void
+    startSchedule() override;
 
 private:
+    void
+    runSchedule();
 
-	void
-	runSchedule();
+    using EventMap = std::multimap<Duration, std::shared_ptr<EventBody>>;
 
-	using EventMap = std::multimap<Duration, std::shared_ptr<EventBody> >;
+    EventMap::value_type
+    createSchedule(Duration start, std::shared_ptr<EventBody> body);
 
-	EventMap::value_type
-	createSchedule(Duration start, std::shared_ptr<EventBody> body);
+    void
+    periodicTask(std::shared_ptr<EventBody> body);
 
-	void
-	periodicTask(std::shared_ptr<EventBody> body);
+    void
+    handleMissedDeadline(std::shared_ptr<EventBody> body);
 
-	void
-	handleMissedDeadline(std::shared_ptr<EventBody> body);
+    EventMap events_;
 
-	EventMap events_;
+    std::vector<std::shared_ptr<EventBody>> nonPeriodicEvents_;
 
-	std::vector<std::shared_ptr<EventBody>> nonPeriodicEvents_;
+    std::thread invokerThread_;
 
-	std::thread invokerThread_;
+    std::condition_variable wakeupCondition_;
+    std::mutex eventsMutex_;
 
-	std::condition_variable wakeupCondition_;
-	std::mutex eventsMutex_;
+    std::atomic_bool started_;
+    TimePoint startingTime_;
 
-	std::atomic_bool started_;
-	TimePoint startingTime_;
+    bool mainThread_;
 
-	bool mainThread_;
-
-	sched_param schedulingParams_;
+    sched_param schedulingParams_;
 };
 
 #endif /* UAVAP_CORE_SCHEDULER_MULTITHREADINGSCHEDULER_H_ */

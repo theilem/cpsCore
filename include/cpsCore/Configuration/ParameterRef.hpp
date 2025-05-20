@@ -48,12 +48,12 @@ struct ParameterRef
 };
 
 template<typename Type>
-struct is_parameter_ref : public std::false_type
+struct is_parameter_ref : std::false_type
 {
 };
 
 template<typename Type>
-struct is_parameter_ref<ParameterRef<Type>> : public std::true_type
+struct is_parameter_ref<ParameterRef<Type>> : std::true_type
 {
 };
 

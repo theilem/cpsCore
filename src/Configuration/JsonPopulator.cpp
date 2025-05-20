@@ -4,50 +4,26 @@
  *  Created on: Jul 26, 2019
  *      Author: mirco
  */
-#include <cpsCore/Configuration/JsonPopulator.h>
-#include <fstream>
+#include "cpsCore/Configuration/JsonPopulator.h"
+#include <sstream>
 
-JsonPopulator::JsonPopulator() :
-		jsonString_(stringStream_.rdbuf())
-{
-	jsonString_ << "{" << std::endl;
-	indent();
-}
-
-JsonPopulator::JsonPopulator(std::ofstream& file) :
-		jsonString_(file.rdbuf())
-{
-	jsonString_ << "{" << std::endl;
-	indent();
-}
-
-JsonPopulator::~JsonPopulator()
-{
-	jsonString_ << std::endl;
-	jsonString_ << "}" << std::endl; // No need for outdent
-}
 
 std::string
 JsonPopulator::getString() const
 {
-	return stringStream_.str() + "\n}";
+    std::stringstream ss;
+    ss << json_.dump(4);
+    return ss.str();
 }
 
 void
-JsonPopulator::addTabs()
+JsonPopulator::toFile(const std::string& path) const
 {
-	for (int k = 0; k < tabCounter_; k++)
-		jsonString_ << "\t";
-}
-
-void
-JsonPopulator::indent()
-{
-	tabCounter_++;
-}
-
-void
-JsonPopulator::outdent()
-{
-	tabCounter_--;
+    std::fstream file(path, std::ios::out);
+    if (!file.is_open())
+    {
+        CPSLOG_ERROR << "Could not open file " << path;
+        return;
+    }
+    file << json_.dump(4);
 }

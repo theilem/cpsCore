@@ -34,6 +34,7 @@ public:
 	static_assert(((has_typeid<Objects>::value || is_static_helper<Objects>::value) && ...),
 				  "Missing typeid in one of the objects");
 
+	using Types = std::tuple<Objects...>;
 
 	/**
 	 * @brief Create an Aggregator containing Objects defined in a configuration loaded in from a config path.
@@ -91,12 +92,12 @@ private:
 		{
 			try
 			{
-				CPSLOG_DEBUG << "Overriding " << paramOverrides[k] << " from " << config.get<std::string>(paramOverrides[k])
+				CPSLOG_DEBUG << "Overriding " << paramOverrides[k] << " from " << config[paramOverrides[k]].get<std::string>()
 							 << " to " << paramOverrides[k + 1];
-			} catch (boost::property_tree::ptree_error&)
+			} catch (Configuration::exception&)
 			{
 			}
-			config.put(paramOverrides[k], paramOverrides[k + 1]);
+			config[paramOverrides[k]] = paramOverrides[k + 1];
 		}
 	}
 
@@ -134,8 +135,7 @@ private:
 	inline static void
 	addIfInConfig(Aggregator& agg, const Configuration& config)
 	{
-		auto params = config.get_child_optional(Object::typeId);
-		if (params)
+		if (auto params = config.find(Object::typeId); params != config.end())
 		{
 			CPSLOG_TRACE << "Adding " << Object::typeId << " with config";
 			auto obj = createObject<Object>(*params);
@@ -149,8 +149,7 @@ private:
 	inline static void
 	addIfNotInConfig(Aggregator& agg, const Configuration& config)
 	{
-		auto params = config.get_child_optional(Object::typeId);
-		if (!params)
+		if (auto params = config.find(Object::typeId); params == config.end())
 		{
 			CPSLOG_TRACE << "Adding " << Object::typeId << " without config";
 			auto obj = createObjectDefault<Object>();

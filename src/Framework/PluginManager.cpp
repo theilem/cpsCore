@@ -12,7 +12,7 @@
 bool
 PluginManager::configure(const Configuration& config)
 {
-	PropertyMapper<Configuration> pm(config);
+	PropertyMapper pm(config);
 	Configuration plugins;
 	pm.add("plugins", plugins, true);
 

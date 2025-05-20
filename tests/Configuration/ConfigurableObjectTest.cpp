@@ -75,12 +75,12 @@ public:
 class Test2: public ConfigurableObject<ParamsNested>
 {
 public:
-	static constexpr const char* const typeId = "test2";
+	static constexpr auto typeId = "test2";
 
 	bool
 	configure(const Configuration& config)
 	{
-		PropertyMapper<Configuration> pm(config);
+		PropertyMapper pm(config);
 
 		configureParams(pm);
 
@@ -123,13 +123,13 @@ TEST_CASE("Test1")
 	Configuration config;
 	Configuration subConfig;
 
-	subConfig.add("p1", 3.2);
-	subConfig.add("p2", "test1");
-	subConfig.add("p3", 700);
+	subConfig["p1"] = 3.2;
+	subConfig["p2"] = "test1";
+	subConfig["p3"] = 700;
 
-	config.add("p1", 2.1);
-	config.add("p2", 1);
-	config.add_child("p3", subConfig);
+	config["p1"] = 2.1;
+	config["p2"] = 1;
+	config["p3"] = subConfig;
 
 	Test test;
 	CHECK(test.configure(config));
@@ -149,20 +149,20 @@ TEST_CASE("Test2 Member Config")
 	Configuration config;
 	Configuration subConfig;
 
-	subConfig.add("p1", 3.2);
-	subConfig.add("p2", "test1");
-	subConfig.add("p3", 700);
+	subConfig["p1"] = 3.2;
+	subConfig["p2"] = "test1";
+	subConfig["p3"] = 700;
 
-	config.add("p1", 2.1);
-	config.add("p2", 1);
-	config.add_child("p3", subConfig);
+	config["p1"] = 2.1;
+	config["p2"] = 1;
+	config["p3"] = subConfig;
 
 	Configuration configUpper;
 
-	configUpper.add("p1", 4.2);
-	configUpper.add("p2", "test2");
-	configUpper.add("p3", 800);
-	configUpper.add_child("sub_test", config);
+	configUpper["p1"] = 4.2;
+	configUpper["p2"] = "test2";
+	configUpper["p3"] = 800;
+	configUpper["sub_test"] = config;
 
 	Test2 test;
 	CHECK(test.configure(configUpper));
@@ -181,11 +181,12 @@ TEST_CASE("Test3 Optional Config")
 	Configuration configWithout;
 	Configuration subConfig;
 
-	subConfig.add("p1", 3.2);
-	subConfig.add("p2", "test1");
-	subConfig.add("p3", 700);
 
-	config.add_child("nested", subConfig);
+	subConfig["p1"] = 3.2;
+	subConfig["p2"] = "test1";
+	subConfig["p3"] = 700;
+
+	config["nested"] = subConfig;
 
 	TestOptional test;
 	CHECK(test.configure(config));
@@ -193,7 +194,7 @@ TEST_CASE("Test3 Optional Config")
 	CHECK(test.getParams().nested()->p1() == 3.2f);
 
 	Configuration c;
-	PropertyMapper<Configuration> p(c);
+	PropertyMapper p(c);
 	REQUIRE(p.isEmpty());
 
 	TestOptional test2;

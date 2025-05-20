@@ -91,7 +91,7 @@ SerialHandler::startHandler()
     {
         io_.run();
         if (!handlerCanceled_.load())
-            io_.reset();
+            io_.restart();
     }
     CPSLOG_DEBUG << "Serial handler canceled" << std::endl;
 }

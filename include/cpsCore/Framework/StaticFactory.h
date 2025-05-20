@@ -36,29 +36,29 @@ public:
 		if (!supportsMulti && (config.size() > 1))
 		{
 			CPSLOG_ERROR << "Factory " << typeId << " does not support multi (" << config.size()
-						 << " were found). Will create first only.";
+						 << " were found). Will not create any objects.";
+			return ReturnType();
 		}
 
 		if constexpr(supportsMulti)
 		{
 			ReturnType objects;
-			for (const auto& it : config)
+			for (const auto& [key, value] : config.items())
 			{
-				auto specific = createSpecific<Objects...>(it.first, it.second);
-				if (specific)
+				if (auto specific = createSpecific<Objects...>(key, value))
 					objects.push_back(specific);
 			}
 			return objects;
 		}
 		else
 		{
-			auto child = config.front();
-			return createSpecific<Objects...>(child.first, child.second);
+			const auto child = config.items().begin();
+			return createSpecific<Objects...>(child.key(), child.value());
 		}
 	}
 
 	static ReturnType
-	create(const std::string& type)
+	createType(const std::string& type)
 	{
 		return createSpecific<Objects...>(type);
 	}

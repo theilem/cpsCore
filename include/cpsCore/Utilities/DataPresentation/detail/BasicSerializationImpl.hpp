@@ -328,8 +328,7 @@ dp::load(Archive& ar, Configuration& c)
 {
 	std::string data;
 	ar >> data;
-	std::stringstream ss(data);
-	boost::property_tree::read_json(ss, c);
+	c = parseConfigString(data);
 }
 
 template<class Archive, typename Type>
@@ -337,7 +336,8 @@ void
 dp::store(Archive& ar, Configuration& c)
 {
 	std::stringstream ss;
-	boost::property_tree::write_json(ss, c, false);
+	// Write the configuration to a string stream
+	ss << c.dump();
 	ar << ss.str();
 }
 

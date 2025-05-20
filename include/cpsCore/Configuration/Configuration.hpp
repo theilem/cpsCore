@@ -17,13 +17,16 @@ using ConfigurationError = int;
 
 #else
 
-#include <boost/property_tree/ptree.hpp>
+#include <nlohmann/json.hpp>
 
-using Configuration = boost::property_tree::ptree;
-using ConfigurationError = boost::property_tree::ptree_error;
+using json = nlohmann::json;
+using Configuration = json;
 
 Configuration
 parseConfigFile(const std::string& path);
+
+Configuration
+parseConfigString(const std::string& config);
 
 #endif
 

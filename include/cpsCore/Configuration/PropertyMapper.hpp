@@ -1,8 +1,31 @@
 /*
  * PropertyMapper.hpp
  *
- *  Created on: Jun 17, 2017
- *      Author: mircot
+ * Created on: Jun 17, 2017
+ *     Author: mircot
+ *
+ * Description:
+ * ------------
+ * PropertyMapper is a utility class used to map configuration parameters
+ * (e.g., parsed from a JSON file) to C++ variables and data structures.
+ * It handles basic POD types, STL containers (vectors, maps), Eigen types,
+ * and user-defined types that implement a `configure(PropertyMapper&)` method.
+ *
+ *
+ * Functionality:
+ * --------------
+ * - Extracts and assigns values from a Configuration object
+ * - Supports nested configurations and recursive mapping
+ * - Supports mandatory/optional field enforcement
+ * - Supports enumeration mapping via EnumMap
+ * - Supports Eigen vector and matrix types
+ * - Type-safe using C++17 SFINAE utilities (e.g., enable_if)
+ *
+ * Example usage:
+ *  Configuration config = ...; // parsed from file
+ *  PropertyMapper pm(config);
+ *  double gain;
+ *  pm.add("controller.gain", gain, true);
  */
 
 #ifndef UAVAP_CORE_PROPERTYMAPPER_PROPERTYMAPPER_H_
@@ -11,8 +34,8 @@
 #include <type_traits>
 
 #include <Eigen/Core>
-#include <boost/optional.hpp>
 
+#include "Configuration.hpp"
 #include "cpsCore/Configuration/Parameter.hpp"
 #include "cpsCore/Utilities/Optional.hpp"
 #include "cpsCore/Configuration/ParameterRef.hpp"
@@ -24,938 +47,511 @@
 #include "cpsCore/Utilities/LinearAlgebra.h"
 #include "cpsCore/Utilities/TypeTraits.hpp"
 
-template<typename Configuration>
 class PropertyMapper
 {
 public:
-	PropertyMapper(const Configuration& p);
+    explicit
+    PropertyMapper(const Configuration& p) :
+        p_(p), mandatoryCheck_(true), empty_(p.empty())
+    {
+    }
 
-	template<typename PODType>
-	bool
-	add(const std::string& key,
-		typename std::enable_if<std::is_pod<PODType>::value, PODType>::type& val,
-		bool mandatory);
+    template <typename PODType>
+    bool
+    add(const std::string& key, std::enable_if_t<std::is_pod_v<PODType>, PODType>& val, bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end() && !it->is_null())
+        {
+            try
+            {
+                val = it->get<PODType>();
+                CPSLOG_TRACE << "Property " << key << " = " << val;
+                return true;
+            }
+            catch (const Configuration::exception& e)
+            {
+            }
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename Type>
-	bool
-	add(const std::string& key, typename std::enable_if<!std::is_pod<Type>::value, Type>::type& val,
-		bool mandatory);
+    template <typename Type>
+    bool
+    add(const std::string& key, std::enable_if_t<!std::is_pod_v<Type>, Type>& val, bool mandatory)
+    {
+        auto pm = getChild(key, mandatory);
+        if (!pm.isEmpty())
+        {
+            if (val.configure(pm))
+                return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addVector(const std::string& key,
-			  std::vector<enable_if_is_parameter_set<typename T::value_type>>& val, bool mandatory);
+    template <typename T>
+    bool
+    addVector(const std::string& key, std::vector<T>& val, bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end() && it->is_array())
+        {
+            val.clear();
+            for (auto& value : *it)
+            {
+                if constexpr (std::is_same_v<T, Configuration>)
+                {
+                    val.push_back(value);
+                }
+                else if constexpr (is_parameter_set<T>::value)
+                {
+                    PropertyMapper pm(value);
+                    val.emplace_back();
+                    val.back().configure(pm);
+                }
+                else if constexpr (std::is_enum_v<T>)
+                {
+                    val.push_back(EnumMap<T>::convert(value.get<std::string>()));
+                }
+                else if constexpr (is_eigen<T>::value)
+                {
+                    if (value.is_array())
+                    {
+                        auto vec = value.get<std::vector<typename T::Scalar>>();
+                        val.emplace_back();
+                        val.back() = Eigen::Map<T>(vec.data(), vec.size());
+                    }
+                    else
+                    {
+                        CPSLOG_ERROR << "Property " << key << " is not a vector";
+                        return false;
+                    }
+                }
+                else
+                    val.push_back(value.get<T>());
+            }
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addVector(const std::string& key,
-			  std::vector<enable_if_not_is_parameter_set<typename T::value_type>>& val,
-			  bool mandatory);
+    template <typename T>
+    bool
+    addMap(const std::string& key,
+           std::map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val, bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end())
+        {
+            val.clear();
+            for (auto& [key, value] : it->items())
+            {
+                PropertyMapper pm(value);
+                auto i = val.insert(std::make_pair(key, typename T::value_type::second_type()));
+                i.first->second.configure(pm);
+            }
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addMap(const std::string& key,
-		   std::map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val, bool mandatory);
+    template <typename T>
+    bool
+    addMap(const std::string& key,
+           std::map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
+           bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end())
+        {
+            val.clear();
+            for (auto& [key, value] : it->items())
+            {
+                PropertyMapper pm(value);
+                val.insert(std::make_pair(key, value.get<typename T::value_type::second_type>()));
+            }
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addMap(const std::string& key,
-		   std::map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
-		   bool mandatory);
+    template <typename T>
+    bool
+    addMap(const std::string& key,
+           std::unordered_map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
+           bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end())
+        {
+            val.clear();
+            for (auto& [key, value] : it->items())
+            {
+                PropertyMapper pm(value);
+                auto i = val.insert(std::make_pair(key, typename T::value_type::second_type()));
+                i.first->second.configure(pm);
+            }
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addMap(const std::string& key,
-		   std::unordered_map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
-		   bool mandatory);
+    template <typename T>
+    bool
+    addMap(const std::string& key,
+           std::unordered_map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
+           bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end())
+        {
+            val.clear();
+            for (auto& [key, value] : it->items())
+            {
+                PropertyMapper pm(value);
+                val.insert(
+                    std::make_pair(key, value.get<typename T::value_type::second_type>()));
+            }
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addMap(const std::string& key,
-		   std::unordered_map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
-		   bool mandatory);
+    template <typename T>
+    bool
+    addEnumMap(const std::string& key,
+               std::map<typename T::key_type, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
+               bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end())
+        {
+            val.clear();
+            for (auto& [key, value] : it->items())
+            {
+                PropertyMapper pm(value);
+                auto i = val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(key),
+                                                   typename T::value_type::second_type()));
+                i.first->second.configure(pm);
+            }
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addEnumMap(const std::string& key,
-			   std::map<typename T::key_type, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
-			   bool mandatory);
+    template <typename T>
+    bool
+    addEnumMap(const std::string& key,
+               std::map<typename T::key_type, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
+               bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end())
+        {
+            val.clear();
+            for (auto& [key, value] : it->items())
+            {
+                PropertyMapper pm(value);
+                auto i = val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(key),
+                                                   value.get<typename T::value_type::second_type>()));
+            }
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addEnumMap(const std::string& key,
-			   std::map<typename T::key_type, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
-			   bool mandatory);
+    template <typename T>
+    bool
+    addEnumMap(const std::string& key,
+               std::unordered_map<typename T::key_type, enable_if_is_parameter_set<typename T::value_type::second_type>>
+               & val,
+               bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end())
+        {
+            val.clear();
+            for (auto& [key, value] : it->items())
+            {
+                PropertyMapper pm(value);
+                auto i = val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(key),
+                                                   typename T::value_type::second_type()));
+                i.first->second.configure(pm);
+            }
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addEnumMap(const std::string& key,
-			   std::unordered_map<typename T::key_type, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
-			   bool mandatory);
+    template <typename T>
+    bool
+    addEnumMap(const std::string& key,
+               std::unordered_map<typename T::key_type, enable_if_not_is_parameter_set<typename
+                                      T::value_type::second_type>>& val,
+               bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end())
+        {
+            val.clear();
+            for (auto& [key, value] : it->items())
+            {
+                PropertyMapper pm(value);
+                val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(key),
+                                          value.get<typename T::value_type::second_type>()));
+            }
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename T>
-	bool
-	addEnumMap(const std::string& key,
-			   std::unordered_map<typename T::key_type, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
-			   bool mandatory);
+    bool
+    add(const std::string& key, Duration& val, bool mandatory);
 
-	bool
-	addVector(const std::string& key, std::vector<Configuration>& val, bool mandatory);
+    bool
+    add(const std::string& key, std::string& val, bool mandatory);
 
-	bool
-	add(const std::string& key, Duration& val, bool mandatory);
+    bool
+    add(const std::string& key, Vector3& val, bool mandatory);
 
-	bool
-	add(const std::string& key, std::string& val, bool mandatory);
+    bool
+    add(const std::string& key, Vector2& val, bool mandatory);
 
-	bool
-	add(const std::string& key, Vector3& val, bool mandatory);
+    bool
+    add(const std::string& key, Configuration& val, bool mandatory);
 
-	bool
-	add(const std::string& key, Vector2& val, bool mandatory);
+    template <typename Type>
+    bool
+    add(const std::string& key, Eigen::Matrix<Type, Eigen::Dynamic, 1>& val, bool mandatory)
+    {
+        std::vector<Type> vec;
+        if (!this->addVector(key, vec, mandatory))
+            return false;
 
-	bool
-	add(const std::string& key, Configuration& val, bool mandatory);
+        Eigen::Matrix<Type, -1, 1> values(vec.size(), 1);
+        for (size_t i = 0; i < vec.size(); ++i)
+        {
+            values(i) = vec[i];
+        }
+        val = values;
+        return true;
+    }
 
-	template<typename Type>
-	bool
-	add(const std::string& key, Eigen::Matrix<Type, Eigen::Dynamic, 1>& val, bool mandatory);
+    template <typename Type>
+    bool
+    add(const std::string& key, Eigen::Array<Type, Eigen::Dynamic, 1>& val, bool mandatory)
+    {
+        std::vector<Type> vec;
+        if (!this->addVector(key, vec, mandatory))
+            return false;
 
-	template<typename Type>
-	bool
-	add(const std::string& key, Eigen::Array<Type, Eigen::Dynamic, 1>& val, bool mandatory);
+        Eigen::Array<Type, -1, 1> values(vec.size(), 1);
+        for (size_t i = 0; i < vec.size(); ++i)
+        {
+            values(i) = vec[i];
+        }
+        val = values;
+        return true;
+    }
 
-	template<typename Type>
-	bool
-	addAngle(const std::string& key, Angle<Type>& val, bool mandatory);
+    template <typename Type>
+    bool
+    addAngle(const std::string& key, Angle<Type>& val, bool mandatory)
+    {
+        Type v;
+        if (!this->add<Type>(key, v, mandatory))
+            return false;
+        val = v;
+        return true;
+    }
 
-	template<typename Type>
-	bool
-	addOptional(const std::string& key, Optional<Type>& val, bool mandatory);
+    template <typename Type>
+    bool
+    addOptional(const std::string& key, Optional<Type>& val, bool mandatory)
+    {
+        Type v;
+        if (this->addSpecific<Type>(key, v, mandatory))
+        {
+            val = v;
+            return true;
+        }
+        val = std::nullopt;
+        return false;
+    }
 
-	template<typename Enum>
-	bool
-	addEnum(const std::string& key, Enum& e, bool mandatory);
+    template <typename Enum>
+    bool
+    addEnum(const std::string& key, Enum& e, bool mandatory)
+    {
+        if (auto it = p_.find(key); it != p_.end() && it->is_string())
+        {
+            auto str = it->get<std::string>();
+            CPSLOG_TRACE << "Property " << key << " = " << str;
+            e = EnumMap<Enum>::convert(str);
+            return true;
+        }
+        mandatoryCheck(key, mandatory);
+        return false;
+    }
 
-	template<typename Enum>
-	bool
-	addEnumVector(const std::string& key, std::vector<Enum>& e, bool mandatory);
+    template <typename Type, int rows, int cols, int options>
+    bool
+    addEigen(const std::string& key, Eigen::Matrix<Type, rows, cols, options>& val, bool mandatory)
+    {
+        std::vector<Type> vec;
+        if (!this->addVector(key, vec, mandatory))
+            return false;
 
-	template<typename Type, int rows, int cols, int options>
-	bool
-	addEigen(const std::string& key, Eigen::Matrix<Type, rows, cols, options>& val, bool mandatory);
+        if (vec.size() == rows * cols)
+        {
+            val = Eigen::Matrix<Type, rows, cols, options>(vec.data());
+            return true;
+        }
+        if (mandatory)
+        {
+            CPSLOG_ERROR << "PM: Vector " << key << " does not have " << rows * cols << " values, only " << vec.size();
+            mandatoryCheck_ = false;
+        }
+        return false;
+    }
 
-	template<typename Param>
-	bool
-	operator&(Param& param);
+    template <typename Param>
+    bool
+    operator&(Param& param)
+    {
+        static_assert(is_parameter<Param>::value || is_parameter_ref<Param>::value,
+                      "Cannot handle non parameter objects");
 
-	bool
-	map();
+        if constexpr (is_parameter_set_ref<typename Param::ValueType>::value)
+        {
+            auto pm = getChild(param.id, param.mandatory);
+            if (!pm.isEmpty())
+            {
+                configure(pm, param.value);
+                return pm.map();
+            }
+            return false;
+        }
+        else if constexpr (is_parameter_set<typename Param::ValueType>::value)
+        {
+            auto pm = getChild(param.id, param.mandatory);
+            if (!pm.isEmpty())
+            {
+                param.value.configure(pm);
+                return pm.map();
+            }
+            return false;
+        }
+        else
+            return addSpecific<typename Param::ValueType>(param.id, param.value, param.mandatory);
+    }
 
-	PropertyMapper
-	getChild(const std::string& key, bool mandatory);
+    bool
+    map() const
+    {
+        return mandatoryCheck_;
+    }
 
-	bool
-	isEmpty() const;
+    PropertyMapper
+    getChild(const std::string& key, bool mandatory)
+    {
+        if (auto value = p_.find(key); value != p_.end() && value->is_object())
+        {
+            return PropertyMapper(*value);
+        }
+        if (mandatory)
+        {
+            CPSLOG_ERROR << "PM: mandatory " << key << " missing";
+            mandatoryCheck_ = false;
+        }
+        return PropertyMapper(Configuration());
+    }
+
+    bool
+    isEmpty() const
+    {
+        return empty_ || p_.empty();
+    }
 
 protected:
-
-	const Configuration& p_;
-	bool mandatoryCheck_;
-	bool empty_;
+    const Configuration& p_;
+    bool mandatoryCheck_;
+    bool empty_;
 
 private:
-	template<typename Type>
-	struct is_special_param
-	{
-		template<typename _1>
-		static char
-		chk(
-				decltype(std::declval<PropertyMapper<Configuration>>().add(std::string(), std::declval<_1&>(), true)));
+    template <typename Type>
+    bool
+    addSpecific(const std::string& key, Type& val, bool mandatory);
 
-		template<typename>
-		static int
-		chk(...);
-
-		static constexpr bool value = sizeof(chk<Type>(0)) == sizeof(char);
-	};
-
-	template<typename Type>
-	bool
-	addSpecific(const std::string& key, Type& val, bool mandatory);
-
+    void
+    mandatoryCheck(const std::string& key, bool mandatory)
+    {
+        if (mandatory)
+        {
+            CPSLOG_ERROR << "PM: mandatory " << key << " missing";
+            mandatoryCheck_ = false;
+        }
+    }
 };
 
-template<typename Config>
-template<typename PODType>
+template <typename T, typename = void>
+struct is_special_param : std::false_type
+{
+};
+
+template <typename T>
+struct is_special_param<T,
+                        std::void_t<decltype(
+                            std::declval<PropertyMapper>().add(std::declval<std::string>(), std::declval<T&>(),
+                                                               true)
+                        )>> : std::true_type
+{
+};
+
+
+template <typename Type>
 inline bool
-PropertyMapper<Config>::add(const std::string& key,
-							typename std::enable_if<std::is_pod<PODType>::value, PODType>::type& val, bool mandatory)
+PropertyMapper::addSpecific(const std::string& key, Type& val, bool mandatory)
 {
-	auto value = p_.template get_optional<PODType>(key);
-	if (value)
-	{
-		CPSLOG_TRACE << "Property " << key << " = " << *value;
-		val = *value;
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename Type>
-inline bool
-PropertyMapper<Config>::add(const std::string& key,
-							typename std::enable_if<!std::is_pod<Type>::value, Type>::type& val, bool mandatory)
-{
-	if (key.empty())
-	{
-		bool success = val.configure(p_);
-		if (mandatory)
-			mandatoryCheck_ &= success;
-
-		return success;
-	}
-	else
-	{
-		Config subtree;
-		add(key, subtree, false);
-		if (!subtree.empty())
-		{
-			if (val.configure(subtree))
-				return true;
-		}
-		if (mandatory)
-		{
-			CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-			mandatoryCheck_ = false;
-		}
-		return false;
-	}
-}
-
-template<typename Config>
-template<typename T>
-inline bool
-PropertyMapper<Config>::addVector(const std::string& key,
-								  std::vector<enable_if_is_parameter_set<typename T::value_type>>& val, bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			PropertyMapper<Config> pm(it.second);
-			val.push_back(typename T::value_type());
-			val.back().configure(pm);
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename T>
-inline bool
-PropertyMapper<Config>::addVector(const std::string& key,
-								  std::vector<enable_if_not_is_parameter_set<typename T::value_type>>& val,
-								  bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			val.push_back(it.second.template get_value<typename T::value_type>());
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename Type>
-inline bool
-PropertyMapper<Config>::add(const std::string& key, Eigen::Matrix<Type, Eigen::Dynamic, 1>& val,
-							bool mandatory)
-{
-	auto value = p_.get_child_optional(key);
-	if (value)
-	{
-		Config child = *value;
-		Eigen::Matrix<Type, -1, 1> values(child.size(), 1);
-		int k = 0;
-		for (auto& it : child)
-		{
-			values[k++] = it.second.template get_value<Type>();
-		}
-		val = values;
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename Type>
-inline bool
-PropertyMapper<Config>::add(const std::string& key, Eigen::Array<Type, Eigen::Dynamic, 1>& val,
-							bool mandatory)
-{
-	val =
-			{};
-	auto value = p_.get_child_optional(key);
-	if (value)
-	{
-		Config child = *value;
-		Eigen::Matrix<Type, -1, 1> values(child.size(), 1);
-		int k = 0;
-		for (auto& it : child)
-		{
-			values[k++] = it.second.template get_value<Type>();
-		}
-		val = values.array();
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename Enum>
-inline bool
-PropertyMapper<Config>::addEnum(const std::string& key, Enum& e, bool mandatory)
-{
-	auto value = p_.template get_optional<std::string>(key);
-	if (value)
-	{
-		CPSLOG_TRACE << "Property " << key << " = " << *value;
-		e = EnumMap<Enum>::convert(*value);
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename Enum>
-inline bool
-PropertyMapper<Config>::addEnumVector(const std::string& key, std::vector<Enum>& e, bool mandatory)
-{
-	e.clear();
-	auto value = p_.get_child_optional(key);
-	if (value)
-	{
-		Config child = *value;
-		for (auto& it : child)
-		{
-			e.push_back(EnumMap<Enum>::convert(it.second.template get_value<std::string>()));
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-PropertyMapper<Config>::PropertyMapper(const Config& p) :
-		p_(p), mandatoryCheck_(true), empty_(p.empty())
-{
-}
-
-template<typename Config>
-bool
-PropertyMapper<Config>::add(const std::string& key, std::string& val, bool mandatory)
-{
-	auto value = p_.template get_optional<std::string>(key);
-	if (value)
-	{
-		CPSLOG_TRACE << "Property " << key << " = " << *value;
-		val = *value;
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-bool
-PropertyMapper<Config>::add(const std::string& key, Duration& val, bool mandatory)
-{
-	auto value = p_.template get_optional<int>(key);
-	if (value)
-	{
-		CPSLOG_TRACE << "Property " << key << " = " << *value;
-		val = Milliseconds(*value);
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-bool
-PropertyMapper<Config>::add(const std::string& key, Config& val, bool mandatory)
-{
-
-	//See if it is a path that contains another configuration file
-	auto path = p_.template get_optional<std::string>(key);
-	if (path && !path->empty())
-	{
-	}
-	else
-	{
-		auto value = p_.get_child_optional(key);
-		if (value)
-		{
-			val = *value;
-			return true;
-		}
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-bool
-PropertyMapper<Config>::addVector(const std::string& key, std::vector<Config>& val, bool mandatory)
-{
-	val.clear();
-	auto value = p_.get_child_optional(key);
-	if (value)
-	{
-		Config child = *value;
-		for (auto& it : child)
-		{
-			val.push_back(it.second);
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-bool
-PropertyMapper<Config>::map()
-{
-	//Do some error printouts
-	return mandatoryCheck_;
-}
-
-template<typename Config>
-bool
-PropertyMapper<Config>::add(const std::string& key, Vector3& val, bool mandatory)
-{
-	std::vector<FloatingType> vec;
-	if (!this->template addVector<std::vector<FloatingType>>(key, vec, mandatory))
-		return false;
-
-	if (vec.size() == 3)
-	{
-		val = Vector3(vec[0], vec[1], vec[2]);
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: Vector " << key << " does not have 3 values, only " << vec.size();
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename Type, int rows, int cols, int options>
-bool
-PropertyMapper<Config>::addEigen(const std::string& key, Eigen::Matrix<Type, rows, cols, options>& val, bool mandatory)
-{
-	std::vector<Type> vec;
-	if (!this->template addVector<std::vector<Type>>(key, vec, mandatory))
-		return false;
-
-	if (vec.size() == rows * cols)
-	{
-		val = Eigen::Matrix<Type, rows, cols, options>(vec.data());
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: Vector " << key << " does not have " << rows * cols << " values, only " << vec.size();
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-bool
-PropertyMapper<Config>::add(const std::string& key, Vector2& val, bool mandatory)
-{
-	std::vector<FloatingType> vec;
-	if (!this->template addVector<std::vector<FloatingType>>(key, vec, mandatory))
-		return false;
-
-	if (vec.size() == 2)
-	{
-		val = Vector2(vec[0], vec[1]);
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: Vector " << key << " does not have 2 values, only " << vec.size();
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-PropertyMapper<Config>
-PropertyMapper<Config>::getChild(const std::string& key, bool mandatory)
-{
-
-	auto value = p_.get_child_optional(key);
-	if (value)
-	{
-		PropertyMapper<Config> p(*value);
-		return p;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return PropertyMapper(Config());
-}
-
-template<typename Config>
-bool
-PropertyMapper<Config>::isEmpty() const
-{
-	return empty_ || p_.empty();
-}
-
-template<typename Config>
-template<typename Param>
-bool
-PropertyMapper<Config>::operator&(Param& param)
-{
-	static_assert(is_parameter<Param>::value || is_parameter_ref<Param>::value, "Cannot handle non parameter objects");
-	if constexpr (is_parameter_set<typename Param::ValueType>::value)
-	{
-		auto pm = getChild(param.id, param.mandatory);
-		if (!pm.isEmpty())
-		{
-			param.value.configure(pm);
-			return pm.map();
-		}
-		return false;
-	}
-	else if constexpr (is_parameter_set_ref<typename Param::ValueType>::value)
-	{
-		auto pm = getChild(param.id, param.mandatory);
-		if (!pm.isEmpty())
-		{
-			configure(pm, param.value);
-			return pm.map();
-		}
-		return false;
-	}
-	else
-		return addSpecific<typename Param::ValueType>(param.id, param.value, param.mandatory);
-}
-
-template<typename Config>
-template<typename Type>
-bool
-PropertyMapper<Config>::addSpecific(const std::string& key, Type& val, bool mandatory)
-{
-	if constexpr (is_special_param<Type>::value)
-		return add(key, val, mandatory);
-	else if constexpr (std::is_enum<Type>::value)
-		return addEnum(key, val, mandatory);
-	else if constexpr (is_vector<Type>::value)
-		return addVector<Type>(key, val, mandatory);
-	else if constexpr (is_string_key_map<Type>::value)
-		return addMap<Type>(key, val, mandatory);
-	else if constexpr (is_enum_map<Type>::value)
-		return addEnumMap<Type>(key, val, mandatory);
-	else if constexpr (is_angle<Type>::value)
-		return addAngle<typename Type::ValueType>(key, val, mandatory);
-	else if constexpr (is_optional<Type>::value)
-		return addOptional<typename Type::value_type>(key, val, mandatory);
-	else if constexpr (is_eigen<Type>::value)
-		return addEigen(key, val, mandatory);
-	else if constexpr (is_parameter_set<Type>::value)
-	{
-		auto pm = getChild(key, mandatory);
-		if (!pm.isEmpty())
-		{
-			val.configure(pm);
-			return pm.map();
-		}
-		return false;
-	}
-	else if constexpr (is_parameter_set_ref<Type>::value)
-	{
-		auto pm = getChild(key, mandatory);
-		if (!pm.isEmpty())
-		{
-			configure(pm, val);
-			return pm.map();
-		}
-		return false;
-	}
-	else
-		return add<Type>(key, val, mandatory);
-}
-
-template<typename Config>
-template<typename Type>
-inline bool
-PropertyMapper<Config>::addAngle(const std::string& key, Angle<Type>& val, bool mandatory)
-{
-	Type v;
-	auto b = this->template add<Type>(key, v, mandatory);
-	if (!b)
-		return false;
-	val = v;
-
-	return true;
-}
-
-template<typename Config>
-template<typename Type>
-inline bool
-PropertyMapper<Config>::addOptional(const std::string& key, Optional<Type>& val, bool mandatory)
-{
-	Type v;
-	if (this->addSpecific<Type>(key, v, mandatory))
-	{
-		val = v;
-		return true;
-	}
-
-	val = std::nullopt;
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename T>
-bool
-PropertyMapper<Config>::addMap(const std::string& key,
-							   std::map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
-							   bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			PropertyMapper<Config> pm(it.second);
-			auto i = val.insert(std::make_pair(it.first, typename T::value_type::second_type()));
-			i.first->second.configure(pm);
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename T>
-bool
-PropertyMapper<Config>::addMap(const std::string& key,
-							   std::map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
-							   bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			if constexpr (std::is_same_v<typename T::value_type::second_type, Config>)
-				val.insert(std::make_pair(it.first, it.second));
-			else
-				val.insert(std::make_pair(it.first, it.second.template get_value<typename T::value_type::second_type>()));
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename T>
-bool
-PropertyMapper<Config>::addMap(const std::string& key,
-							   std::unordered_map<std::string, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
-							   bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			PropertyMapper<Config> pm(it.second);
-			auto i = val.insert(std::make_pair(it.first, typename T::value_type::second_type()));
-			i.first->second.configure(pm);
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename T>
-bool
-PropertyMapper<Config>::addMap(const std::string& key,
-							   std::unordered_map<std::string, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
-							   bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			val.insert(std::make_pair(it.first, it.second.template get_value<typename T::value_type::second_type>()));
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-
-template<typename Config>
-template<typename T>
-bool
-PropertyMapper<Config>::addEnumMap(const std::string& key,
-								   std::map<typename T::key_type, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
-								   bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			PropertyMapper<Config> pm(it.second);
-			auto i = val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(it.first),
-											   typename T::value_type::second_type()));
-			i.first->second.configure(pm);
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename T>
-bool
-PropertyMapper<Config>::addEnumMap(const std::string& key,
-								   std::map<typename T::key_type, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
-								   bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(it.first),
-									  it.second.template get_value<typename T::value_type::second_type>()));
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename T>
-bool
-PropertyMapper<Config>::addEnumMap(const std::string& key,
-								   std::unordered_map<typename T::key_type, enable_if_is_parameter_set<typename T::value_type::second_type>>& val,
-								   bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			PropertyMapper<Config> pm(it.second);
-			auto i = val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(it.first),
-											   typename T::value_type::second_type()));
-			i.first->second.configure(pm);
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
-}
-
-template<typename Config>
-template<typename T>
-bool
-PropertyMapper<Config>::addEnumMap(const std::string& key,
-								   std::unordered_map<typename T::key_type, enable_if_not_is_parameter_set<typename T::value_type::second_type>>& val,
-								   bool mandatory)
-{
-	val.clear();
-	boost::optional<const Config&> value;
-	if (key.empty())
-		value = p_;
-	else
-		value = p_.get_child_optional(key);
-	if (value)
-	{
-		const Config& config = *value;
-		for (auto& it : config)
-		{
-			val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(it.first),
-									  it.second.template get_value<typename T::value_type::second_type>()));
-		}
-		return true;
-	}
-	if (mandatory)
-	{
-		CPSLOG_ERROR << "PM: mandatory " << key << " missing";
-		mandatoryCheck_ = false;
-	}
-	return false;
+    if constexpr (is_special_param<Type>::value)
+        return add(key, val, mandatory);
+    else if constexpr (std::is_enum_v<Type>)
+        return addEnum(key, val, mandatory);
+    else if constexpr (is_vector<Type>::value)
+        return addVector(key, val, mandatory);
+    else if constexpr (is_string_key_map<Type>::value)
+        return addMap<Type>(key, val, mandatory);
+    else if constexpr (is_enum_map<Type>::value)
+        return addEnumMap<Type>(key, val, mandatory);
+    else if constexpr (is_angle<Type>::value)
+        return addAngle<typename Type::ValueType>(key, val, mandatory);
+    else if constexpr (is_optional<Type>::value)
+        return addOptional<typename Type::value_type>(key, val, mandatory);
+    else if constexpr (is_eigen<Type>::value)
+        return addEigen(key, val, mandatory);
+    else if constexpr (is_parameter_set<Type>::value)
+    {
+        auto pm = getChild(key, mandatory);
+        if (!pm.isEmpty())
+        {
+            val.configure(pm);
+            return pm.map();
+        }
+        return false;
+    }
+    else if constexpr (is_parameter_set_ref<Type>::value)
+    {
+        auto pm = getChild(key, mandatory);
+        if (!pm.isEmpty())
+        {
+            configure(pm, val);
+            return pm.map();
+        }
+        return false;
+    }
+    else
+        return add<Type>(key, val, mandatory);
 }
 
 

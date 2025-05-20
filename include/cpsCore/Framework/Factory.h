@@ -114,8 +114,8 @@ Factory<Type>::create(const Configuration& config)
 
 	try
 	{
-		type = config.get<std::string>("type");
-	} catch (ConfigurationError&)
+		type = config["type"];
+	} catch (Configuration::exception&)
 	{
 		if (defaultId_.empty())
 			throw InvalidTypeError("Type missing in config.");

@@ -2,8 +2,11 @@
 // Created by mirco on 27.11.19.
 //
 
-#include <boost/property_tree/json_parser.hpp>
 #include "cpsCore/Configuration/Configuration.hpp"
+
+#include <fstream>
+#include <sstream>
+
 
 Configuration
 parseConfigFile(const std::string& path)
@@ -11,7 +14,20 @@ parseConfigFile(const std::string& path)
 	Configuration conf;
 	if (!path.empty())
 	{
-		boost::property_tree::read_json(path, conf);
+		std::ifstream f(path);
+		conf = json::parse(f);
+	}
+	return conf;
+}
+
+Configuration
+parseConfigString(const std::string& config)
+{
+	Configuration conf;
+	if (!config.empty())
+	{
+		std::istringstream iss(config);
+		conf = json::parse(config);
 	}
 	return conf;
 }

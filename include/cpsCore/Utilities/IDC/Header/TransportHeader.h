@@ -29,12 +29,12 @@
 
 struct TransportHeader
 {
-	uint16_t sequenceNr;
-	uint8_t flags; //!< ack_requested, ack_present, segmented, 0, 0, 0, 0, 0
-	uint16_t ackNr;
-	uint16_t packetId;
-	uint8_t segmentationNr;
-	uint8_t segmentationTotal;
+	std::uint16_t sequenceNr;
+	std::uint8_t flags; //!< ack_requested, ack_present, segmented, 0, 0, 0, 0, 0
+	std::uint16_t ackNr;
+	std::uint16_t packetId;
+	std::uint8_t segmentationNr;
+	std::uint8_t segmentationTotal;
 };
 
 namespace dp

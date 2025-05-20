@@ -30,7 +30,7 @@
 
 struct NetworkHeader : SerializeCustom
 {
-	uint16_t crc;
+	std::uint16_t crc;
 };
 
 namespace dp

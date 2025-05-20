@@ -70,12 +70,12 @@ Packet::prepend(const Packet& str)
 	prepend(str.getBuffer());
 }
 
-uint16_t
+std::uint16_t
 Packet::getCRC16() const
 {
 	boost::crc_ccitt_type crc;
 	crc.process_bytes(static_cast<const void*>(buffer_.c_str()), getSize());
-	return static_cast<uint16_t>(crc.checksum());
+	return static_cast<std::uint16_t>(crc.checksum());
 }
 
 std::string&

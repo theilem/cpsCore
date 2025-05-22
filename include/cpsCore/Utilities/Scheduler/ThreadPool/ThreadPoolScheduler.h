@@ -7,6 +7,8 @@
 
 #include <unordered_set>
 #include <thread>
+#include <condition_variable>
+#include <mutex>
 
 #include "cpsCore/Utilities/Scheduler/IScheduler.h"
 #include "cpsCore/Aggregation/AggregatableObject.hpp"

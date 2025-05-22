@@ -11,6 +11,7 @@
 #include "cpsCore/Utilities/Scheduler/Event.h"
 #include "cpsCore/Utilities/Time.hpp"
 #include <functional>
+#include <optional>
 
 struct SchedulingArgs
 {

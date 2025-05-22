@@ -64,7 +64,7 @@ public:
         {
             try
             {
-                val = it->get<PODType>();
+                val = it->template get<PODType>();
                 CPSLOG_TRACE << "Property " << key << " = " << val;
                 return true;
             }
@@ -111,13 +111,13 @@ public:
                 }
                 else if constexpr (std::is_enum_v<T>)
                 {
-                    val.push_back(EnumMap<T>::convert(value.get<std::string>()));
+                    val.push_back(EnumMap<T>::convert(value.template get<std::string>()));
                 }
                 else if constexpr (is_eigen<T>::value)
                 {
                     if (value.is_array())
                     {
-                        auto vec = value.get<std::vector<typename T::Scalar>>();
+                        auto vec = value.template get<std::vector<typename T::Scalar>>();
                         val.emplace_back();
                         val.back() = Eigen::Map<T>(vec.data(), vec.size());
                     }
@@ -128,7 +128,7 @@ public:
                     }
                 }
                 else
-                    val.push_back(value.get<T>());
+                    val.push_back(value.template get<T>());
             }
             return true;
         }
@@ -168,7 +168,7 @@ public:
             for (auto& [key, value] : it->items())
             {
                 PropertyMapper pm(value);
-                val.insert(std::make_pair(key, value.get<typename T::value_type::second_type>()));
+                val.insert(std::make_pair(key, value.template get<typename T::value_type::second_type>()));
             }
             return true;
         }
@@ -210,7 +210,7 @@ public:
             {
                 PropertyMapper pm(value);
                 val.insert(
-                    std::make_pair(key, value.get<typename T::value_type::second_type>()));
+                    std::make_pair(key, value.template get<typename T::value_type::second_type>()));
             }
             return true;
         }
@@ -253,7 +253,7 @@ public:
             {
                 PropertyMapper pm(value);
                 val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(key),
-                                                   value.get<typename T::value_type::second_type>()));
+                                                   value.template get<typename T::value_type::second_type>()));
             }
             return true;
         }
@@ -298,7 +298,7 @@ public:
             {
                 PropertyMapper pm(value);
                 val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(key),
-                                          value.get<typename T::value_type::second_type>()));
+                                          value.template get<typename T::value_type::second_type>()));
             }
             return true;
         }
@@ -386,7 +386,7 @@ public:
     {
         if (auto it = p_.find(key); it != p_.end() && it->is_string())
         {
-            auto str = it->get<std::string>();
+            auto str = it->template get<std::string>();
             CPSLOG_TRACE << "Property " << key << " = " << str;
             e = EnumMap<Enum>::convert(str);
             return true;

@@ -36,7 +36,9 @@ public:
 	configure(const Configuration& config)
 	{
 		PropertyMapper pm(config);
-		return configure(pm);
+
+		params.configure(pm);
+		return pm.map();
 	}
 
 	bool

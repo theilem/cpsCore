@@ -252,7 +252,7 @@ public:
             for (auto& [key, value] : it->items())
             {
                 PropertyMapper pm(value);
-                auto i = val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(key),
+                val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(key),
                                                    value.get<typename T::value_type::second_type>()));
             }
             return true;
@@ -423,7 +423,17 @@ public:
         static_assert(is_parameter<Param>::value || is_parameter_ref<Param>::value,
                       "Cannot handle non parameter objects");
 
-        if constexpr (is_parameter_set_ref<typename Param::ValueType>::value)
+        if constexpr (is_configurable_object<typename Param::ValueType>::value)
+        {
+            if (auto it = p_.find(param.id); it != p_.end())
+            {
+                if (param.value.configure(*it))
+                    return true;
+            }
+            mandatoryCheck(param.id, param.mandatory);
+            return false;
+        }
+        else if constexpr (is_parameter_set_ref<typename Param::ValueType>::value)
         {
             auto pm = getChild(param.id, param.mandatory);
             if (!pm.isEmpty())

@@ -40,7 +40,7 @@ public:
 	}
 
 	const char*
-	what() const _NOEXCEPT override
+	what() const noexcept override
 	{
 		return what_.c_str();
 	}

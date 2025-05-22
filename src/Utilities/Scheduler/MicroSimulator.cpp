@@ -58,6 +58,7 @@ MicroSimulator::simulate(Duration duration)
 	}
 	while (now_ <= endSim)
 	{
+		std::unique_lock lock(simMutex_);
 		if (events_.empty())
 		{
 			break;
@@ -175,6 +176,12 @@ bool
 MicroSimulator::isStopped()
 {
 	return stopped_;
+}
+
+std::mutex&
+MicroSimulator::getSimMutex()
+{
+	return simMutex_;
 }
 
 int

@@ -23,7 +23,7 @@ public:
 	using ReturnTypeSingle = std::shared_ptr<SuperClass>;
 	using ReturnTypeMulti = std::vector<std::shared_ptr<SuperClass>>;
 	using ReturnType = std::conditional_t<supportsMulti, ReturnTypeMulti, ReturnTypeSingle>;
-	using SpecificObjects = std::tuple<Objects...>;
+	using Types = std::tuple<Objects...>;
 
 	static ReturnType
 	create(const Configuration& config)

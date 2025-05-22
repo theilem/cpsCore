@@ -105,6 +105,7 @@ namespace
             c & angle;
         }
     };
+
     class AngleTest : public ConfigurableObject<AngleParams>
     {
     public:

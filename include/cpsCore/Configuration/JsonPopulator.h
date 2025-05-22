@@ -49,6 +49,10 @@ public:
         {
             JsonPopulator pop;
             const_cast<Type&>(param.value).parse(pop);
+            if constexpr (has_configure_params<Type>::value)
+            {
+                const_cast<Type&>(param.value).configureParams(pop);
+            }
             json_[param.id] = pop.json_;
         }
         else
@@ -62,21 +66,42 @@ public:
     void
     writeValue(const std::string& id, const Type& value)
     {
+        auto& writeTo = id.empty() ? json_ : json_[id];
         if constexpr (is_parameter_set<Type>::value || is_parameter_set_ref<Type>::value)
         {
             JsonPopulator pop;
             const_cast<Type&>(value).configure(pop);
-            json_[id] = pop.json_;
+            writeTo = pop.json_;
         }
         else if constexpr (std::is_enum_v<Type>)
-            json_[id] = EnumMap<Type>::convert(value);
-        else if constexpr  (is_angle<Type>::value)
+            writeTo = EnumMap<Type>::convert(value);
+        else if constexpr (is_angle<Type>::value)
+            writeTo = value.degrees();
+        else if constexpr (is_vector<Type>::value)
         {
-            json_[id] = value.degrees();
+            Configuration config;
+            for (const auto& v : value)
+            {
+                JsonPopulator pop;
+                pop.writeValue("", v);
+                config.push_back(pop.getConfig());
+            }
+            writeTo = config;
+        }
+        else if constexpr (is_string_key_map<Type>::value)
+        {
+            Configuration config;
+            for (const auto& [key, value] : value)
+            {
+                JsonPopulator pop;
+                pop.writeValue("", value);
+                config["key"] = pop.getConfig();
+            }
+            writeTo = config;
         }
         else
         {
-            json_[id] = value;
+            writeTo = value;
         }
     }
 
@@ -105,7 +130,7 @@ public:
     void
     populate()
     {
-        (populateOne<Objects>(),...);
+        (populateOne<Objects>(), ...);
     }
 
     template <typename Object>
@@ -114,6 +139,7 @@ public:
     {
         if constexpr (is_configurable_object<Object>::value)
         {
+            std::cout << "Configurable Object " << Object::typeId << std::endl;
             JsonPopulator pop;
             Object obj;
             obj.parse(pop);
@@ -123,9 +149,23 @@ public:
             }
             json_[Object::typeId] = pop.getConfig();
         }
+        else if constexpr (is_static_factory<Object>::value)
+        {
+            std::cout << "Static factory " << Object::typeId << std::endl;
+            auto pop = populateContainer<Object>();
+            json_[Object::typeId] = pop.getConfig();
+        }
+        else if constexpr (is_static_helper<Object>::value)
+        {
+            std::cout << "Static helper without typeId" << std::endl;
+            auto pop = populateContainer<Object>();
+            json_.merge_patch(pop.getConfig());
+        }
         else
         {
-            CPSLOG_ERROR << "Type not supported";
+            std::cout << "Some other Object " << Object::typeId << std::endl;
+            // Not a configuratble object, but it can still be created.
+            json_[Object::typeId] = Configuration::object();
         }
     }
 
@@ -133,20 +173,22 @@ public:
     struct populate_from_container
     {
         template <typename... Args>
-        static JsonPopulator populateHelper(std::tuple<Args...>)
+        static JsonPopulator
+        populateHelper(std::tuple<Args...>)
         {
             JsonPopulator pop;
             pop.populate<Args...>();
             return pop;
         }
 
-        static JsonPopulator doPopulate()
+        static JsonPopulator
+        doPopulate()
         {
             return populateHelper(typename Container::Types{});
         }
     };
 
-    template<typename Container>
+    template <typename Container>
     static JsonPopulator
     populateContainer()
     {

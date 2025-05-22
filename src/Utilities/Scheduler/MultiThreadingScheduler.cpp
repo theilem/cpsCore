@@ -20,7 +20,7 @@ MultiThreadingScheduler::MultiThreadingScheduler() :
 MultiThreadingScheduler::~MultiThreadingScheduler()
 {
 	if (started_.load())
-		stop();
+		MultiThreadingScheduler::stop();
 
 	CPSLOG_TRACE << "Scheduler destroyed.";
 }
@@ -221,6 +221,7 @@ MultiThreadingScheduler::runSchedule()
 					if (!eventBody->isCanceled.load())
 					{
 						//Thread not started yet
+						eventBody->isStarted.store(true);
 						eventBody->periodicThread = std::thread([this, eventBody]
 																{ periodicTask(eventBody); });
 						if (params.priority() != 20)
@@ -284,7 +285,6 @@ MultiThreadingScheduler::createSchedule(Duration start, std::shared_ptr<EventBod
 void
 MultiThreadingScheduler::periodicTask(std::shared_ptr<EventBody> body)
 {
-	body->isStarted.store(true);
 	std::unique_lock<std::mutex> lock(body->executionMutex);
 	while (!body->isCanceled.load())
 	{

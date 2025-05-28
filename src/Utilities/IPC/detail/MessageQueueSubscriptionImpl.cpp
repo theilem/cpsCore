@@ -90,7 +90,7 @@ MessageQueueSubscriptionImpl::connect()
 		return true;
 	} catch (const boost::interprocess::interprocess_exception& e)
 	{
-		CPSLOG_WARN << "Could not connect to message queue: " << e.what();
+		CPSLOG_DEBUG << "Could not connect to message queue: " << e.what();
 		messageQueue_.reset();
 		return false;
 	}

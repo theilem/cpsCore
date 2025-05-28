@@ -38,7 +38,7 @@ public:
 
 	template<class Type>
 	void
-	add(std::vector<std::shared_ptr<Type>> objs);
+	add(const std::vector<std::shared_ptr<Type>>& objs);
 
 	void
 	add(std::shared_ptr<IAggregatableObject> obj);
@@ -103,9 +103,9 @@ Aggregator::add(std::shared_ptr<Type> obj)
 
 template<class Type>
 inline void
-Aggregator::add(std::vector<std::shared_ptr<Type>> objs)
+Aggregator::add(const std::vector<std::shared_ptr<Type>>& objs)
 {
-	for (auto it : objs)
+	for (auto& it : objs)
 	{
 		add(it);
 	}

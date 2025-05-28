@@ -17,6 +17,7 @@
 
 #include "cpsCore/Aggregation/AggregatableObject.hpp"
 #include "cpsCore/Configuration/ConfigurableObject.hpp"
+#include "cpsCore/Synchronization/IRunnableObject.h"
 #include "cpsCore/Utilities/Scheduler/IScheduler.h"
 #include "cpsCore/Utilities/Scheduler/MicroSimulatorParams.h"
 #include "cpsCore/Utilities/Time.hpp"
@@ -26,6 +27,7 @@
 class MicroSimulator
     : public IScheduler,
       public ITimeProvider,
+      public IRunnableObject,
       public AggregatableObject<>,
       public ConfigurableObject<MicroSimulatorParams>
 {
@@ -33,6 +35,8 @@ public:
     static constexpr TypeId typeId = "micro_sim";
 
     MicroSimulator();
+    bool
+    run(RunStage stage) override;
 
     ~MicroSimulator() override;
 
@@ -88,6 +92,9 @@ public:
     std::mutex&
     getSimMutex();
 
+    void
+    setRealTimeFactor(float factor);
+
 private:
     void
     logProgress(const TimePoint end, const Duration duration);
@@ -101,6 +108,7 @@ private:
     int runs_;
     bool stopOnWait_;
     std::mutex simMutex_;
+    float realTimeFactor_;
 
     Mutex waitCondMutex_;
     std::condition_variable* waitCondition_;

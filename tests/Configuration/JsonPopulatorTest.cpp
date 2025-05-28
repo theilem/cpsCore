@@ -115,8 +115,7 @@ namespace
 
 TEST_CASE("Json Populator Test 1")
 {
-    JsonPopulator pop;
-    pop.populate<Test>();
+    auto pop = JsonPopulator::populate<Test>();
 
     std::string correct =
         "{\n"
@@ -141,8 +140,7 @@ TEST_CASE("Json Populator Test 1")
 TEST_CASE("Json Populator Test 2")
 {
     REQUIRE(has_configure_params<Test2>::value);
-    JsonPopulator pop;
-    pop.populate<Test2>();
+    auto pop = JsonPopulator::populate<Test2>();
 
     std::string correct =
         "{\n"
@@ -229,8 +227,7 @@ TEST_CASE("Json Populator Test 3")
 
 TEST_CASE("Json Populator Test 4")
 {
-    JsonPopulator pop;
-    pop.populate<AngleTest>();
+    auto pop = JsonPopulator::populate<AngleTest>();
     std::string correct =
         "{\n"
         "    \"angle_test\": {\n"

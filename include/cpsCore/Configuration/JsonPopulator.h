@@ -99,6 +99,19 @@ public:
             }
             writeTo = config;
         }
+        else if constexpr (is_optional<Type>::value)
+        {
+            if (value)
+            {
+                JsonPopulator pop;
+                pop.writeValue("", *value);
+                writeTo = pop.getConfig();
+            }
+            else
+            {
+                writeTo = nullptr;
+            }
+        }
         else
         {
             writeTo = value;
@@ -127,10 +140,12 @@ public:
     }
 
     template <class... Objects>
-    void
+    static JsonPopulator
     populate()
     {
-        (populateOne<Objects>(), ...);
+        JsonPopulator pop;
+        (pop.populateOne<Objects>(), ...);
+        return pop;
     }
 
     template <typename Object>
@@ -139,7 +154,6 @@ public:
     {
         if constexpr (is_configurable_object<Object>::value)
         {
-            std::cout << "Configurable Object " << Object::typeId << std::endl;
             JsonPopulator pop;
             Object obj;
             obj.parse(pop);
@@ -151,19 +165,23 @@ public:
         }
         else if constexpr (is_static_factory<Object>::value)
         {
-            std::cout << "Static factory " << Object::typeId << std::endl;
             auto pop = populateContainer<Object>();
             json_[Object::typeId] = pop.getConfig();
         }
         else if constexpr (is_static_helper<Object>::value)
         {
-            std::cout << "Static helper without typeId" << std::endl;
             auto pop = populateContainer<Object>();
             json_.merge_patch(pop.getConfig());
         }
+        else if constexpr (is_parameter_set<Object>::value)
+        {
+            JsonPopulator pop;
+            Object obj;
+            obj.configure(pop);
+            json_ = pop.getConfig();
+        }
         else
         {
-            std::cout << "Some other Object " << Object::typeId << std::endl;
             // Not a configuratble object, but it can still be created.
             json_[Object::typeId] = Configuration::object();
         }
@@ -176,9 +194,7 @@ public:
         static JsonPopulator
         populateHelper(std::tuple<Args...>)
         {
-            JsonPopulator pop;
-            pop.populate<Args...>();
-            return pop;
+            return JsonPopulator::populate<Args...>();
         }
 
         static JsonPopulator

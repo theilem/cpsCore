@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 #include "cpsCore/Aggregation/TypeTraits.hpp"
+#include "cpsCore/Logging/CPSLogger.h"
 
 class IAggregatableObject;
 class Aggregator;
@@ -53,6 +54,7 @@ template<typename Type>
 inline std::shared_ptr<Type>
 DynamicObjectContainer::getOne(Type* self) const
 {
+	// static_assert(is_complete<Type>::value, "Type must be a complete type.");
 	// If it is incomplete that means that this process cannot create this object so it should return a nullptr
 	if constexpr (is_complete<Type>::value)
 	{
@@ -69,6 +71,7 @@ DynamicObjectContainer::getOne(Type* self) const
 	}
 	else
 	{
+		CPSLOG_TRACE << "Tried getting incomplete type. Returning nullptr.";
 		return nullptr;
 	}
 

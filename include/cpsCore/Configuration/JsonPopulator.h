@@ -71,7 +71,10 @@ public:
         {
             JsonPopulator pop;
             const_cast<Type&>(value).configure(pop);
-            writeTo = pop.json_;
+            if (pop.json_.empty())
+                writeTo = json::object();
+            else
+                writeTo = pop.json_;
         }
         else if constexpr (std::is_enum_v<Type>)
             writeTo = EnumMap<Type>::convert(value);

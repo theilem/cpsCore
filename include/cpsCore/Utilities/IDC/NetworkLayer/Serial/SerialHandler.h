@@ -61,6 +61,7 @@ private:
     bool useCRC_;
     SerialDirection direction_;
     bool sendBlocking_;
+    std::mutex sendingMutex_;
 
     std::stringstream packetBuffer_;
 

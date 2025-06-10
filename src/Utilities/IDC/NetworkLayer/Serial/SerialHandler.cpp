@@ -71,6 +71,7 @@ SerialHandler::sendPacket(const Packet& packet)
     stats_.dataSent() += message.size();
     stats_.packetsSent()++;
 
+    std::unique_lock lock(sendingMutex_);
     std::ostream os(&outBuffer_);
     os << message;
 

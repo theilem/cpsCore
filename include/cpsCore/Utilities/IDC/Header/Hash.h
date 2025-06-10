@@ -12,7 +12,7 @@ hash_32_fnv1a(const std::string& str)
     uint32_t hash = 0x811c9dc5;
     uint32_t prime = 0x1000193;
 
-    for (int i = 0; i < str.length(); ++i)
+    for (std::size_t i = 0; i < str.length(); ++i)
     {
         uint8_t value = str[i];
         hash = hash ^ value;
@@ -28,7 +28,7 @@ hash_64_fnv1a(const std::string& str)
     uint64_t hash = 0xcbf29ce484222325;
     uint64_t prime = 0x100000001b3;
 
-    for (int i = 0; i < str.length(); ++i)
+    for (std::size_t i = 0; i < str.length(); ++i)
     {
         uint8_t value = str[i];
         hash = hash ^ value;
@@ -38,22 +38,41 @@ hash_64_fnv1a(const std::string& str)
     return hash;
 } //hash_64_fnv1a
 
-struct HashingHeader
+struct Hash
 {
-    HashingHeader(): hashValue(0)
+    Hash(): hashValue(0)
     {
     }
 
-    explicit
-    HashingHeader(const std::string& string):
+    Hash(const std::string& string):
         hashValue(hash_32_fnv1a(string))
     {
     }
 
-    bool
-    operator==(const std::string& string) const
+    Hash(const char* string):
+        hashValue(hash_32_fnv1a(std::string(string)))
     {
-        return hashValue == hash_32_fnv1a(string);
+    }
+
+    auto operator<(const Hash& other) const
+    {
+        return hashValue < other.hashValue;
+    }
+
+    bool
+    operator==(const Hash& other) const
+    {
+        return hashValue == other.hashValue;
+    }
+
+    explicit operator uint32_t() const
+    {
+        return hashValue;
+    }
+
+    explicit operator int() const
+    {
+        return static_cast<int>(hashValue);
     }
 
     uint32_t hashValue;
@@ -63,7 +82,7 @@ namespace dp
 {
     template <typename Archive, typename>
     void
-    serialize(Archive& ar, HashingHeader& h)
+    serialize(Archive& ar, Hash& h)
     {
         ar & h.hashValue;
     }

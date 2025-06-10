@@ -17,9 +17,9 @@
 
 using FloatingType = float;
 
-using Vector2 = Eigen::Vector2f;
-using Vector3 = Eigen::Vector3f;
-using Matrix3 = Eigen::Matrix3f;
+using Vector2 = Eigen::Matrix<FloatingType, 2, 1, Eigen::DontAlign>;
+using Vector3 = Eigen::Matrix<FloatingType, 3, 1, Eigen::DontAlign>;
+using Matrix3 = Eigen::Matrix<FloatingType, 3, 3, Eigen::DontAlign>;
 using AngleAxis = Eigen::AngleAxisf;
 using Rotation2 = Eigen::Rotation2Df;
 using EigenLine = Eigen::ParametrizedLine<FloatingType, 3>;
@@ -194,31 +194,31 @@ operator<<(std::ostream& os, const EigenHyperplane& obj)
 
 namespace dp
 {
-template<class Archive, typename Type>
-inline void
-serialize(Archive& ar, Eigen::Vector3d& t)
-{
-	ar & t[0];
-	ar & t[1];
-	ar & t[2];
-}
-
-template<class Archive, typename Type>
-inline void
-serialize(Archive& ar, Vector2& t)
-{
-	ar & t[0];
-	ar & t[1];
-}
-
-template<class Archive, typename Type>
-inline void
-serialize(Archive& ar, Eigen::Vector3f& t)
-{
-	ar & t[0];
-	ar & t[1];
-	ar & t[2];
-}
+// template<class Archive, typename Type>
+// inline void
+// serialize(Archive& ar, Eigen::Vector3d& t)
+// {
+// 	ar & t[0];
+// 	ar & t[1];
+// 	ar & t[2];
+// }
+//
+// template<class Archive, typename Type>
+// inline void
+// serialize(Archive& ar, Vector2& t)
+// {
+// 	ar & t[0];
+// 	ar & t[1];
+// }
+//
+// template<class Archive, typename Type>
+// inline void
+// serialize(Archive& ar, Eigen::Vector3f& t)
+// {
+// 	ar & t[0];
+// 	ar & t[1];
+// 	ar & t[2];
+// }
 
 template<class Archive, typename Type>
 void

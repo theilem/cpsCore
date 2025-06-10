@@ -78,5 +78,30 @@ private:
 	std::string buffer_; //!< Buffer containing the information in serialized form
 };
 
+namespace dp
+{
+	template <class Archive, typename>
+	void
+	load(Archive& ar, Packet& packet)
+	{
+		std::string str;
+		ar >> str;
+		packet = Packet(str);
+	}
+	template <class Archive, typename>
+	void
+	store(Archive& ar, Packet& packet)
+	{
+		ar << packet.getBuffer();
+	}
+	template <class Archive, typename>
+	void
+	serialize(Archive& ar, Packet& packet)
+	{
+		split(ar, packet);
+	}
+
+}
+
 
 #endif /* UAVAP_CORE_DATAPRESENTATION_PACKET_H_ */

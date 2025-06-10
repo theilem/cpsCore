@@ -94,10 +94,22 @@ public:
     bool
     addVector(const std::string& key, std::vector<T>& val, bool mandatory)
     {
-        if (auto it = p_.find(key); it != p_.end() && it->is_array())
+        auto conf = p_;
+        if (!key.empty())
+        {
+            auto it = conf.find(key);
+            if (it == conf.end())
+            {
+                mandatoryCheck(key, mandatory);
+                return false;
+            }
+            conf = *it;
+        }
+
+        if (conf.is_array())
         {
             val.clear();
-            for (auto& value : *it)
+            for (auto& value : conf)
             {
                 if constexpr (std::is_same_v<T, Configuration>)
                 {
@@ -120,6 +132,20 @@ public:
                         auto vec = value.template get<std::vector<typename T::Scalar>>();
                         val.emplace_back();
                         val.back() = Eigen::Map<T>(vec.data(), vec.size());
+                    }
+                    else
+                    {
+                        CPSLOG_ERROR << "Property " << key << " is not a vector";
+                        return false;
+                    }
+                }
+                else if constexpr (is_vector<T>::value)
+                {
+                    if (value.is_array())
+                    {
+                        PropertyMapper pm(value);
+                        val.emplace_back();
+                        pm.addVector<typename T::value_type>("", val.back(), false);
                     }
                     else
                     {
@@ -253,7 +279,7 @@ public:
             {
                 PropertyMapper pm(value);
                 val.insert(std::make_pair(EnumMap<typename T::key_type>::convert(key),
-                                                   value.template get<typename T::value_type::second_type>()));
+                                          value.template get<typename T::value_type::second_type>()));
             }
             return true;
         }

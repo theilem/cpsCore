@@ -9,6 +9,7 @@
 #include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <atomic>
 
 #include "cpsCore/Utilities/Scheduler/IScheduler.h"
 #include "cpsCore/Aggregation/AggregatableObject.hpp"

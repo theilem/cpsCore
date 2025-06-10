@@ -105,9 +105,9 @@ template<class Archive, typename Type>
 inline void
 dp::load(Archive& ar, typename std::enable_if<is_vector<Type>::value, Type>::type& val)
 {
-	uint8_t size;
+	std::uint16_t size;
 	ar >> size;
-	for (uint8_t i = 0; i < size; ++i)
+	for (std::uint16_t i = 0; i < size; ++i)
 	{
 		typename Type::value_type tmp;
 		ar >> tmp;
@@ -119,7 +119,7 @@ template<class Archive, typename Type>
 inline void
 dp::store(Archive& ar, typename std::enable_if<is_vector<Type>::value, Type>::type& val)
 {
-	ar << static_cast<uint8_t>(val.size());
+	ar << static_cast<std::uint16_t>(val.size());
 	for (auto& it : val)
 	{
 		ar << it;
@@ -287,10 +287,19 @@ template<class Archive, typename Type>
 void
 dp::load(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val)
 {
-	Eigen::Index rows(1);
-	Eigen::Index cols(1);
-	ar & rows;
-	ar & cols;
+	Eigen::Index rows(Type::RowsAtCompileTime);
+	Eigen::Index cols(Type::ColsAtCompileTime);
+	if constexpr (Type::RowsAtCompileTime == Eigen::Dynamic)
+	{
+		// If the number of rows is dynamic, we need to load the size
+		ar >> rows;
+	}
+	if constexpr (Type::ColsAtCompileTime == Eigen::Dynamic)
+	{
+		// If the number of columns is dynamic, we need to load the size
+		ar >> cols;
+	}
+	// Resize the matrix to the loaded size
 	val.resize(rows, cols);
 
 	ar.read(reinterpret_cast<char*>(val.data()), val.size() * sizeof(typename Type::Base::Scalar));
@@ -300,10 +309,16 @@ template<class Archive, typename Type>
 void
 dp::store(Archive& ar, std::enable_if_t<is_eigen_mat<Type>::value, Type>& val)
 {
-	Eigen::Index rows = val.rows();
-	Eigen::Index cols = val.cols();
-	ar & rows;
-	ar & cols;
+	if constexpr (Type::RowsAtCompileTime == Eigen::Dynamic)
+	{
+		// If the number of rows is dynamic, we need to store the size
+		ar << static_cast<Eigen::Index>(val.rows());
+	}
+	if constexpr (Type::ColsAtCompileTime == Eigen::Dynamic)
+	{
+		// If the number of columns is dynamic, we need to store the size
+		ar << static_cast<Eigen::Index>(val.cols());
+	}
 	ar.append(reinterpret_cast<char*>(val.data()), val.size() * sizeof(typename Type::Base::Scalar));
 }
 

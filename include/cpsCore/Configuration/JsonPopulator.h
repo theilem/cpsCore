@@ -102,6 +102,13 @@ public:
             }
             writeTo = config;
         }
+        else if constexpr (is_eigen_vector<Type>::value)
+        {
+            std::vector<typename Type::Scalar> vec(value.data(), value.data() + value.size());
+            JsonPopulator pop;
+            pop.writeValue("", vec);
+            writeTo = pop.getConfig();
+        }
         else if constexpr (is_optional<Type>::value)
         {
             if (value)

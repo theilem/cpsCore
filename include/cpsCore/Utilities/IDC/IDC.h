@@ -20,7 +20,7 @@ class Packet;
 
 class IDC;
 
-class IDC: public AggregatableObject<INetworkLayer, ITransportLayer, IDC>, public IRunnableObject
+class IDC: public AggregatableObject<Multi<INetworkLayer>, ITransportLayer, IDC>, public IRunnableObject
 {
 
 public:

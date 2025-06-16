@@ -25,6 +25,8 @@
 #include "cpsCore/Utilities/Packet.h"
 #include <boost/crc.hpp>
 
+#include "cpsCore/Utilities/DataPresentation/hamming74.h"
+
 Packet::Packet(const std::string& buf) :
 		buffer_(buf)
 {
@@ -76,6 +78,21 @@ Packet::getCRC16() const
 	boost::crc_ccitt_type crc;
 	crc.process_bytes(static_cast<const void*>(buffer_.c_str()), getSize());
 	return static_cast<std::uint16_t>(crc.checksum());
+}
+
+Packet
+Packet::hamming74Encode() const
+{
+	auto encoded = Hamming74::encode(buffer_);
+	return Packet(encoded);
+}
+
+Packet
+Packet::hamming74Decode() const
+{
+	std::vector<bool> corrected;
+	auto decoded = Hamming74::decode(buffer_, corrected);
+	return Packet(decoded);
 }
 
 std::string&

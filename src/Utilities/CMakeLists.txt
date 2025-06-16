@@ -41,6 +41,7 @@ set(CORE_SRCS ${CORE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/File/FileFromArchive.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/File/FileToArchive.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/detail/BasicSerialization.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/DataPresentation/hamming74.cpp
 
         #Test
         ${CMAKE_CURRENT_SOURCE_DIR}/Test/TestInfo.cpp

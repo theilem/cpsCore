@@ -38,6 +38,7 @@ struct SerialHandlerParams
 	Parameter<FlowControl> flowControl = {boost::asio::serial_port_base::flow_control::none, "flow_control", false};
 	Parameter<SerialDirection> direction = {SerialDirection::BOTH, "direction", false};
 	Parameter<bool> sendBlocking = {false, "send_blocking", false};
+	Parameter<bool> useHammingEC = {false, "use_hamming_ec", false};
 
 	template <typename Config>
 	inline void
@@ -50,6 +51,7 @@ struct SerialHandlerParams
 		c & flowControl;
 		c & direction;
 		c & sendBlocking;
+		c & useHammingEC;
 	}
 };
 

@@ -72,6 +72,10 @@ public:
 	BinaryToArchive&
 	operator >>(const Type& val);
 
+
+	bool
+	compressDouble() const;
+
 private:
 
 	ArchiveOptions options_;

@@ -206,6 +206,43 @@ namespace dp
     serialize(Archive& ar, typename std::enable_if<is_vector<Type>::value, Type>::type& val);
 
     /**
+     * @brief is_vector struct false_type because T is not a vector
+     */
+    template <typename T>
+    struct is_array : std::false_type
+    {
+    };
+
+    /**
+     * @brief is_vector struct true_type because T is a vector
+     */
+    template <typename T, std::size_t size>
+    struct is_array<std::array<T, size>> : std::true_type
+    {
+    };
+
+    /**
+     * @brief Load function for any vector
+     */
+    template <class Archive, typename Type>
+    void
+    load(Archive& ar, typename std::enable_if<is_array<Type>::value && !std::is_pod_v<Type>, Type>::type& val);
+
+    /**
+     * @brief Store function for any vector
+     */
+    template <class Archive, typename Type>
+    void
+    store(Archive& ar, typename std::enable_if<is_array<Type>::value && !std::is_pod_v<Type>, Type>::type& val);
+
+    /**
+     * @brief Serialize function for any vector
+     */
+    template <class Archive, typename Type>
+    void
+    serialize(Archive& ar, typename std::enable_if<is_array<Type>::value && !std::is_pod_v<Type>, Type>::type& val);
+
+    /**
      * @brief is_map struct false_type because T is not a map
      */
     template <typename T>

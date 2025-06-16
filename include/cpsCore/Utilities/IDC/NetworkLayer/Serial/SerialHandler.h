@@ -59,6 +59,7 @@ private:
     char delim_;
     std::string delimString_;
     bool useCRC_;
+    bool useHammingEC_;
     SerialDirection direction_;
     bool sendBlocking_;
     std::mutex sendingMutex_;

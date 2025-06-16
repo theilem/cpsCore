@@ -12,6 +12,8 @@
 #include <cpsCore/Utilities/DataPresentation/BinarySerialization.hpp>
 #include <cpsCore/Utilities/DataPresentation/DataPresentation.h>
 
+#include "cpsCore/Utilities/DataPresentation/hamming74.h"
+
 namespace
 {
 enum TestContent {
@@ -216,4 +218,89 @@ TEST_CASE("Test Configuration")
 	CHECK(reconstructChild["az"].get<int>() == 1);
 	CHECK(reconstructChild["ay"].get<double>() == 1.2);
 	CHECK(reconstructChild["ad"].get<std::string>() == "ab");
+}
+
+TEST_CASE("Test Hamming74")
+{
+	std::string data = "Random test string for Hamming74 encoding and decoding.";
+	std::string encoded = Hamming74::encode(data);
+	std::vector<bool> corrected;
+	std::string decoded = Hamming74::decode(encoded, corrected);
+	CHECK(data == decoded);
+
+	Packet packet(data);
+	auto encodedPacket = packet.hamming74Encode();
+	auto decodedPacket = encodedPacket.hamming74Decode();
+	CHECK(packet.getBuffer() == decodedPacket.getBuffer());
+}
+
+TEST_CASE("Multi serialization")
+{
+	DataPresentation dp;
+	Packet packet = dp.serialize(1, 2.0, std::string("test"), std::vector<int>{1, 2, 3});
+
+	auto [i, d, s, v] = dp.extract<int, double, std::string, std::vector<int>>(packet);
+
+	CHECK(i == 1);
+	CHECK(d == 2.0);
+	CHECK(s == "test");
+	CHECK(v.size() == 3);
+	CHECK(v[0] == 1);
+	CHECK(v[1] == 2);
+	CHECK(v[2] == 3);
+
+	Packet packet2 = dp.serialize(Vector3(1.0, 2.0, 3.0), std::string("test2"), 42, Vector3(4.0, 5.0, 6.0));
+	auto [v1, s2, i2, v2] = dp.extract<Vector3, std::string, int, Vector3>(packet2);
+	CHECK(v1 == Vector3(1.0, 2.0, 3.0));
+	CHECK(s2 == "test2");
+	CHECK(i2 == 42);
+	CHECK(v2 == Vector3(4.0, 5.0, 6.0));
+
+}
+
+TEST_CASE("Eigen double compression")
+{
+	Eigen::Matrix<double, -1, -1> mat = Eigen::Matrix<double, -1, -1>::Random(7, 3);
+
+	DataPresentation dp;
+	ArchiveOptions opts;
+	opts.compressDouble = false;
+	dp.setParams(opts);
+	Packet packet = dp.serialize(mat);
+	CHECK(packet.getSize() == 7 * 3 * sizeof(double) + 2 * sizeof(Eigen::Index));
+
+	auto matRes = dp.deserialize<Eigen::Matrix<double, -1, -1>>(packet);
+	CHECK(matRes == mat);
+
+	opts.compressDouble = true;
+	dp.setParams(opts);
+	Packet packet2 = dp.serialize(mat);
+	CHECK(packet2.getSize() == 7 * 3 * sizeof(float) + 2 * sizeof(Eigen::Index));
+	auto matRes2 = dp.deserialize<Eigen::Matrix<double, -1, -1>>(packet2);
+	CHECK(matRes2.cast<float>() == mat.cast<float>());
+
+	Eigen::Matrix<double, 8, 6> mat2 = Eigen::Matrix<double, 8, 6>::Random();
+	Packet packet3 = dp.serialize(mat2);
+	CHECK(packet3.getSize() == 8 * 6 * sizeof(float));
+	auto matRes3 = dp.deserialize<Eigen::Matrix<double, 8, 6>>(packet3);
+	CHECK(matRes3.cast<float>() == mat2.cast<float>());
+}
+
+TEST_CASE("std::array serialization")
+{
+	std::array<int, 3> arr = {1, 2, 3};
+	DataPresentation dp;
+	Packet packet = dp.serialize(arr);
+	auto arrRes = dp.deserialize<std::array<int, 3>>(packet);
+	CHECK(arrRes.size() == 3);
+	CHECK(arrRes[0] == 1);
+	CHECK(arrRes[1] == 2);
+	CHECK(arrRes[2] == 3);
+	std::array<std::string, 2> arrStr = {"Hello", "World"};
+	Packet packetStr = dp.serialize(arrStr);
+	auto arrStrRes = dp.deserialize<std::array<std::string, 2>>(packetStr);
+	CHECK(arrStrRes.size() == 2);
+	CHECK(arrStrRes[0] == "Hello");
+	CHECK(arrStrRes[1] == "World");
+
 }

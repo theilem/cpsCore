@@ -40,6 +40,12 @@ BinaryFromArchive::getConsumed()
 	return idx_;
 }
 
+bool
+BinaryFromArchive::compressDouble() const
+{
+	return options_.compressDouble();
+}
+
 void
 BinaryFromArchive::setOptions(const ArchiveOptions& opts)
 {

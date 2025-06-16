@@ -95,6 +95,9 @@ public:
 	std::size_t
 	getConsumed();
 
+	bool
+	compressDouble() const;
+
 private:
 
 	ArchiveOptions options_;

@@ -38,3 +38,9 @@ BinaryToArchive::operator <<(const double& doub)
 	}
 	return *this;
 }
+
+bool
+BinaryToArchive::compressDouble() const
+{
+	return options_.compressDouble();
+}

@@ -73,6 +73,12 @@ public:
 	std::uint16_t
 	getCRC16() const;
 
+	Packet
+	hamming74Encode() const;
+
+	Packet
+	hamming74Decode() const;
+
 private:
 
 	std::string buffer_; //!< Buffer containing the information in serialized form

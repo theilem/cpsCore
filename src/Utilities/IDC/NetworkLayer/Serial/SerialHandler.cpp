@@ -7,11 +7,12 @@
 #include "cpsCore/Utilities/IDC/Header/NetworkHeader.h"
 #include "cpsCore/Utilities/IDC/NetworkLayer/Serial/SerialHandler.h"
 #include "cpsCore/Utilities/DataPresentation/BinarySerialization.hpp"
+#include "cpsCore/Utilities/DataPresentation/hamming74.h"
 
 SerialHandler::SerialHandler(const SerialHandlerParams& params) :
     io_(), serial_(io_, params.serialPort()), delim_(
         params.delimiterString()[params.delimiterString().size() - 1]), delimString_(
-        params.delimiterString()), useCRC_(params.useCRC()), direction_(params.direction()), sendBlocking_(
+        params.delimiterString()), useCRC_(params.useCRC()), useHammingEC_(params.useHammingEC()), direction_(params.direction()), sendBlocking_(
         params.sendBlocking()), handlerCanceled_(false)
 {
     serial_.set_option(boost::asio::serial_port_base::baud_rate(params.baudRate()));
@@ -67,7 +68,14 @@ SerialHandler::sendPacket(const Packet& packet)
         CPSLOG_TRACE << "Send Header CRC: " << header.crc;
     }
 
+    if (useHammingEC_)
+    {
+        message = Hamming74::encode(message);
+        CPSLOG_TRACE << "Send Hamming encoded packet";
+    }
+
     message += delimString_;
+
     stats_.dataSent() += message.size();
     stats_.packetsSent()++;
 
@@ -149,6 +157,10 @@ SerialHandler::receive(const boost::system::error_code& err, std::size_t bytes_t
     }
 
     Packet packet(packetString);
+    if (useHammingEC_)
+    {
+        packet = packet.hamming74Decode();
+    }
     stats_.dataReceived() += packetString.size();
     stats_.packetsReceived()++;
 

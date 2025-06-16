@@ -12,8 +12,7 @@
 #include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
 #include <utility>
 
-MultiThreadingScheduler::MultiThreadingScheduler() :
-		started_(false), mainThread_(false)
+MultiThreadingScheduler::MultiThreadingScheduler() : started_(false), mainThread_(false)
 {
 }
 
@@ -27,7 +26,7 @@ MultiThreadingScheduler::~MultiThreadingScheduler()
 
 Event
 MultiThreadingScheduler::schedule(const std::function<void()>& task, Duration initialFromNow,
-								  const std::string& eventName)
+                                  const std::string& eventName)
 {
 	auto body = std::make_shared<EventBody>(task, eventName);
 	auto element = createSchedule(initialFromNow, body);
@@ -42,7 +41,7 @@ MultiThreadingScheduler::schedule(const std::function<void()>& task, Duration in
 
 Event
 MultiThreadingScheduler::schedule(const std::function<void()>& task, Duration initialFromNow, Duration period,
-								  const std::string& eventName)
+                                  const std::string& eventName)
 {
 	auto body = std::make_shared<EventBody>(task, period, eventName);
 	auto element = createSchedule(initialFromNow, body);
@@ -116,7 +115,6 @@ MultiThreadingScheduler::run(RunStage stage)
 		}
 		case RunStage::NORMAL:
 		{
-
 			if (auto sigHand = get<SignalHandler>())
 				sigHand->subscribeOnExit([this] { stop(); });
 			break;
@@ -126,11 +124,13 @@ MultiThreadingScheduler::run(RunStage stage)
 			if (!mainThread_)
 			{
 				invokerThread_ = std::thread([this]
-											 { runSchedule(); });
+				{
+					runSchedule();
+				});
 
 				if (params.priority() != 20)
 					pthread_setschedparam(invokerThread_.native_handle(), SCHED_FIFO,
-										  &schedulingParams_);
+					                      &schedulingParams_);
 			}
 			else
 			{
@@ -169,6 +169,21 @@ MultiThreadingScheduler::runSchedule()
 		{
 			if (startingTime_ + events_.begin()->first > now)
 			{
+				// Clean non-periodic events
+				for (auto it = nonPeriodicEvents_.begin(); it != nonPeriodicEvents_.end();)
+				{
+					if ((*it)->isDone.load())
+						(*it)->periodicThread.join();
+					if ((*it)->isCanceled.load() || (*it)->isDone.load())
+					{
+						CPSLOG_TRACE << "Removing canceled or done non-periodic event " << (*it)->eventName;
+						it = nonPeriodicEvents_.erase(it);
+					}
+					else
+					{
+						++it;
+					}
+				}
 				//Sleep until next event
 				timeProvider->waitUntil(startingTime_ + events_.begin()->first, wakeupCondition_, lock);
 				now = timeProvider->now();
@@ -178,7 +193,8 @@ MultiThreadingScheduler::runSchedule()
 		{
 			wakeupCondition_.wait(lock);
 		}
-		CPSLOG_TRACE << "Waking up at " << timeProvider->now().time_since_epoch().count() - startingTime_.time_since_epoch().count();
+		CPSLOG_TRACE << "Waking up at " << timeProvider->now().time_since_epoch().count() - startingTime_.
+				time_since_epoch().count();
 		while (!events_.empty())
 		{
 			if (startingTime_ + events_.begin()->first > now)
@@ -223,11 +239,13 @@ MultiThreadingScheduler::runSchedule()
 						//Thread not started yet
 						eventBody->isStarted.store(true);
 						eventBody->periodicThread = std::thread([this, eventBody]
-																{ periodicTask(eventBody); });
+						{
+							periodicTask(eventBody);
+						});
 						if (params.priority() != 20)
 							if (int r = pthread_setschedparam(
-									eventBody->periodicThread.native_handle(),
-									SCHED_FIFO, &schedulingParams_))
+								eventBody->periodicThread.native_handle(),
+								SCHED_FIFO, &schedulingParams_))
 							{
 								CPSLOG_DEBUG << "Cannot set sched params: " << r;
 							}
@@ -245,9 +263,13 @@ MultiThreadingScheduler::runSchedule()
 				//Not a periodic thread
 				if (!eventBody->isCanceled.load())
 				{
-					eventBody->periodicThread = std::thread(it->second->body);
+					eventBody->periodicThread = std::thread([eventBody]()
+					{
+						eventBody->body();
+						eventBody->isDone.store(true);
+					});
 					nonPeriodicEvents_.push_back(eventBody);
-//					std::thread(it->second->body).detach();
+					//					std::thread(it->second->body).detach();
 				}
 			}
 			//Remove current schedule from events as it was handled

@@ -24,6 +24,7 @@ struct EventBody
 	std::atomic_bool isCanceled;
 	std::atomic_bool isStarted;
 	std::atomic_bool missedDeadline;
+	std::atomic_bool isDone;
 
 	std::mutex executionMutex;
 	std::thread periodicThread;

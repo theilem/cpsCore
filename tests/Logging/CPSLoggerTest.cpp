@@ -35,7 +35,7 @@ TEST_CASE("Logging Test")
 	std::stringstream result;
 	result << " [ERROR] [" << __FILE__ << ":" << line1 - 1 << "] error\n";
 	result << " [WARNING] [" << __FILE__ << ":" << line2 - 1 << "] warn\n";
-	result << " [DEBUG] [" << __FILE__ << ":" << line3 - 1 << "] debug";
+	result << " [DEBUG] [" << __FILE__ << ":" << line3 - 1 << "] debug\n";
 	CHECK(stream.str() == result.str());
 
 	CPSLogger::instance()->setLogLevel(LogLevel::NONE);
@@ -65,7 +65,7 @@ TEST_CASE("Logging Test")
 	result << " [ERROR] ["<< __FILE__ << ":" << line1 - 1 << "] error\n";
 	result << " [WARNING] ["<< __FILE__ << ":" << line2 - 1 << "] warn\n";
 	result << " [DEBUG] ["<< __FILE__ << ":" << line3 - 1 << "] debug\n";
-	result << " [TRACE] ["<< __FILE__ << ":" << line4 - 1 << "] trace";
+	result << " [TRACE] ["<< __FILE__ << ":" << line4 - 1 << "] trace\n";
 	CHECK(stream.str() == result.str());
 	CPSLogger::instance()->flush();
 
@@ -83,10 +83,24 @@ TEST_CASE("Logging Test")
 	result << " [ERROR] ["<< __FILE__ << ":" << line1 - 1 << "] \n";
 	result << " [WARNING] ["<< __FILE__ << ":" << line2 - 1 << "] \n";
 	result << " [DEBUG] ["<< __FILE__ << ":" << line3 - 1 << "] \n";
-	result << " [TRACE] ["<< __FILE__ << ":" << line4 - 1 << "] ";
+	result << " [TRACE] ["<< __FILE__ << ":" << line4 - 1 << "] \n";
 	CHECK(stream.str() == result.str());
 
 	CPSLogger::instance()->setSink(std::cout);
 	CPSLogger::instance()->setLogLevel(LogLevel::WARN);
 }
 
+TEST_CASE("Log Flush Test")
+{
+	std::ostream sink(nullptr);
+	std::ostringstream stream;
+
+	sink.rdbuf(stream.rdbuf());
+	CPSLogger::instance()->setSink(sink);
+	CPSLogger::instance()->setLogLevel(LogLevel::DEBUG);
+	CPSLogger::instance()->flush();
+	stream.str("");
+
+	CPSLOG_ERROR << "error";
+	CHECK(CPSLogger::instance()->isFlushed());
+}

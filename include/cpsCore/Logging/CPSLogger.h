@@ -32,8 +32,15 @@ public:
 		LogLevel oldLogLevel_;
 	};
 
+	struct FlushScope
+	{
+		~FlushScope();
+	};
+
 	static CPSLogger*
 	instance();
+
+	~CPSLogger();
 
 	void
 	setLogLevel(LogLevel level);
@@ -55,6 +62,9 @@ public:
 
 	void
 	flush();
+
+	bool
+	isFlushed() const;
 
 	void
 	setTimeProvider(std::shared_ptr<ITimeProvider> timeProvider);
@@ -82,7 +92,20 @@ private:
 	};
 };
 
-#define CPSLOG(level) (CPSLogger::instance()->log(level))
+class RAIILogStream {
+public:
+	explicit RAIILogStream(LogLevel level)
+		: scope_(), stream_(CPSLogger::instance()->log(level)) {}
+
+	std::ostream& stream() { return stream_; }
+
+private:
+	CPSLogger::FlushScope scope_;
+	std::ostream& stream_;
+};
+
+
+#define CPSLOG(level) (RAIILogStream(level).stream())
 #ifdef NO_LOGGING
 #warning "Logging Disabled"
 #define CPSLOG_ERROR if (0) CPSLOG(::LogLevel::ERROR)
@@ -97,15 +120,15 @@ private:
 
 #else
 
-#define CPSLOG_ERROR (CPSLOG(::LogLevel::ERROR) << " [ERROR] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
-#define CPSLOG_WARN (CPSLOG(::LogLevel::WARN) << " [WARNING] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
+#define CPSLOG_ERROR CPSLOG(::LogLevel::ERROR) << " [ERROR] " << "[" << __FILE__ << ":" << __LINE__ <<"] "
+#define CPSLOG_WARN CPSLOG(::LogLevel::WARN) << " [WARNING] " << "[" << __FILE__ << ":" << __LINE__ <<"] "
 
 #ifdef NODEBUG
 #define CPSLOG_DEBUG if (0) CPSLOG(::LogLevel::DEBUG)
 #define CPSLOG_TRACE if (0) CPSLOG(::LogLevel::TRACE)
 #else
-#define CPSLOG_DEBUG (CPSLOG(::LogLevel::DEBUG) << " [DEBUG] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
-#define CPSLOG_TRACE (CPSLOG(::LogLevel::TRACE) << " [TRACE] " << "[" << __FILE__ << ":" << __LINE__ <<"] ")
+#define CPSLOG_DEBUG CPSLOG(::LogLevel::DEBUG) << " [DEBUG] " << "[" << __FILE__ << ":" << __LINE__ <<"] "
+#define CPSLOG_TRACE CPSLOG(::LogLevel::TRACE) << " [TRACE] " << "[" << __FILE__ << ":" << __LINE__ <<"] "
 #endif
 
 #define MODULE_LOG(level, module) (CPSLOGger::instance()->log(level, module))

@@ -12,7 +12,7 @@ RedisSubscriber::RedisSubscriber(const RedisChannelParams& params, const RedisHo
 	params_(params),
 	host_(host)
 {
-	connect();
+	RedisSubscriber::connect();
 }
 
 RedisSubscriber::~RedisSubscriber()

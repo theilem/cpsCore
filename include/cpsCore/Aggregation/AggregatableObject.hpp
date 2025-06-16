@@ -20,6 +20,8 @@ public:
 	using PtrType = std::shared_ptr<Type>;
 	template<class Type>
 	using WeakPtrType = std::weak_ptr<Type>;
+	template <typename Type>
+	using GetType = typename ObjectHandleContainer<Objects...>::template GetType<Type>;
 
 	template<class Agg>
 	void
@@ -29,7 +31,7 @@ public:
 	notifyAggregationOnUpdate(const Aggregator& agg) override;
 
 	template<class Ret>
-	PtrType<Ret>
+	GetType<Ret>
 	get() const;
 
 	template<class...Checks>
@@ -79,7 +81,7 @@ AggregatableObject<Objects...>::notifyAggregationOnUpdate(const Agg& agg)
 
 template<class ... Objects>
 template<class Ret>
-inline typename AggregatableObject<Objects...>::template PtrType<Ret>
+inline typename AggregatableObject<Objects...>::template GetType<Ret>
 AggregatableObject<Objects...>::get() const
 {
 	static_assert(AggregatableObject<Objects...>::isGettable<Ret>(), "Requested class not gettable");

@@ -7,58 +7,44 @@
 
 #include <type_traits>
 
-template<typename Type>
-struct is_configurable_object
+class PropertyMapper;
+
+template <typename T, typename = void>
+struct is_configurable_object : std::false_type
 {
-	template<typename _1>
-	static char&
-	chk(
-			typename std::enable_if<
-					std::is_same<void,
-							decltype(std::declval<typename _1::ParamType>().configure(std::declval<int&>()))>::value,
-					int>::type);
-
-	template<typename>
-	static int&
-	chk(...);
-
-	static constexpr bool value = sizeof(chk<Type>(0)) == sizeof(char);
 };
 
-
-
-template<typename Type>
-struct is_parameter_set_ref
+template <typename T>
+struct is_configurable_object<T, std::void_t<
+                                  decltype(std::declval<typename T::ParamType>().configure(
+                                      std::declval<PropertyMapper&>()))
+                              >> : std::true_type
 {
-	template<typename _1> static char &
-	chk(
-			typename std::enable_if<
-					std::is_same<void, decltype(configure(std::declval<int&>(), std::declval<_1&>()))>::value, int>::type);
-	template<typename > static int &
-	chk(...);
-
-	static constexpr bool value = sizeof(chk<Type>(0)) == sizeof(char);
 };
 
-template<typename Type>
-struct has_configure_params
+template <typename, typename = void>
+struct is_parameter_set_ref : std::false_type
 {
-	template<typename _1>
-	static char&
-	chk(
-			typename std::enable_if<
-					std::is_same<void,
-							decltype(std::declval<_1>().configureParams(std::declval<int&>()))>::value,
-					int>::type);
-
-	template<typename>
-	static int&
-	chk(...);
-
-	static constexpr bool value = sizeof(chk<Type>(0)) == sizeof(char);
 };
 
+template <typename T>
+struct is_parameter_set_ref<T, std::void_t<
+                                decltype(configure(std::declval<PropertyMapper&>(), std::declval<T&>()))
+                            >> : std::true_type
+{
+};
 
+template <typename, typename = void>
+struct has_configure_params : std::false_type
+{
+};
+
+template <typename T>
+struct has_configure_params<T, std::void_t<
+                                decltype(std::declval<T>().configureParams(std::declval<PropertyMapper&>()))
+                            >> : std::true_type
+{
+};
 
 
 #endif //CPSCORE_CONFIGURATION_TYPETRAITS_HPP

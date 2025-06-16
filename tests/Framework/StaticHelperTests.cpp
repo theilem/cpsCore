@@ -16,7 +16,7 @@ TEST_CASE("Single Type Static Handler")
 	StaticHelper<MicroSimulator> helper;
 
 	Configuration config;
-	config.add_child("micro_sim", Configuration());
+	config["micro_sim"] = Configuration();
 
 	auto agg = helper.createAggregation(config);
 
@@ -36,7 +36,7 @@ TEST_CASE("Multi Type Static Handler")
 	StaticHelper<MicroSimulator, SignalHandler, SystemTimeProvider> helper;
 
 	Configuration config;
-	config.add_child("micro_sim", Configuration());
+	config["micro_sim"] = Configuration();
 
 	auto agg = helper.createAggregation(config);
 
@@ -44,8 +44,8 @@ TEST_CASE("Multi Type Static Handler")
 	CHECK(agg.getOne<MicroSimulator>());
 	CHECK_FALSE(agg.getOne<SignalHandler>());
 
-	config.add_child("signal_handler", Configuration());
-	config.add_child("system_time", Configuration());
+	config["signal_handler"] = Configuration();
+	config["system_time"] = Configuration();
 
 	auto agg2 = helper.createAggregation(config);
 
@@ -71,7 +71,7 @@ TEST_CASE("Default static helper")
 	CHECK(agg.getOne<SignalHandler>());
 	CHECK_FALSE(agg.getOne<ITimeProvider>());
 
-	config.add_child("system_time", Configuration());
+	config["system_time"] = Configuration();
 
 	auto agg2 = HelperWithDefaults::createAggregation(config);
 
@@ -84,9 +84,9 @@ TEST_CASE("Default static helper")
 
 	Configuration schedConfig;
 	Configuration multiThreadSchedConfig;
-	multiThreadSchedConfig.add("priority", 10);
-	schedConfig.add_child("thread", multiThreadSchedConfig);
-	config.add_child("scheduler", schedConfig);
+	multiThreadSchedConfig["priority"] = 10;
+	schedConfig["thread"] = multiThreadSchedConfig;
+	config["scheduler"] = schedConfig;
 
 	auto agg3 = HelperWithDefaults::createAggregation(config);
 

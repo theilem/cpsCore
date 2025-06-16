@@ -96,32 +96,34 @@ private:
 	std::ostream& os_;
 };
 
+class PropertyMapper;
+
 template<typename, typename = void>
 struct is_parameter_set : std::false_type {};
 
 template<typename T>
-struct is_parameter_set<T, std::void_t<decltype(std::declval<T>().configure(std::declval<int&>()))>> : std::true_type {};
+struct is_parameter_set<T, std::void_t<decltype(std::declval<T>().configure(std::declval<PropertyMapper&>()))>> : std::true_type {};
 
 
 template<typename Type>
-struct is_parameter : public std::false_type
+struct is_parameter : std::false_type
 {
 };
 
 template<typename Type>
-struct is_parameter<Parameter<Type>> : public std::true_type
+struct is_parameter<Parameter<Type>> : std::true_type
 {
 };
 
 template<typename Type>
-using enable_if_is_parameter = typename std::enable_if<is_parameter<Type>::value, Type>::type;
+using enable_if_is_parameter = std::enable_if_t<is_parameter<Type>::value, Type>;
 template<typename Type>
-using enable_if_not_is_parameter = typename std::enable_if<!is_parameter<Type>::value, Type>::type;
+using enable_if_not_is_parameter = std::enable_if_t<!is_parameter<Type>::value, Type>;
 
 template<typename Type>
-using enable_if_is_parameter_set = typename std::enable_if<is_parameter_set<Type>::value, Type>::type;
+using enable_if_is_parameter_set = std::enable_if_t<is_parameter_set<Type>::value, Type>;
 template<typename Type>
-using enable_if_not_is_parameter_set = typename std::enable_if<!(is_parameter_set<Type>::value), Type>::type;
+using enable_if_not_is_parameter_set = std::enable_if_t<!(is_parameter_set<Type>::value), Type>;
 
 
 template <typename Type, typename ParameterSetType = std::enable_if_t<is_parameter_set<Type>::value>>

@@ -30,7 +30,7 @@
 /**
  * @brief general framework error
  */
-class FrameworkError
+class FrameworkError: public std::exception
 {
 public:
 
@@ -39,10 +39,10 @@ public:
 	{
 	}
 
-	std::string
-	what()
+	const char*
+	what() const noexcept override
 	{
-		return what_;
+		return what_.c_str();
 	}
 
 private:

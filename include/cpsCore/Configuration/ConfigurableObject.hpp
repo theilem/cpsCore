@@ -19,6 +19,8 @@ public:
 
 	ConfigurableObject() = default;
 
+	virtual ~ConfigurableObject() = default;
+
 	inline ConfigurableObject(const ParameterSet& p) :
 			params(p)
 	{
@@ -30,12 +32,27 @@ public:
 		params = set;
 	}
 
-	inline bool
+	virtual bool
 	configure(const Configuration& config)
 	{
-		PropertyMapper<Configuration> pm(config);
-		params.template configure(pm);
+		PropertyMapper pm(config);
+
+		params.configure(pm);
 		return pm.map();
+	}
+
+	bool
+	configure(PropertyMapper& pm)
+	{
+		params.configure(pm);
+		return pm.map();
+	}
+
+	template <typename Parser>
+	void
+	parse(Parser& parser)
+	{
+		params.configure(parser);
 	}
 
 	inline const ParameterSet&
@@ -50,19 +67,12 @@ public:
 		return params;
 	}
 
-//	template<typename Config>
-//	inline static void
-//	configureParams(ConfigurableObject<ParameterSet>& obj, Config& config)
-//	{
-//		obj.params.template configure(config);
-//	}
-
 	template<typename Config>
 	inline static ParameterSet
 	configureParamsStatic(Config& config)
 	{
 		ParameterSet p;
-		p.template configure(config);
+		p.configure(config);
 		return p;
 	}
 

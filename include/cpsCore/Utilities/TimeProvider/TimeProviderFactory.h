@@ -7,6 +7,7 @@
 
 #ifndef UAVAP_CORE_TIMEPROVIDER_TIMEPROVIDERFACTORY_H_
 #define UAVAP_CORE_TIMEPROVIDER_TIMEPROVIDERFACTORY_H_
+
 #include "cpsCore/Framework/StaticFactory.h"
 #include "cpsCore/Utilities/TimeProvider/ITimeProvider.h"
 #include "cpsCore/Utilities/TimeProvider/SystemTimeProvider.h"

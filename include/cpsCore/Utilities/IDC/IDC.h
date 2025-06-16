@@ -13,18 +13,19 @@
 
 #include <boost/signals2.hpp>
 
-class INetworkLayer;
-class ITransportLayer;
+#include "NetworkLayer/INetworkLayer.h"
+#include "TransportLayer/ITransportLayer.h"
+
 class Packet;
 
 class IDC;
 
-class IDC: public AggregatableObject<INetworkLayer, ITransportLayer, IDC>, public IRunnableObject
+class IDC: public AggregatableObject<Multi<INetworkLayer>, ITransportLayer, IDC>, public IRunnableObject
 {
 
 public:
 
-	static constexpr TypeId typeId = "idc";
+	static constexpr auto typeId = "idc";
 
 	bool
 	run(RunStage stage) override;

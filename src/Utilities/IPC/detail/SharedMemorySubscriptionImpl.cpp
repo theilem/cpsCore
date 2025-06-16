@@ -16,7 +16,7 @@
 SharedMemorySubscriptionImpl::SharedMemorySubscriptionImpl(const std::string& id) :
 		listenerCanceled_(true), id_(id)
 {
-	connected_ = connect();
+	connected_ = SharedMemorySubscriptionImpl::connect();
 }
 
 boost::signals2::connection
@@ -40,7 +40,7 @@ SharedMemorySubscriptionImpl::cancel()
 
 SharedMemorySubscriptionImpl::~SharedMemorySubscriptionImpl()
 {
-	cancel();
+	SharedMemorySubscriptionImpl::cancel();
 }
 
 void

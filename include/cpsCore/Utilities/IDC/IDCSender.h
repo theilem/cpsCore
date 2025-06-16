@@ -8,6 +8,7 @@
 #ifndef UAVAP_CORE_IDC_IDCSENDER_H_
 #define UAVAP_CORE_IDC_IDCSENDER_H_
 #include <memory>
+#include <string>
 
 class IDC;
 class Packet;

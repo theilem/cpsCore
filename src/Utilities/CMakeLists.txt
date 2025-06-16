@@ -16,6 +16,7 @@ set(CORE_SRCS ${CORE_SRCS}
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/MultiThreadingScheduler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/Event.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/EventBody.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/Scheduler/ThreadPool/ThreadPoolScheduler.cpp
 
         #IPC
         ${CMAKE_CURRENT_SOURCE_DIR}/IPC/IPC.cpp

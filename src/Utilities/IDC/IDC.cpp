@@ -24,7 +24,7 @@ IDC::run(RunStage stage)
 		}
 		if (!isSet<ITransportLayer>())
 		{
-			if (!isSet<INetworkLayer>())
+			if (!isSet<Multi<INetworkLayer>>())
 			{
 				CPSLOG_ERROR << "Transport and Network layer missing. IDC needs one.";
 				return true;
@@ -45,8 +45,8 @@ IDC::sendPacket(const std::string& id, const Packet& packet, bool ack)
 
 	if (!transport)
 	{
-		auto network = get<INetworkLayer>();
-		if (!network)
+		auto networks = get<Multi<INetworkLayer>>();
+		if (networks.empty())
 		{
 			CPSLOG_ERROR << "Transport and Network layer missing. IDC needs one.";
 			return false;
@@ -56,8 +56,19 @@ IDC::sendPacket(const std::string& id, const Packet& packet, bool ack)
 		{
 			CPSLOG_WARN << "Acknowledgment cannot be requested because TransportLayer is missing";
 		}
+		bool success = false;
+		for (const auto& net: networks)
+		{
+			success |= net->sendPacket(id, packet);
+		}
+		if (!success)
+		{
+			CPSLOG_ERROR << "Failed to send packet through all available network layers. Id " << id
+				<< " not found";
+			return false;
+		}
 
-		return network->sendPacket(id, packet);
+		return true;
 	}
 	return transport->send(id, packet, ack);
 }
@@ -69,14 +80,23 @@ IDC::subscribeOnPacket(const std::string& id, const OnPacket::slot_type& handle)
 
 	if (!transport)
 	{
-		auto network = get<INetworkLayer>();
-		if (!network)
+		auto networks = get<Multi<INetworkLayer>>();
+		if (networks.empty())
 		{
 			CPSLOG_ERROR << "Transport and Network layer missing. IDC needs one.";
-			return boost::signals2::connection();
+			return {};
 		}
+		for (const auto& net: networks)
+		{
+			auto con = net->subscribeOnPacket(id, handle);
+			if (con.connected())
+			{
+				return con;
+			}
+		}
+		CPSLOG_ERROR << "Failed to subscribe on packet for id " << id << ". Not found in any network layer.";
 
-		return network->subscribeOnPacket(id, handle);
+		return {};
 	}
 	return transport->subscribeOnPacket(id, handle);
 }
@@ -88,8 +108,8 @@ IDC::createSender(const std::string& id)
 	if (!self)
 	{
 		CPSLOG_ERROR << "Something went terribly wrong";
-		return IDCSender();
+		return {};
 	}
 
-	return IDCSender(self, id);
+	return {self, id};
 }

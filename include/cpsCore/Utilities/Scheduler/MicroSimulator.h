@@ -11,11 +11,13 @@
 #include <condition_variable>
 #include <functional>
 #include <map>
+#include <mutex>
 
 #include <boost/thread.hpp>
 
 #include "cpsCore/Aggregation/AggregatableObject.hpp"
 #include "cpsCore/Configuration/ConfigurableObject.hpp"
+#include "cpsCore/Synchronization/IRunnableObject.h"
 #include "cpsCore/Utilities/Scheduler/IScheduler.h"
 #include "cpsCore/Utilities/Scheduler/MicroSimulatorParams.h"
 #include "cpsCore/Utilities/Time.hpp"
@@ -23,87 +25,95 @@
 #include "cpsCore/Utilities/LockTypes.hpp"
 
 class MicroSimulator
-		: public IScheduler,
-		  public ITimeProvider,
-		  public AggregatableObject<>,
-		  public ConfigurableObject<MicroSimulatorParams>
+    : public IScheduler,
+      public ITimeProvider,
+      public IRunnableObject,
+      public AggregatableObject<>,
+      public ConfigurableObject<MicroSimulatorParams>
 {
 public:
+    static constexpr TypeId typeId = "micro_sim";
 
-	static constexpr TypeId typeId = "micro_sim";
+    MicroSimulator();
+    bool
+    run(RunStage stage) override;
 
-	MicroSimulator();
+    ~MicroSimulator() override;
 
-	~MicroSimulator() override;
+    Event
+    schedule(const std::function<void
+                 ()>& task, Duration initialFromNow, const std::string& eventName = "") override;
 
-	Event
-	schedule(const std::function<void
-			()>& task, Duration initialFromNow, const std::string& eventName = "") override;
+    Event
+    schedule(const std::function<void
+                 ()>& task, Duration initialFromNow, Duration period, const std::string& eventName = "") override;
 
-	Event
-	schedule(const std::function<void
-			()>& task, Duration initialFromNow, Duration period, const std::string& eventName = "") override;
+    void
+    stop() override;
 
-	void
-	stop() override;
+    void
+    setMainThread() override;
 
-	void
-	setMainThread() override;
+    void
+    startSchedule() override;
 
-	void
-	startSchedule() override;
+    TimePoint
+    now() override;
 
-	TimePoint
-	now() override;
+    Duration
+    timeSinceStart() override;
 
-	Duration
-	timeSinceStart() override;
+    bool
+    waitFor(Duration duration, std::condition_variable& interrupt,
+            std::unique_lock<std::mutex>& lock) override;
 
-	bool
-	waitFor(Duration duration, std::condition_variable& interrupt,
-			std::unique_lock<std::mutex>& lock) override;
+    bool
+    waitUntil(TimePoint timePoint, std::condition_variable& interrupt,
+              std::unique_lock<std::mutex>& lock) override;
 
-	bool
-	waitUntil(TimePoint timePoint, std::condition_variable& interrupt,
-			  std::unique_lock<std::mutex>& lock) override;
+    int
+    simulate(Duration duration);
 
-	int
-	simulate(Duration duration);
+    int
+    simulate();
 
-	int
-	simulate();
+    void
+    stopOnWait();
 
-	void
-	stopOnWait();
+    void
+    releaseWait();
 
-	void
-	releaseWait();
+    void
+    clearSchedule();
 
-	void
-	clearSchedule();
+    bool
+    isStopped();
 
-	bool
-	isStopped();
+    std::mutex&
+    getSimMutex();
 
+    void
+    setRealTimeFactor(float factor);
 
 private:
+    void
+    logProgress(const TimePoint end, const Duration duration);
 
-	void
-	logProgress(const TimePoint end, const Duration duration);
+    void
+    drawProgressBar(float progress);
 
-	void
-	drawProgressBar(float progress);
+    std::multimap<TimePoint, std::shared_ptr<EventBody>> events_;
 
-	std::multimap<TimePoint, std::shared_ptr<EventBody> > events_;
+    TimePoint now_;
+    int runs_;
+    bool stopOnWait_;
+    std::mutex simMutex_;
+    float realTimeFactor_;
 
-	TimePoint now_;
-	int runs_;
-	bool stopOnWait_;
-
-	Mutex waitCondMutex_;
-	std::condition_variable* waitCondition_;
-	bool waitReleased_;
-	bool stopped_;
+    Mutex waitCondMutex_;
+    std::condition_variable* waitCondition_;
+    bool waitReleased_;
+    bool stopped_;
 };
 
 #endif /* UAVAP_CORE_SCHEDULER_MICROSIMULATOR_H_ */

@@ -11,6 +11,21 @@
 #include "cpsCore/Utilities/Scheduler/Event.h"
 #include "cpsCore/Utilities/Time.hpp"
 #include <functional>
+#include <optional>
+
+struct SchedulingArgs
+{
+	std::function<void()> callback;
+	Duration offset;
+	std::optional<Duration> period;
+	std::optional<Duration> deadline;
+	std::optional<Duration> wcet;  // Provide an (estimate) of the wcet, which may be used for scheduling decisions
+
+	// Define dependencies as function handles that are translated into strings as "IClass::functionName"
+	std::vector<std::string> depends;
+	std::vector<std::string> provides;
+
+};
 
 class IScheduler
 {

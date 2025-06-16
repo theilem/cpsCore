@@ -18,14 +18,14 @@ TEST_CASE("Single Type Static Factory")
 	TestFactory factory;
 
 	Configuration simConfig;
-	simConfig.add_child("micro_sim", Configuration());
+	simConfig["micro_sim"] = Configuration();
 
 	CHECK(factory.typeId == IScheduler::typeId);
 	CHECK(TestFactory::typeId == IScheduler::typeId);
 
 	CHECK(is_static_factory<TestFactory>::value);
 
-	auto microSim1 = factory.create("micro_sim");
+	auto microSim1 = factory.createType("micro_sim");
 
 	REQUIRE(microSim1);
 	CHECK(std::dynamic_pointer_cast<MicroSimulator>(microSim1));
@@ -38,7 +38,7 @@ TEST_CASE("Single Type Static Factory")
 	CHECK(!std::dynamic_pointer_cast<MultiThreadingScheduler>(microSim2));
 
 	CPSLogger::LogLevelScope log(LogLevel::NONE);
-	CHECK(!factory.create("micro_sim_does_not_exist"));
+	CHECK(!factory.createType("micro_sim_does_not_exist"));
 }
 
 SCENARIO("Static Factory in Helper without multi")
@@ -52,10 +52,10 @@ SCENARIO("Static Factory in Helper without multi")
 		{
 
 			Configuration simConfig;
-			simConfig.add_child("micro_sim", Configuration());
+			simConfig["micro_sim"] = Configuration();
 
 			Configuration config;
-			config.add_child("scheduler", simConfig);
+			config["scheduler"] = simConfig;
 
 			auto agg = TestHelper::createAggregation(config);
 
@@ -72,48 +72,24 @@ SCENARIO("Static Factory in Helper without multi")
 		{
 
 			Configuration simConfig;
-			simConfig.add_child("micro_sim", Configuration());
-			simConfig.add_child("thread", Configuration());
+			simConfig["micro_sim"] = Configuration();
+			simConfig["thread"] = Configuration();
 
 			Configuration config;
-			config.add_child("scheduler", simConfig);
+			config["scheduler"] = simConfig;
 
 			CPSLogger::LogLevelScope log(LogLevel::NONE);
 			auto agg = TestHelper::createAggregation(config);
 
-			THEN("Only micro_sim in aggregation")
+			THEN("None in aggregation")
 			{
-				CHECK(agg.getOne<IScheduler>());
-				CHECK(agg.getOne<MicroSimulator>());
-				CHECK(agg.getOne<ITimeProvider>());
-				CHECK(!agg.getOne<MultiThreadingScheduler>());
-				CHECK(agg.getAll<IScheduler>().size() == 1);
-			}
-		}
-
-		WHEN("thread and micro_sim in config")
-		{
-
-			Configuration simConfig;
-			simConfig.add_child("thread", Configuration());
-			simConfig.add_child("micro_sim", Configuration());
-
-			Configuration config;
-			config.add_child("scheduler", simConfig);
-
-			CPSLogger::LogLevelScope log(LogLevel::NONE);
-			auto agg = TestHelper::createAggregation(config);
-
-			THEN("Only thread in aggregation")
-			{
-				CHECK(agg.getOne<IScheduler>());
+				CHECK(!agg.getOne<IScheduler>());
 				CHECK(!agg.getOne<MicroSimulator>());
 				CHECK(!agg.getOne<ITimeProvider>());
-				CHECK(agg.getOne<MultiThreadingScheduler>());
-				CHECK(agg.getAll<IScheduler>().size() == 1);
+				CHECK(!agg.getOne<MultiThreadingScheduler>());
+				CHECK(agg.getAll<IScheduler>().size() == 0);
 			}
 		}
-
 	}
 }
 
@@ -128,10 +104,10 @@ SCENARIO("Static Factory in Helper with multi")
 		{
 
 			Configuration simConfig;
-			simConfig.add_child("micro_sim", Configuration());
+			simConfig["micro_sim"] = Configuration();
 
 			Configuration config;
-			config.add_child("scheduler", simConfig);
+			config["scheduler"] = simConfig;
 
 			auto agg = TestHelper::createAggregation(config);
 
@@ -146,13 +122,12 @@ SCENARIO("Static Factory in Helper with multi")
 
 		WHEN("micro_sim and thread in config")
 		{
-
 			Configuration simConfig;
-			simConfig.add_child("micro_sim", Configuration());
-			simConfig.add_child("thread", Configuration());
+			simConfig["micro_sim"] = Configuration();
+			simConfig["thread"] = Configuration();
 
 			Configuration config;
-			config.add_child("scheduler", simConfig);
+			config["scheduler"] = simConfig;
 
 			auto agg = TestHelper::createAggregation(config);
 

@@ -1,9 +1,8 @@
 set(CORE_SRCS 	${CORE_SRCS}
-				${CMAKE_CURRENT_SOURCE_DIR}/Helper.cpp
-				${CMAKE_CURRENT_SOURCE_DIR}/PluginManager.cpp
+				${CMAKE_CURRENT_SOURCE_DIR}/PluginHelper.cpp
 				PARENT_SCOPE)
 
-add_library(cps_framework_api	SHARED api/FrameworkAPI.cpp)
+add_library(cps_framework_api	 api/FrameworkAPI.cpp)
 target_link_libraries(cps_framework_api cps_core)
 					
 									

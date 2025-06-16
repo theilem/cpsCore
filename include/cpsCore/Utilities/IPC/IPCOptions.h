@@ -8,9 +8,6 @@
 #ifndef UAVAP_CORE_IPC_IPCOPTIONS_H_
 #define UAVAP_CORE_IPC_IPCOPTIONS_H_
 
-#include <functional>
-
-class Subscription;
 
 struct IPCOptions
 {

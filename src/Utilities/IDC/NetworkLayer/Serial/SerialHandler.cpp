@@ -43,7 +43,7 @@ SerialHandler::subscribeOnPackets(const OnPacket::slot_type& slot)
     if (direction_ == SerialDirection::SEND)
     {
         CPSLOG_ERROR << "Handler only configured to send. Will not receive.";
-        return boost::signals2::connection();
+        return {};
     }
     return onPacket_.connect(slot);
 }
@@ -61,7 +61,7 @@ SerialHandler::sendPacket(const Packet& packet)
 
     if (useCRC_)
     {
-        NetworkHeader header;
+        NetworkHeader header{};
         header.crc = packet.getCRC16();
         message.insert(0, dp::serialize(header).getBuffer());
         CPSLOG_TRACE << "Send Header CRC: " << header.crc;
@@ -71,6 +71,7 @@ SerialHandler::sendPacket(const Packet& packet)
     stats_.dataSent() += message.size();
     stats_.packetsSent()++;
 
+    std::unique_lock lock(sendingMutex_);
     std::ostream os(&outBuffer_);
     os << message;
 
@@ -91,7 +92,7 @@ SerialHandler::startHandler()
     {
         io_.run();
         if (!handlerCanceled_.load())
-            io_.reset();
+            io_.restart();
     }
     CPSLOG_DEBUG << "Serial handler canceled" << std::endl;
 }

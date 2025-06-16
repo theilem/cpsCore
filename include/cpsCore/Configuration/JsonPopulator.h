@@ -8,526 +8,221 @@
 #ifndef UAVAP_CORE_PROPERTYMAPPER_JSONPOPULATOR_H_
 #define UAVAP_CORE_PROPERTYMAPPER_JSONPOPULATOR_H_
 
+#include <fstream>
+#include <type_traits>
+
 #include "cpsCore/Configuration/ConfigurableObject.hpp"
 #include "cpsCore/Framework/StaticFactory.h"
 #include "cpsCore/Framework/StaticHelper.h"
-#include <fstream>
+#include "uavAP/FlightControl/Controller/PIDController/PIDHandling.h"
+
 
 class JsonPopulator
 {
 public:
+    JsonPopulator() = default;
 
-	JsonPopulator();
+    ~JsonPopulator() = default;
 
-	explicit JsonPopulator(std::ofstream& file);
+    template <typename Type>
+    JsonPopulator&
+    operator&(const Parameter<Type>& param)
+    {
+        if constexpr (is_parameter_set<Type>::value || is_parameter_set_ref<Type>::value)
+        {
+            JsonPopulator pop;
+            const_cast<Type&>(param.value).configure(pop);
+            json_[param.id] = pop.json_;
+        }
+        else
+        {
+            writeValue(param.id, param.value);
+        }
+        return *this;
+    }
 
-	~JsonPopulator();
+    template <typename Type>
+    JsonPopulator&
+    operator&(const ParameterRef<Type>& param)
+    {
+        if constexpr (is_configurable_object<Type>::value)
+        {
+            JsonPopulator pop;
+            const_cast<Type&>(param.value).parse(pop);
+            if constexpr (has_configure_params<Type>::value)
+            {
+                const_cast<Type&>(param.value).configureParams(pop);
+            }
+            json_[param.id] = pop.json_;
+        }
+        else
+        {
+            writeValue(param.id, param.value);
+        }
+        return *this;
+    }
 
-	template<typename Type>
-	std::enable_if_t<
-			!is_parameter_set<typename Type::ValueType>::value
-			&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>&
-	operator&(Type& param);
+    template <typename Type>
+    void
+    writeValue(const std::string& id, const Type& value)
+    {
+        auto& writeTo = id.empty() ? json_ : json_[id];
+        if constexpr (is_parameter_set<Type>::value || is_parameter_set_ref<Type>::value)
+        {
+            JsonPopulator pop;
+            const_cast<Type&>(value).configure(pop);
+            if (pop.json_.empty())
+                writeTo = json::object();
+            else
+                writeTo = pop.json_;
+        }
+        else if constexpr (std::is_enum_v<Type>)
+            writeTo = EnumMap<Type>::convert(value);
+        else if constexpr (is_angle<Type>::value)
+            writeTo = value.degrees();
+        else if constexpr (is_vector<Type>::value)
+        {
+            Configuration config;
+            for (const auto& v : value)
+            {
+                JsonPopulator pop;
+                pop.writeValue("", v);
+                config.push_back(pop.getConfig());
+            }
+            writeTo = config;
+        }
+        else if constexpr (is_string_key_map<Type>::value)
+        {
+            Configuration config;
+            for (const auto& [key, value] : value)
+            {
+                JsonPopulator pop;
+                pop.writeValue("", value);
+                config["key"] = pop.getConfig();
+            }
+            writeTo = config;
+        }
+        else if constexpr (is_eigen_vector<Type>::value)
+        {
+            std::vector<typename Type::Scalar> vec(value.data(), value.data() + value.size());
+            JsonPopulator pop;
+            pop.writeValue("", vec);
+            writeTo = pop.getConfig();
+        }
+        else if constexpr (is_optional<Type>::value)
+        {
+            if (value)
+            {
+                JsonPopulator pop;
+                pop.writeValue("", *value);
+                writeTo = pop.getConfig();
+            }
+            else
+            {
+                writeTo = nullptr;
+            }
+        }
+        else
+        {
+            writeTo = value;
+        }
+    }
 
-	template<typename Type>
-	std::enable_if_t<(is_parameter_set<typename Type::ValueType>::value), JsonPopulator>&
-	operator&(Type& param);
+    template <typename Type,
+              std::enable_if_t<is_parameter_set<Type>::value, int>  = 0>
+    JsonPopulator&
+    operator&(const Type& param)
+    {
+        const_cast<Type&>(param).configure(*this);
+        return *this;
+    }
 
-	template<typename Type>
-	std::enable_if_t<(is_configurable_object<typename Type::ValueType>::value), JsonPopulator>&
-	operator&(Type& param);
+    std::string
+    getString() const;
 
-	std::string
-	getString() const;
+    void
+    toFile(const std::string& path) const;
 
-	void
-	addTabs();
+    Configuration
+    getConfig() const
+    {
+        return json_;
+    }
 
-	void
-	indent();
+    template <class... Objects>
+    static JsonPopulator
+    populate()
+    {
+        JsonPopulator pop;
+        (pop.populateOne<Objects>(), ...);
+        return pop;
+    }
 
-	void
-	outdent();
+    template <typename Object>
+    void
+    populateOne()
+    {
+        if constexpr (is_configurable_object<Object>::value)
+        {
+            JsonPopulator pop;
+            Object obj;
+            obj.parse(pop);
+            if constexpr (has_configure_params<Object>::value)
+            {
+                obj.configureParams(pop);
+            }
+            json_[Object::typeId] = pop.getConfig();
+        }
+        else if constexpr (is_static_factory<Object>::value)
+        {
+            auto pop = populateContainer<Object>();
+            json_[Object::typeId] = pop.getConfig();
+        }
+        else if constexpr (is_static_helper<Object>::value)
+        {
+            auto pop = populateContainer<Object>();
+            json_.merge_patch(pop.getConfig());
+        }
+        else if constexpr (is_parameter_set<Object>::value)
+        {
+            JsonPopulator pop;
+            Object obj;
+            obj.configure(pop);
+            json_ = pop.getConfig();
+        }
+        else
+        {
+            // Not a configuratble object, but it can still be created.
+            json_[Object::typeId] = Configuration::object();
+        }
+    }
 
-	template<typename Type>
-	JsonPopulator&
-	operator<<(const Type& text);
+    template <typename Container>
+    struct populate_from_container
+    {
+        template <typename... Args>
+        static JsonPopulator
+        populateHelper(std::tuple<Args...>)
+        {
+            return JsonPopulator::populate<Args...>();
+        }
 
-	template<class ... Objects>
-	void
-	populate();
+        static JsonPopulator
+        doPopulate()
+        {
+            return populateHelper(typename Container::Types{});
+        }
+    };
 
-	template<template<class...Args> class Container, class ... Objects>
-	inline void
-	populateContainer(const Container<Objects...>& container);
-
-	template<class Container>
-	static int
-	fromMain(int argc, char** argv);
+    template <typename Container>
+    static JsonPopulator
+    populateContainer()
+    {
+        return populate_from_container<Container>::doPopulate();
+    }
 
 private:
-
-
-	template<class Obj, std::enable_if_t<is_configurable_object<Obj>::value, int> = 0>
-	void
-	populateImpl();
-
-	template<class Obj, std::enable_if_t<is_static_factory<Obj>::value, int> = 0>
-	void
-	populateImpl();
-
-	template<class Obj, std::enable_if_t<is_static_helper<Obj>::value, int> = 0>
-	void
-	populateImpl();
-
-	template<class Obj, std::enable_if_t<
-			!is_configurable_object<Obj>::value && !is_static_factory<Obj>::value &&
-			!is_static_helper<Obj>::value, int> = 0>
-	void
-	populateImpl();
-
-
-	template<class Obj, std::enable_if_t<
-			has_configure_params<Obj>::value, int> = 0>
-	void
-	handleParams();
-
-
-	template<class Obj, std::enable_if_t<
-			!has_configure_params<Obj>::value, int> = 0>
-	void
-	handleParams();
-
-
-	template<class Obj>
-	bool
-	populateImplBoolRet();
-
-
-	template<typename Type>
-	std::enable_if_t<is_string<Type>::value, JsonPopulator>&
-	writeValue(const Type& value);
-
-	template<typename Type>
-	std::enable_if_t<std::is_enum<Type>::value, JsonPopulator>&
-	writeValue(const Type& value);
-
-	template<typename Type>
-	std::enable_if_t<is_angle<Type>::value, JsonPopulator>&
-		writeValue(const Type& value);
-
-	template<typename Type>
-	std::enable_if_t<is_vector<Type>::value, JsonPopulator>&
-		writeValue(const Type& value);
-
-	template<typename Type>
-	std::enable_if_t<is_enum_map<Type>::value, JsonPopulator>&
-	writeValue(const Type& value);
-
-	template<typename Type>
-	std::enable_if_t<is_string_key_map<Type>::value, JsonPopulator>&
-	writeValue(const Type& value);
-
-	template<typename Type>
-	std::enable_if_t<is_optional<Type>::value, JsonPopulator>&
-	writeValue(const Type& value);
-
-	template<typename Type>
-	std::enable_if_t<is_eigen<Type>::value, JsonPopulator>&
-	writeValue(const Type& value);
-
-	template<typename Type>
-	std::enable_if_t<is_parameter_set<Type>::value, JsonPopulator>&
-	writeValue(const Type& value);
-
-	template<typename Type>
-	std::enable_if_t<
-			!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value &&
-			!is_vector<Type>::value && !is_parameter_set<Type>::value && !is_string_key_map<Type>::value &&
-			!is_optional<Type>::value && !is_eigen<Type>::value && !is_enum_map<Type>::value,
-			JsonPopulator>&
-	writeValue(const Type& value);
-
-	std::stringstream stringStream_;
-	std::ostream jsonString_;
-
-	bool firstElement_ = true;
-	int tabCounter_ = 0;
+    json json_;
 };
-
-template<typename Type>
-inline std::enable_if_t<
-		!is_parameter_set<typename Type::ValueType>::value
-		&& !is_configurable_object<typename Type::ValueType>::value, JsonPopulator>&
-JsonPopulator::operator&(Type& param)
-{
-	if (!firstElement_)
-	{
-		jsonString_ << "," << std::endl;
-	}
-	addTabs();
-
-	firstElement_ = false;
-	jsonString_ << "\"" << param.id << "\": ";
-	this->template writeValue<typename Type::ValueType>(param.value);
-
-	return *this;
-}
-
-template<typename Type>
-inline std::enable_if_t<(is_parameter_set<typename Type::ValueType>::value), JsonPopulator>&
-JsonPopulator::operator&(Type& param)
-{
-	if (!firstElement_)
-	{
-		jsonString_ << "," << std::endl;
-	}
-	addTabs();
-
-	jsonString_ << "\"" << param.id << "\": {" << std::endl;
-
-	firstElement_ = true;
-	tabCounter_++;
-	param.value.configure(*this);
-	firstElement_ = false;
-	tabCounter_--;
-
-	jsonString_ << std::endl;
-	addTabs();
-	jsonString_ << "}";
-	return *this;
-}
-
-template<typename Type>
-inline std::enable_if_t<(is_configurable_object<typename Type::ValueType>::value),
-		JsonPopulator>&
-JsonPopulator::operator&(Type& param)
-{
-	if (!firstElement_)
-	{
-		jsonString_ << "," << std::endl;
-	}
-	addTabs();
-
-	jsonString_ << "\"" << param.id << "\": {" << std::endl;
-
-	firstElement_ = true;
-	tabCounter_++;
-	handleParams<typename Type::ValueType>();
-//	param.value.configureParams(*this);
-	firstElement_ = false;
-	tabCounter_--;
-
-	jsonString_ << std::endl;
-	addTabs();
-	jsonString_ << "}";
-	return *this;
-}
-
-template<typename Type>
-inline std::enable_if_t<is_string<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	jsonString_ << "\"" << value << "\"";
-	return *this;
-}
-
-template<typename Type>
-inline std::enable_if_t<std::is_enum<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	jsonString_ << "\"" << EnumMap<Type>::convert(value) << "\"";
-	return *this;
-}
-
-template<typename Type>
-inline std::enable_if_t<is_angle<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	jsonString_ << value.degrees();
-	return *this;
-}
-
-template<typename Type>
-inline std::enable_if_t<is_eigen<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	std::vector<typename Type::value_type> vec(value.data(), value.data() + value.rows() * value.cols());
-	return writeValue(vec);
-}
-
-template<typename Type>
-inline std::enable_if_t<is_vector<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	jsonString_ << "[" << std::endl;
-	indent();
-	firstElement_ = true;
-	for (const auto& it : value)
-	{
-		if (!firstElement_)
-			jsonString_ << "," << std::endl;
-		addTabs();
-		writeValue(it);
-		firstElement_ = false;
-	}
-	firstElement_ = false;
-
-	outdent();
-	jsonString_ << std::endl;
-	addTabs();
-	jsonString_ << "]";
-	return *this;
-}
-
-template <typename Type>
-std::enable_if_t<is_enum_map<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	jsonString_ << "{" << std::endl;
-	indent();
-	firstElement_ = true;
-	for (const auto& it : value)
-	{
-		if (!firstElement_)
-			jsonString_ << "," << std::endl;
-		addTabs();
-		writeValue(it.first);
-		jsonString_ << ": ";
-		writeValue(it.second);
-		firstElement_ = false;
-	}
-
-	outdent();
-	jsonString_ << std::endl;
-	addTabs();
-	jsonString_ << "}";
-	return *this;
-}
-
-
-template<typename Type>
-std::enable_if_t<is_string_key_map<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	jsonString_ << "{" << std::endl;
-	indent();
-	firstElement_ = true;
-	for (const auto& it : value)
-	{
-		if (!firstElement_)
-			jsonString_ << "," << std::endl;
-		addTabs();
-		jsonString_ << "\"" << it.first << "\": ";
-		writeValue(it.second);
-		firstElement_ = false;
-	}
-
-	outdent();
-	jsonString_ << std::endl;
-	addTabs();
-	jsonString_ << "}";
-	return *this;
-}
-
-template<typename Type>
-std::enable_if_t<is_optional<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	if (value)
-		writeValue<typename Type::value_type>(*value);
-	else
-		writeValue<typename Type::value_type>({});
-	return *this;
-}
-
-template<typename Type>
-inline std::enable_if_t<is_parameter_set<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	if (!firstElement_)
-	{
-		jsonString_ << "," << std::endl;
-	}
-
-	jsonString_ << "{" << std::endl;
-
-	firstElement_ = true;
-	tabCounter_++;
-	const_cast<Type&>(value).configure(*this);
-	firstElement_ = false;
-	tabCounter_--;
-
-	jsonString_ << std::endl;
-	addTabs();
-	jsonString_ << "}";
-	return *this;
-}
-
-template<typename Type>
-inline std::enable_if_t<
-		!std::is_enum<Type>::value && !is_string<Type>::value && !is_angle<Type>::value &&
-		!is_vector<Type>::value && !is_parameter_set<Type>::value && !is_string_key_map<Type>::value &&
-		!is_optional<Type>::value && !is_eigen<Type>::value && !is_enum_map<Type>::value, JsonPopulator>&
-JsonPopulator::writeValue(const Type& value)
-{
-	if constexpr (std::is_same_v<Type, bool>)
-		jsonString_ << (value ? "true" : "false");
-	else
-		jsonString_ << value;
-	return *this;
-}
-
-template<typename Type>
-inline JsonPopulator&
-JsonPopulator::operator<<(const Type& value)
-{
-	writeValue(value);
-	return *this;
-}
-
-template<class ... Objects>
-inline void
-JsonPopulator::populate()
-{
-	(populateImpl<Objects>(), ...);
-}
-
-template<template<class...Args> class Container, class ... Objects>
-inline void
-JsonPopulator::populateContainer(const Container<Objects...>&)
-{
-	(populateImpl<Objects>(), ...);
-}
-
-template<class Obj, std::enable_if_t<is_configurable_object<Obj>::value, int>>
-inline void
-JsonPopulator::populateImpl()
-{
-	//Is configurable Object
-	if (!firstElement_)
-	{
-		jsonString_ << "," << std::endl;
-	}
-	addTabs();
-	jsonString_ << "\"" << Obj::typeId << "\"" << ": {" << std::endl;
-//	addTabs();
-	indent();
-	firstElement_ = true;
-
-	handleParams<Obj>();
-
-	outdent();
-	firstElement_ = false;
-
-	jsonString_ << std::endl;
-	addTabs();
-	jsonString_ << "}";
-}
-
-
-template<class Obj, std::enable_if_t<is_static_factory<Obj>::value, int>>
-inline void
-JsonPopulator::populateImpl()
-{
-	//Is configurable Object
-	if (!firstElement_)
-	{
-		jsonString_ << "," << std::endl;
-	}
-	addTabs();
-	jsonString_ << "\"" << Obj::typeId << "\"" << ": {" << std::endl;
-	indent();
-	firstElement_ = true;
-	populateContainer(typename Obj::SpecificObjects());
-	outdent();
-	firstElement_ = false;
-
-	jsonString_ << std::endl;
-	addTabs();
-	jsonString_ << "}";
-}
-
-
-template<class Obj, std::enable_if_t<is_static_helper<Obj>::value, int>>
-inline void
-JsonPopulator::populateImpl()
-{
-	//Is configurable Object
-	if (!firstElement_)
-	{
-		jsonString_ << "," << std::endl;
-	}
-	populateContainer(Obj());
-}
-
-
-template<class Obj, std::enable_if_t<
-		!is_configurable_object<Obj>::value && !is_static_factory<Obj>::value && !is_static_helper<Obj>::value, int>>
-inline void
-JsonPopulator::populateImpl()
-{
-	//Is not configurable, just add type
-	if (!firstElement_)
-	{
-		jsonString_ << "," << std::endl;
-	}
-	addTabs();
-	firstElement_ = false;
-	jsonString_ << "\"" << Obj::typeId << "\"" << ": {" << std::endl;
-	addTabs();
-	jsonString_ << "}";
-}
-
-
-template<class Obj>
-inline bool
-JsonPopulator::populateImplBoolRet()
-{
-	populateImpl<Obj>();
-	return true;
-}
-
-
-template<class Container>
-int
-JsonPopulator::fromMain(int argc, char** argv)
-{
-	std::string filename = "a.json";
-	if (argc >= 2)
-	{
-		filename = argv[1];
-	}
-
-	std::ofstream file;
-
-	file.open(filename, std::ofstream::out);
-
-	JsonPopulator pop(file);
-
-	pop.populateContainer(Container());
-
-	return 0;
-}
-
-
-template<class Obj, std::enable_if_t<
-		has_configure_params<Obj>::value, int>>
-void
-JsonPopulator::handleParams()
-{
-	Obj obj;
-	obj.configureParams(*this);
-}
-
-
-template<class Obj, std::enable_if_t<
-		!has_configure_params<Obj>::value, int>>
-void
-JsonPopulator::handleParams()
-{
-	Obj::configureParamsStatic(*this);
-}
-
 
 #endif /* UAVAP_CORE_PROPERTYMAPPER_JSONPOPULATOR_H_ */

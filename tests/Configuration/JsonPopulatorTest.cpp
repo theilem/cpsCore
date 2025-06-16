@@ -15,163 +15,224 @@
 
 namespace
 {
-struct ParamsNested
-{
-	Parameter<float> p1 =
-			{2.5, "p1", true};
-	Parameter<std::string> p2 =
-			{"test", "p2", false};
-	Parameter<uint64_t> p3 =
-			{100, "p3", true};
+    struct ParamsNested
+    {
+        Parameter<float> p1 =
+            {2.5, "p1", true};
+        Parameter<std::string> p2 =
+            {"test", "p2", false};
+        Parameter<uint64_t> p3 =
+            {100, "p3", true};
 
-	template<class Configurator>
-	inline void
-	configure(Configurator& c)
-	{
-		c & p1;
-		c & p2;
-		c & p3;
-	}
-};
+        template <class Configurator>
+        void
+        configure(Configurator& c)
+        {
+            c & p1;
+            c & p2;
+            c & p3;
+        }
+    };
 
-struct Params
-{
-	Parameter<float> p1 =
-			{1.0, "p1", true};
-	Parameter<std::vector<int>> p2 =
-			{{7,8,9}, "p2", true};
-	Parameter<ParamsNested> p3 =
-			{
-					{}, "p3", false};
+    struct Params
+    {
+        Parameter<float> p1 =
+            {1.0, "p1", true};
+        Parameter<std::vector<int>> p2 =
+            {{7, 8, 9}, "p2", true};
+        Parameter<ParamsNested> p3 =
+        {
+            {}, "p3", false
+        };
 
-	template<class Configurator>
-	inline void
-	configure(Configurator& c)
-	{
-		c & p1;
-		c & p2;
-		c & p3;
-	}
-};
+        template <class Configurator>
+        inline void
+        configure(Configurator& c)
+        {
+            c & p1;
+            c & p2;
+            c & p3;
+        }
+    };
 
-class Test : public ConfigurableObject<Params>
-{
-public:
+    class Test : public ConfigurableObject<Params>
+    {
+    public:
+        static constexpr const char* const typeId = "test";
+    };
 
-	static constexpr const char* const typeId = "test";
+    class Test2 : public ConfigurableObject<Params>
+    {
+    public:
+        static constexpr const char* const typeId = "test2";
 
-};
+        bool
+        configure(const Configuration& config)
+        {
+            PropertyMapper pm(config);
 
-class Test2 : public ConfigurableObject<Params>
-{
-public:
-	static constexpr const char* const typeId = "test2";
+            configureParams(pm);
 
-	bool
-	configure(const Configuration& config)
-	{
-		PropertyMapper<Configuration> pm(config);
+            return pm.map();
+        }
 
-		configureParams(pm);
+        template <typename Config>
+        void
+        configureParams(Config& c)
+        {
+            params.configure(c);
 
-		return pm.map();
-	}
+            ParameterRef<Test> ref(test,
+                                   {}, "sub_test", true);
+            c & ref;
+        }
 
-	template<typename Config>
-	void
-	configureParams(Config& c)
-	{
-		params.configure(c);
+    private:
+        Test test;
+    };
 
-		ParameterRef<Test> ref(test,
-							   {}, "sub_test", true);
-		c & ref;
+    using TestHelper = StaticHelper<Test, Test2>;
 
-	}
 
-private:
+    struct AngleParams
+    {
+        Parameter<Angle<FloatingType>> angle = {Angle<FloatingType>(45.0), "angle", true};
 
-	Test test;
+        template <class Configurator>
+        void
+        configure(Configurator& c)
+        {
+            c & angle;
+        }
+    };
 
-};
-
+    class AngleTest : public ConfigurableObject<AngleParams>
+    {
+    public:
+        static constexpr const char* const typeId = "angle_test";
+    };
 }
 
 TEST_CASE("Json Populator Test 1")
 {
-	JsonPopulator pop;
-	pop.populate<Test, Test>();
+    auto pop = JsonPopulator::populate<Test>();
 
-	std::string correct = "{\n"
-						  "\t\"test\": {\n"
-						  "\t\t\"p1\": 1,\n"
-						  "\t\t\"p2\": [\n"
-						  "\t\t\t7,\n"
-						  "\t\t\t8,\n"
-						  "\t\t\t9\n"
-						  "\t\t],\n"
-						  "\t\t\"p3\": {\n"
-						  "\t\t\t\"p1\": 2.5,\n"
-						  "\t\t\t\"p2\": \"test\",\n"
-						  "\t\t\t\"p3\": 100\n"
-						  "\t\t}\n"
-						  "\t},\n"
-						  "\t\"test\": {\n"
-						  "\t\t\"p1\": 1,\n"
-						  "\t\t\"p2\": [\n"
-						  "\t\t\t7,\n"
-						  "\t\t\t8,\n"
-						  "\t\t\t9\n"
-						  "\t\t],\n"
-						  "\t\t\"p3\": {\n"
-						  "\t\t\t\"p1\": 2.5,\n"
-						  "\t\t\t\"p2\": \"test\",\n"
-						  "\t\t\t\"p3\": 100\n"
-						  "\t\t}\n"
-						  "\t}\n"
-						  "}";
+    std::string correct =
+        "{\n"
+        "    \"test\": {\n"
+        "        \"p1\": 1.0,\n"
+        "        \"p2\": [\n"
+        "            7,\n"
+        "            8,\n"
+        "            9\n"
+        "        ],\n"
+        "        \"p3\": {\n"
+        "            \"p1\": 2.5,\n"
+        "            \"p2\": \"test\",\n"
+        "            \"p3\": 100\n"
+        "        }\n"
+        "    }\n"
+        "}";
 
-	CHECK(correct == pop.getString());
+    CHECK(correct == pop.getString());
 }
 
 TEST_CASE("Json Populator Test 2")
 {
-	REQUIRE(has_configure_params<Test2>::value);
-	JsonPopulator pop;
-	pop.populate<Test2>();
+    REQUIRE(has_configure_params<Test2>::value);
+    auto pop = JsonPopulator::populate<Test2>();
 
+    std::string correct =
+        "{\n"
+        "    \"test2\": {\n"
+        "        \"p1\": 1.0,\n"
+        "        \"p2\": [\n"
+        "            7,\n"
+        "            8,\n"
+        "            9\n"
+        "        ],\n"
+        "        \"p3\": {\n"
+        "            \"p1\": 2.5,\n"
+        "            \"p2\": \"test\",\n"
+        "            \"p3\": 100\n"
+        "        },\n"
+        "        \"sub_test\": {\n"
+        "            \"p1\": 1.0,\n"
+        "            \"p2\": [\n"
+        "                7,\n"
+        "                8,\n"
+        "                9\n"
+        "            ],\n"
+        "            \"p3\": {\n"
+        "                \"p1\": 2.5,\n"
+        "                \"p2\": \"test\",\n"
+        "                \"p3\": 100\n"
+        "            }\n"
+        "        }\n"
+        "    }\n"
+        "}";
 
-
-	std::string correct = "{\n"
-						  "\t\"test2\": {\n"
-						  "\t\t\"p1\": 1,\n"
-						  "\t\t\"p2\": [\n"
-						  "\t\t\t7,\n"
-						  "\t\t\t8,\n"
-						  "\t\t\t9\n"
-						  "\t\t],\n"
-						  "\t\t\"p3\": {\n"
-						  "\t\t\t\"p1\": 2.5,\n"
-						  "\t\t\t\"p2\": \"test\",\n"
-						  "\t\t\t\"p3\": 100\n"
-						  "\t\t},\n"
-						  "\t\t\"sub_test\": {\n"
-						  "\t\t\t\"p1\": 1,\n"
-						  "\t\t\t\"p2\": [\n"
-						  "\t\t\t\t7,\n"
-						  "\t\t\t\t8,\n"
-						  "\t\t\t\t9\n"
-						  "\t\t\t],\n"
-						  "\t\t\t\"p3\": {\n"
-						  "\t\t\t\t\"p1\": 2.5,\n"
-						  "\t\t\t\t\"p2\": \"test\",\n"
-						  "\t\t\t\t\"p3\": 100\n"
-						  "\t\t\t}\n"
-						  "\t\t}\n"
-						  "\t}\n"
-						  "}";
-
-	CHECK(correct == pop.getString());
-
+    CHECK(correct == pop.getString());
 }
 
+TEST_CASE("Json Populator Test 3")
+{
+    auto pop = JsonPopulator::populateContainer<TestHelper>();
+
+    std::string correct =
+        "{\n"
+        "    \"test\": {\n"
+        "        \"p1\": 1.0,\n"
+        "        \"p2\": [\n"
+        "            7,\n"
+        "            8,\n"
+        "            9\n"
+        "        ],\n"
+        "        \"p3\": {\n"
+        "            \"p1\": 2.5,\n"
+        "            \"p2\": \"test\",\n"
+        "            \"p3\": 100\n"
+        "        }\n"
+        "    },\n"
+        "    \"test2\": {\n"
+        "        \"p1\": 1.0,\n"
+        "        \"p2\": [\n"
+        "            7,\n"
+        "            8,\n"
+        "            9\n"
+        "        ],\n"
+        "        \"p3\": {\n"
+        "            \"p1\": 2.5,\n"
+        "            \"p2\": \"test\",\n"
+        "            \"p3\": 100\n"
+        "        },\n"
+        "        \"sub_test\": {\n"
+        "            \"p1\": 1.0,\n"
+        "            \"p2\": [\n"
+        "                7,\n"
+        "                8,\n"
+        "                9\n"
+        "            ],\n"
+        "            \"p3\": {\n"
+        "                \"p1\": 2.5,\n"
+        "                \"p2\": \"test\",\n"
+        "                \"p3\": 100\n"
+        "            }\n"
+        "        }\n"
+        "    }\n"
+        "}";
+
+    CHECK(correct == pop.getString());
+}
+
+TEST_CASE("Json Populator Test 4")
+{
+    auto pop = JsonPopulator::populate<AngleTest>();
+    std::string correct =
+        "{\n"
+        "    \"angle_test\": {\n"
+        "        \"angle\": 45.0\n"
+        "    }\n"
+        "}";
+    CHECK(correct == pop.getString());
+}

@@ -9,6 +9,9 @@
 #define UAVAP_CORE_IDC_NETWORKLAYER_SERIAL_SERIALHANDLER_H_
 
 #include <boost/asio.hpp>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/serial_port.hpp>
+
 #include <boost/signals2.hpp>
 #include "cpsCore/Utilities/Packet.h"
 #include "cpsCore/Utilities/IDC/NetworkLayer/Serial/SerialHandlerParams.h"
@@ -50,7 +53,7 @@ private:
     void
     sendStatus(const boost::system::error_code& ec, std::size_t bytes);
 
-    boost::asio::io_service io_;
+    boost::asio::io_context io_;
     boost::asio::serial_port serial_;
 
     char delim_;
@@ -58,6 +61,7 @@ private:
     bool useCRC_;
     SerialDirection direction_;
     bool sendBlocking_;
+    std::mutex sendingMutex_;
 
     std::stringstream packetBuffer_;
 

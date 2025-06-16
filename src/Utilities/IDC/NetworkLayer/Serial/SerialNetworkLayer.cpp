@@ -15,7 +15,7 @@ SerialNetworkLayer::sendPacket(const std::string& id, const Packet& packet)
 	auto it = handler_.find(id);
 	if (it == handler_.end())
 	{
-		CPSLOG_ERROR << "Connection id not specified: " << id;
+		CPSLOG_DEBUG << "Connection id not specified: " << id;
 		return false;
 	}
 
@@ -28,8 +28,8 @@ SerialNetworkLayer::subscribeOnPacket(const std::string& id, const OnPacket::slo
 	auto it = handler_.find(id);
 	if (it == handler_.end())
 	{
-		CPSLOG_ERROR << "Connection id not specified: " << id;
-		return boost::signals2::connection();
+		CPSLOG_DEBUG << "Connection id not specified: " << id;
+		return {};
 	}
 
 	return it->second->subscribeOnPackets(handle);

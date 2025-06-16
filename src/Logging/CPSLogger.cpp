@@ -11,6 +11,11 @@
 
 CPSLogger* CPSLogger::instance_ = nullptr;
 
+CPSLogger::FlushScope::~FlushScope()
+{
+	CPSLogger::instance()->flush();
+}
+
 CPSLogger*
 CPSLogger::instance()
 {
@@ -18,6 +23,15 @@ CPSLogger::instance()
 	if (!instance_)
 		instance_ = new CPSLogger;
 	return instance_;
+}
+
+CPSLogger::~CPSLogger()
+{
+	if (!isFlushed_)
+	{
+		sink_ << std::endl;
+		isFlushed_ = true;
+	}
 }
 
 void
@@ -56,8 +70,7 @@ CPSLogger::log(LogLevel level, const std::string& module)
 	return emptySink_;
 }
 
-CPSLogger::CPSLogger() :
-		setLevel_(LogLevel::WARN), sink_(nullptr), emptySink_(nullptr)
+CPSLogger::CPSLogger() : setLevel_(LogLevel::WARN), sink_(nullptr), emptySink_(nullptr)
 {
 	sink_.rdbuf(std::cout.rdbuf());
 }
@@ -84,6 +97,12 @@ CPSLogger::flush()
 		return;
 	sink_ << std::endl;
 	isFlushed_ = true;
+}
+
+bool
+CPSLogger::isFlushed() const
+{
+	return isFlushed_;
 }
 
 LogLevel

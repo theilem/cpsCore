@@ -26,10 +26,15 @@
 #ifndef UAVAP_CORE_OBJECT_IRUNNABLEOBJECT_H_
 #define UAVAP_CORE_OBJECT_IRUNNABLEOBJECT_H_
 
+#include "cpsCore/Utilities/EnumMap.hpp"
+
 enum class RunStage
 {
 	INIT, NORMAL, FINAL, SYNCHRONIZE
 };
+
+ENUMMAP_INIT(RunStage, {{RunStage::INIT, "init"}, {RunStage::NORMAL, "normal"},
+		{RunStage::FINAL, "final"}, {RunStage::SYNCHRONIZE, "synchronize"}});
 
 class IRunnableObject
 {

@@ -64,54 +64,6 @@ namespace dp
      */
     void
     store(FileToArchive& ar, char* val, unsigned long bytes);
-    //
-    ///**
-    // * @brief General split functionality for loading
-    // * @param ar From archive
-    // * @param val any value to be loaded differently than it is stored
-    // */
-    //template<class Type>
-    //void
-    //split(BinaryFromArchive& ar, Type& val);
-    //
-    ///**
-    // * @brief General split functionality for storing
-    // * @param ar To archive
-    // * @param val any value to be stored differently than it is loaded
-    // */
-    //template<class Type>
-    //void
-    //split(BinaryToArchive& ar, Type& val);
-    //
-    ///**
-    // * @brief General split functionality for loading
-    // * @param ar From archive
-    // * @param val any value to be loaded differently than it is stored
-    // */
-    //template<class Type>
-    //void
-    //split(FileFromArchive& ar, Type& val);
-    //
-    ///**
-    // * @brief General split functionality for storing
-    // * @param ar To archive
-    // * @param val any value to be stored differently than it is loaded
-    // */
-    //template<class Type>
-    //void
-    //split(FileToArchive& ar, Type& val);
-    //
-    //void
-    //split(BinaryFromArchive& ar, char* val, std::size_t size);
-    //
-    //void
-    //split(BinaryToArchive& ar, char* val, std::size_t size);
-    //
-    //void
-    //split(FileFromArchive& ar, char* val, std::size_t size);
-    //
-    //void
-    //split(FileToArchive& ar, char* val, std::size_t size);
 
     template <class Archive>
     void
@@ -309,44 +261,6 @@ namespace dp
     inline void
     serialize(Archive& ar,
               typename std::enable_if<std::is_same<Type, std::string>::value, Type>::type& val);
-    //
-    ///**
-    // * @brief is_optional struct false_type because T is not a boost optional
-    // */
-    //template<typename T>
-    //struct is_optional: public std::false_type
-    //{
-    //};
-    //#ifndef ERIKA
-    ///**
-    // * @brief is_optional struct true_type because T is a boost optional
-    // */
-    //template<typename T>
-    //struct is_optional<boost::optional<T>> : public std::true_type
-    //{
-    //};
-    //#endif
-    //
-    ///**
-    // * @brief Load function for boost optionals
-    // */
-    //template<class Archive, typename Type>
-    //void
-    //load(Archive& ar, typename std::enable_if<is_optional<Type>::value, Type>::type& val);
-    //
-    ///**
-    // * @brief Store function for boost optionals
-    // */
-    //template<class Archive, typename Type>
-    //void
-    //store(Archive& ar, typename std::enable_if<is_optional<Type>::value, Type>::type& val);
-    //
-    ///**
-    // * @brief Serialize function for boost optionals
-    // */
-    //template<class Archive, typename Type>
-    //inline void
-    //serialize(Archive& ar, typename std::enable_if<is_optional<Type>::value, Type>::type& val);
 
 
     template <typename T>
@@ -418,16 +332,6 @@ namespace dp
     /**
      * Eigen Matrix serialization operations
      */
-    //
-    // template <typename T>
-    // struct is_eigen_mat : public std::false_type
-    // {
-    // };
-    //
-    // template <typename T>
-    // struct is_eigen_mat<Eigen::Matrix<T, -1, -1>> : public std::true_type
-    // {
-    // };
 
     template <typename Type>
     struct is_eigen_mat : std::false_type

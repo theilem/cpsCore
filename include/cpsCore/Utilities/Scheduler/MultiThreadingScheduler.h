@@ -30,7 +30,7 @@ public:
     /**
      * @brief
      */
-    MultiThreadingScheduler();
+    MultiThreadingScheduler() = default;
 
     ~MultiThreadingScheduler() override;
 
@@ -77,10 +77,10 @@ private:
     std::condition_variable wakeupCondition_;
     std::mutex eventsMutex_;
 
-    std::atomic_bool started_;
+    std::atomic_bool started_{false};
     TimePoint startingTime_;
 
-    bool mainThread_;
+    bool mainThread_{false};
 
     sched_param schedulingParams_;
 };

@@ -13,7 +13,7 @@ add_library(cps_core ${CORE_SRCS})
 include_directories(${SUBMODULE_DIR}/Catch2/single_include
         ${CMAKE_CURRENT_SOURCE_DIR})
 
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
+if (NO_DEBUG)
     target_compile_definitions(cps_core PRIVATE NODEBUG)
     message("Compiling with NODEBUG")
 else ()

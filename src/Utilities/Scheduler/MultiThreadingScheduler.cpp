@@ -12,9 +12,6 @@
 #include "cpsCore/Utilities/SignalHandler/SignalHandler.h"
 #include <utility>
 
-MultiThreadingScheduler::MultiThreadingScheduler() : started_(false), mainThread_(false)
-{
-}
 
 MultiThreadingScheduler::~MultiThreadingScheduler()
 {
@@ -31,7 +28,7 @@ MultiThreadingScheduler::schedule(const std::function<void()>& task, Duration in
 	auto body = std::make_shared<EventBody>(task, eventName);
 	auto element = createSchedule(initialFromNow, body);
 
-	CPSLOG_TRACE << "Scheduling " << eventName << " at " << element.first.count();
+	CPSLOG_TRACE << "Scheduling " << eventName << " at " << std::chrono::duration_cast<Milliseconds>(element.first).count() << " ms";
 
 	std::unique_lock<std::mutex> lock(eventsMutex_);
 	events_.insert(element);
@@ -123,6 +120,7 @@ MultiThreadingScheduler::run(RunStage stage)
 		{
 			if (!mainThread_)
 			{
+				CPSLOG_TRACE << "Starting Scheduler in new thread";
 				invokerThread_ = std::thread([this]
 				{
 					runSchedule();
@@ -193,8 +191,7 @@ MultiThreadingScheduler::runSchedule()
 		{
 			wakeupCondition_.wait(lock);
 		}
-		CPSLOG_TRACE << "Waking up at " << timeProvider->now().time_since_epoch().count() - startingTime_.
-				time_since_epoch().count();
+		CPSLOG_TRACE << "Waking up at " << std::chrono::duration_cast<Milliseconds>(timeProvider->now() - startingTime_).count() << " ms";
 		while (!events_.empty())
 		{
 			if (startingTime_ + events_.begin()->first > now)

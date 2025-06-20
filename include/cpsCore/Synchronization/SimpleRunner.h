@@ -40,6 +40,9 @@ public:
 	runStage(RunStage stage);
 
 	bool
+	runStages(const std::vector<RunStage>& stages);
+
+	bool
 	runAllStages();
 
 private:

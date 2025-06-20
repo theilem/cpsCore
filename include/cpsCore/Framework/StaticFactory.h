@@ -43,6 +43,7 @@ public:
 		if constexpr(supportsMulti)
 		{
 			ReturnType objects;
+			CPSLOG_TRACE << "Adding potentially multiple: ";
 			for (const auto& [key, value] : config.items())
 			{
 				if (auto specific = createSpecific<Objects...>(key, value))
@@ -107,9 +108,13 @@ private:
 	{
 		if (type.compare(Object::typeId) == 0)
 		{
+			CPSLOG_TRACE << "Creating object of type " << type;
 			auto object = std::make_shared<Object>();
 			if constexpr (is_configurable_object<Object>::value)
+			{
+				CPSLOG_TRACE << "Configuring object of type " << type;
 				object->configure(config);
+			}
 			return object;
 		}
 		CPSLOG_ERROR << "Type " << type << " of " << typeId << " not found";
@@ -122,9 +127,13 @@ private:
 	{
 		if (type.compare(Object::typeId) == 0)
 		{
+			CPSLOG_TRACE << "Creating object of type " << type;
 			auto object = std::make_shared<Object>();
 			if constexpr (is_configurable_object<Object>::value)
+			{
+				CPSLOG_TRACE << "Configuring object of type " << type;
 				object->configure(config);
+			}
 			return object;
 		}
 		return createSpecific<Second, Others...>(type, config);

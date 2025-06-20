@@ -17,7 +17,7 @@
 class ArchiveError : public std::range_error
 {
 public:
-	ArchiveError(const std::string& what) :
+	explicit ArchiveError(const std::string& what) :
 			std::range_error(what)
 	{
 	}
@@ -35,7 +35,7 @@ public:
 	 * @brief Contructor wrapping around a string
 	 * @param str String to be read from
 	 */
-	BinaryFromArchive(const std::string& str, const ArchiveOptions& opts = ArchiveOptions());
+	explicit BinaryFromArchive(const std::string& str, const ArchiveOptions& opts = ArchiveOptions());
 
 	void
 	setOptions(const ArchiveOptions& opts);

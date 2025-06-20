@@ -26,6 +26,8 @@
 #include "cpsCore/Aggregation/Aggregator.h"
 #include "cpsCore/Synchronization/SimpleRunner.h"
 
+#include "cpsCore/Utilities/EnumMap.hpp"
+
 SimpleRunner::SimpleRunner(Aggregator& agg) :
 		agg_(agg)
 {
@@ -41,8 +43,22 @@ SimpleRunner::runStage(RunStage stage)
 		if (it->run(stage))
 			error = true;
 	}
-	CPSLogger::instance()->flush(); //Synchronize stdio
 	return error;
+}
+
+bool
+SimpleRunner::runStages(const std::vector<RunStage>& stages)
+{
+	for (auto stage : stages)
+	{
+		CPSLOG_DEBUG << "Run stage " << EnumMap<RunStage>::convert(stage);
+		if (runStage(stage))
+		{
+			CPSLOG_ERROR << "Run stage " << EnumMap<RunStage>::convert(stage) << " failed";
+			return true;
+		}
+	}
+	return false;
 }
 
 bool

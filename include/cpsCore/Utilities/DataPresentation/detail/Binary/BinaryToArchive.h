@@ -22,7 +22,7 @@ public:
 	 * @brief Constructor wrapping around a string
 	 * @param str String to be wrapped around and filled with serialization
 	 */
-	BinaryToArchive(std::string& str, const ArchiveOptions& opts = ArchiveOptions());
+	explicit BinaryToArchive(std::string& str, const ArchiveOptions& opts = ArchiveOptions());
 
 	void
 	setOptions(const ArchiveOptions& opts);

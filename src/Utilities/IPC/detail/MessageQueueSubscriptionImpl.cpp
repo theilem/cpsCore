@@ -75,6 +75,13 @@ MessageQueueSubscriptionImpl::onMessageQueue()
 			continue;
 		}
 		packet.resize(size);
+		if (packet == "ending")
+		{
+			CPSLOG_DEBUG << "Received ending packet, stopping listener.";
+			listenerCanceled_.store(true);
+			messageQueue_.reset();
+			return;
+		}
 		packet += ' ';
 		onMessageQueue_(Packet(packet));
 	}

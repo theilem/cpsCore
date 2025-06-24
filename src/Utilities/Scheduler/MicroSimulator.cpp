@@ -36,6 +36,7 @@ MicroSimulator::run(RunStage stage)
 
 MicroSimulator::~MicroSimulator()
 {
+    MicroSimulator::stop();
 }
 
 Event
@@ -61,14 +62,15 @@ MicroSimulator::stop()
 {
     CPSLOG_DEBUG << "Stop MicroSim called";
     stopped_ = true;
+    realTimeCondition_.notify_all();
 }
 
 int
 MicroSimulator::simulate(Duration duration)
 {
     runs_ = 0;
-    auto startTimeReal = std::chrono::high_resolution_clock::now();
-    auto startTimeSim = now_;
+    TimePoint startTimeReal = std::chrono::system_clock::now();
+    TimePoint startTimeSim = now_;
 
     TimePoint endSim = now_ + duration;
     if (params.showProgress())
@@ -91,9 +93,8 @@ MicroSimulator::simulate(Duration duration)
 
         if (realTimeFactor_ > 0)
         {
-            lock.unlock();
-            std::this_thread::sleep_until(startTimeReal + (events_.begin()->first - startTimeSim) * realTimeFactor_);
-            lock.lock();
+            TimePoint untilTime = startTimeReal + Nanoseconds(static_cast<Nanoseconds::rep>(std::chrono::duration_cast<Nanoseconds>(events_.begin()->first - startTimeSim).count() * realTimeFactor_));
+            realTimeCondition_.wait_until(lock, untilTime);
         }
 
         if (stopped_)

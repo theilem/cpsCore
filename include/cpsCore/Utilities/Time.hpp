@@ -34,20 +34,7 @@ enum class TimeUnit
 };
 
 template <typename Type>
-struct TimedValue : std::pair<TimePoint, Type>
-{
-    using ValueType = Type;
-
-    TimedValue()
-        : std::pair<TimePoint, Type>({TimePoint(), Type()})
-    {
-    }
-
-    TimedValue(const TimePoint& time, const Type& value)
-        : std::pair<TimePoint, Type>({time, value})
-    {
-    }
-};
+using TimedValue = std::pair<TimePoint, Type>;
 
 
 // Enable if is timed value
@@ -200,14 +187,6 @@ namespace dp
     serialize(Archive& ar, TimePoint& t)
     {
         split(ar, t);
-    }
-
-    template <class Archive, typename Type>
-    inline void
-    serialize(Archive& ar, std::enable_if_t<is_timed_value<Type>::value, Type>& t)
-    {
-        ar & t.first;
-        ar & t.second;
     }
 }
 

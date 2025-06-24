@@ -26,6 +26,7 @@
 #ifndef UAVAP_CORE_RUNNER_SIMPLERUNNER_H_
 #define UAVAP_CORE_RUNNER_SIMPLERUNNER_H_
 #include "cpsCore/Synchronization/IRunnableObject.h"
+#include <vector>
 
 class Aggregator;
 
@@ -34,7 +35,7 @@ class SimpleRunner
 
 public:
 
-	SimpleRunner(Aggregator& agg);
+	explicit SimpleRunner(Aggregator& agg);
 
 	bool
 	runStage(RunStage stage);

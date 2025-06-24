@@ -16,7 +16,7 @@ public:
 
 	MessageQueuePublisherImpl(const std::string& id, unsigned int numOfMessages, std::size_t elementSize);
 
-	~MessageQueuePublisherImpl();
+	~MessageQueuePublisherImpl() override;
 
 	bool
 	publish(const Packet& obj) override;

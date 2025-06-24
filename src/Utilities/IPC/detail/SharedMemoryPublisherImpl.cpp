@@ -102,6 +102,4 @@ SharedMemoryPublisherImpl::teardown()
 
 	message->active = false;
 	message->cnd.notify_all();
-
-	lock.unlock();
 }

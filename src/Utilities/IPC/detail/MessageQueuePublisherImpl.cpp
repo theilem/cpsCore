@@ -16,6 +16,7 @@ MessageQueuePublisherImpl::MessageQueuePublisherImpl(const std::string& id, unsi
 
 MessageQueuePublisherImpl::~MessageQueuePublisherImpl()
 {
+	MessageQueuePublisherImpl::publish(Packet("ending"));
 	if (boost::interprocess::message_queue::remove(id_.c_str()))
 		CPSLOG_DEBUG << id_ << " message queue removed.";
 }

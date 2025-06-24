@@ -108,6 +108,7 @@ private:
     int runs_;
     bool stopOnWait_;
     std::mutex simMutex_;
+	std::condition_variable realTimeCondition_;
     float realTimeFactor_;
 
     Mutex waitCondMutex_;

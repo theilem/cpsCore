@@ -12,6 +12,7 @@
 #include <cpsCore/Utilities/Scheduler/IScheduler.h>
 #include <cpsCore/Utilities/Scheduler/MicroSimulator.h>
 #include <cpsCore/Utilities/Scheduler/MultiThreadingScheduler.h>
+#include <cpsCore/Framework/StaticHelper.h>
 
 namespace
 {

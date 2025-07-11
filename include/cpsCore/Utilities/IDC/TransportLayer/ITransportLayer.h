@@ -32,6 +32,7 @@ class Packet;
 class ITransportLayer
 {
 public:
+	static constexpr auto typeId = "transport_layer";
 
 	virtual
 	~ITransportLayer() = default;

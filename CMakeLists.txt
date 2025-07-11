@@ -26,7 +26,7 @@ if (NOT APPLE)
     set(SYSTEM_LIBS_STATIC ${SYSTEM_LIBS_STATIC} rt.a)
 endif(NOT APPLE)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(SUBMODULE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern)
 include_directories(${SUBMODULE_DIR}/cpp_redis/includes)

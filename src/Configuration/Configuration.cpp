@@ -15,7 +15,7 @@ parseConfigFile(const std::string& path)
 	if (!path.empty())
 	{
 		std::ifstream f(path);
-		conf = json::parse(f);
+		conf = nlohmann::json::parse(f);
 	}
 	return conf;
 }
@@ -27,7 +27,7 @@ parseConfigString(const std::string& config)
 	if (!config.empty())
 	{
 		std::istringstream iss(config);
-		conf = json::parse(config);
+		conf = nlohmann::json::parse(config);
 	}
 	return conf;
 }

@@ -35,7 +35,7 @@
 
 #include <Eigen/Core>
 
-#include "Configuration.hpp"
+#include "cpsCore/Configuration/Configuration.hpp"
 #include "cpsCore/Configuration/Parameter.hpp"
 #include "cpsCore/Utilities/Optional.hpp"
 #include "cpsCore/Configuration/ParameterRef.hpp"

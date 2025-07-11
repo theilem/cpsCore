@@ -16,6 +16,8 @@ class RunnableTestClass : public IRunnableObject, public AggregatableObject<>
 {
 public:
 
+	static constexpr auto typeId = "runnable_test_class";
+
 	RunnableTestClass() :
 			lastRunStage(RunStage::SYNCHRONIZE)
 	{
@@ -39,6 +41,8 @@ public:
 class RunnableTestTimeoutClass : public IRunnableObject, public IAggregatableObject
 {
 public:
+
+	static constexpr auto typeId = "runnable_test_timeout_class";
 
 	RunnableTestTimeoutClass() :
 			lastRunStage(RunStage::SYNCHRONIZE)

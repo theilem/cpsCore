@@ -36,6 +36,7 @@ SimpleRunner::SimpleRunner(Aggregator& agg) :
 bool
 SimpleRunner::runStage(RunStage stage)
 {
+	CPSLOG_DEBUG << "Running stage " << EnumMap<RunStage>::convert(stage);
 	auto runnableObjects = agg_.getAll<IRunnableObject>();
 	bool error = false;
 	for (auto it : runnableObjects)

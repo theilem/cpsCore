@@ -10,18 +10,7 @@
 #include "cpsCore/Framework/StaticFactory.h"
 #include "cpsCore/Framework/PluginHelper.h"
 
-template <class...>
-class StaticHelper;
 
-template <typename T>
-struct is_static_helper : std::false_type
-{
-};
-
-template <class... Objs>
-struct is_static_helper<StaticHelper<Objs...>> : std::true_type
-{
-};
 
 template <class... Objects>
 class StaticHelper

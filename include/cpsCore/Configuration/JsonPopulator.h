@@ -11,11 +11,13 @@
 #include <fstream>
 #include <type_traits>
 
-#include "cpsCore/Configuration/ConfigurableObject.hpp"
-#include "cpsCore/Framework/StaticFactory.h"
-#include "cpsCore/Framework/StaticHelper.h"
-#include "uavAP/FlightControl/Controller/PIDController/PIDHandling.h"
-
+#include "cpsCore/Configuration/Parameter.hpp"
+#include "cpsCore/Configuration/ParameterRef.hpp"
+#include "cpsCore/Framework/TypeTraits.hpp"
+#include "cpsCore/Utilities/Angle.hpp"
+#include "cpsCore/Utilities/EnumMap.hpp"
+#include "cpsCore/Utilities/TypeTraits.hpp"
+#include "cpsCore/Configuration/TypeTraits.hpp"
 
 class JsonPopulator
 {
@@ -47,13 +49,15 @@ public:
     {
         if constexpr (is_configurable_object<Type>::value)
         {
-            JsonPopulator pop;
-            const_cast<Type&>(param.value).parse(pop);
+            Configuration config;
+            const_cast<Type&>(param.value).parse(config);
             if constexpr (has_configure_params<Type>::value)
             {
+                JsonPopulator pop;
                 const_cast<Type&>(param.value).configureParams(pop);
+                config.merge_patch(pop.getConfig());
             }
-            json_[param.id] = pop.json_;
+            json_[param.id] = config;
         }
         else
         {
@@ -72,7 +76,7 @@ public:
             JsonPopulator pop;
             const_cast<Type&>(value).configure(pop);
             if (pop.json_.empty())
-                writeTo = json::object();
+                writeTo = nlohmann::json::object();
             else
                 writeTo = pop.json_;
         }
@@ -164,14 +168,16 @@ public:
     {
         if constexpr (is_configurable_object<Object>::value)
         {
-            JsonPopulator pop;
             Object obj;
-            obj.parse(pop);
+            Configuration config;
+            obj.parse(config);
             if constexpr (has_configure_params<Object>::value)
             {
+                JsonPopulator pop;
                 obj.configureParams(pop);
+                config.merge_patch(pop.getConfig());
             }
-            json_[Object::typeId] = pop.getConfig();
+            json_[Object::typeId] = config;
         }
         else if constexpr (is_static_factory<Object>::value)
         {
@@ -222,7 +228,7 @@ public:
     }
 
 private:
-    json json_;
+    nlohmann::json json_;
 };
 
 #endif /* UAVAP_CORE_PROPERTYMAPPER_JSONPOPULATOR_H_ */

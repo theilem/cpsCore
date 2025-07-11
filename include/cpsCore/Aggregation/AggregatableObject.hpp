@@ -12,7 +12,7 @@
 #include "cpsCore/Logging/CPSLogger.h"
 
 template<class ... Objects>
-class AggregatableObject : public IAggregatableObject
+class AggregatableObject : public virtual IAggregatableObject
 {
 public:
 

@@ -7,11 +7,13 @@
 
 #ifndef UAVAP_CORE_PROPERTYMAPPER_CONFIGURABLEOBJECT_HPP_
 #define UAVAP_CORE_PROPERTYMAPPER_CONFIGURABLEOBJECT_HPP_
+#include "cpsCore/Configuration/JsonPopulator.h"
 #include "cpsCore/Configuration/Configuration.hpp"
 #include "cpsCore/Configuration/PropertyMapper.hpp"
 
+
 template<class ParameterSet>
-class ConfigurableObject
+class ConfigurableObject: public IConfigurableObject
 {
 public:
 
@@ -19,21 +21,21 @@ public:
 
 	ConfigurableObject() = default;
 
-	virtual ~ConfigurableObject() = default;
+	~ConfigurableObject() override = default;
 
-	inline ConfigurableObject(const ParameterSet& p) :
+	explicit ConfigurableObject(const ParameterSet& p) :
 			params(p)
 	{
 	}
 
-	inline void
+	void
 	setParams(const ParameterSet& set)
 	{
 		params = set;
 	}
 
-	virtual bool
-	configure(const Configuration& config)
+	bool
+	configure(const Configuration& config) override
 	{
 		PropertyMapper pm(config);
 
@@ -41,18 +43,12 @@ public:
 		return pm.map();
 	}
 
-	bool
-	configure(PropertyMapper& pm)
-	{
-		params.configure(pm);
-		return pm.map();
-	}
-
-	template <typename Parser>
 	void
-	parse(Parser& parser)
+	parse(Configuration& config) override
 	{
+		JsonPopulator parser;
 		params.configure(parser);
+		config.merge_patch(parser.getConfig());
 	}
 
 	inline const ParameterSet&
@@ -81,18 +77,5 @@ protected:
 	ParameterSet params;
 };
 
-
-/**
- * For use with nested configurable objects, where the root object doesn't need to be configured
- */
-struct PlaceholderParams
-{
-	template <typename Config>
-	void
-	configure(Config& c)
-	{
-
-	}
-};
 
 #endif /* UAVAP_CORE_PROPERTYMAPPER_CONFIGURABLEOBJECT_HPP_ */

@@ -187,7 +187,15 @@ ObjectHandleContainer<Object, Others...>::setFromAggregationIfNotSet(const Aggre
     else
     {
         if (!object_.lock())
+        {
             object_ = agg.getOne<Object>();
+            if (object_.lock())
+            {
+                if constexpr (is_complete<Object>::value)
+                    CPSLOG_TRACE << "ObjectHandleContainer: Set object of type " << Object::typeId
+                                 << " from Aggregator.";
+            }
+        }
     }
     others_.setFromAggregationIfNotSet(agg);
 }

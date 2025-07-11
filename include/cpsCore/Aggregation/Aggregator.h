@@ -97,7 +97,14 @@ Aggregator::add(std::shared_ptr<Type> obj)
 {
 	if (auto aggObj = std::dynamic_pointer_cast<IAggregatableObject>(obj))
 	{
+		CPSLOG_TRACE << "Aggregator: Adding object of type " << Type::typeId
+					<< " to Aggregator.";
 		add(aggObj);
+	}
+	else
+	{
+		CPSLOG_WARN << "Aggregator: Cannot add object of type " << Type::typeId
+					<< " to Aggregator. It is not an IAggregatableObject.";
 	}
 }
 

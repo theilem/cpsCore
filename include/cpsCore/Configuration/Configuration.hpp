@@ -19,8 +19,17 @@ using ConfigurationError = int;
 
 #include <nlohmann/json.hpp>
 
-using json = nlohmann::json;
-using Configuration = json;
+using Configuration = nlohmann::json;
+
+class IConfigurableObject
+{
+public:
+	virtual ~IConfigurableObject() = default;
+	virtual bool
+	configure(const Configuration& config) = 0;
+	virtual void
+	parse(Configuration& config) = 0;
+};
 
 Configuration
 parseConfigFile(const std::string& path);

@@ -141,15 +141,4 @@ private:
 
 };
 
-template<class T>
-struct is_static_factory : std::false_type
-{
-};
-
-template<class T, bool S, class...C>
-struct is_static_factory<StaticFactory<T, S, C...>> : std::true_type
-{
-};
-
-
 #endif //CPSCORE_STATICFACTORY_H
